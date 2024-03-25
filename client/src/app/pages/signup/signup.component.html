@@ -1,0 +1,27 @@
+<main class="full-page">
+    <form class="form" [formGroup] = "signUpForm">
+        <h4>Register</h4>
+        <div class="form-row">
+            <label for="name" class="form-label">
+              Name
+            </label>
+            <input id="name" type="text" class="form-input" formControlname="name"/>
+        </div>
+        <div class="form-row">
+            <label for="email" class="form-label">
+              Email Address
+            </label>
+            <input id="email" type="email" class="form-input" formControlname="email"/>
+        </div>
+        <div class="form-row">
+            <label for="password" class="form-label">
+              Password
+            </label>
+            <input type="password" class="form-input" formControlname="password"/>
+        </div>
+        <button type='submit' class='btn btn-block'>
+            Sign In
+        </button>
+        <p>Already a member ? <a routerLink="/signin" class="member-btn">Signin</a></p>
+    </form>
+</main>
