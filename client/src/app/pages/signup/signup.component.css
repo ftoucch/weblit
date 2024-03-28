@@ -26,3 +26,7 @@
     cursor: pointer;
     letter-spacing: var(--letterSpacing);
   }
+
+  input.input-error {
+    border: 1px solid var(--red-dark)
+  }

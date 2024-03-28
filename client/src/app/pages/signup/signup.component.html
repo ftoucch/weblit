@@ -1,26 +1,26 @@
 <main class="full-page">
-    <form class="form" [formGroup] = "signUpForm">
+    <form class="form" [formGroup] = "form" (submit) = "signup()">
         <h4>Register</h4>
         <div class="form-row">
             <label for="name" class="form-label">
               Name
             </label>
-            <input id="name" type="text" class="form-input" formControlname="name"/>
+            <input id="name" type="text" class="form-input"  formControlName="name"placeholder="John Wick" />
         </div>
         <div class="form-row">
             <label for="email" class="form-label">
               Email Address
             </label>
-            <input id="email" type="email" class="form-input" formControlname="email"/>
+            <input id="email" type="email" class="form-input" [class.input-error]="form['controls']['email'].errors && form['controls']['email'].touched" formControlName="email" placeholder="johnwick@example.com" />
         </div>
         <div class="form-row">
             <label for="password" class="form-label">
               Password
             </label>
-            <input type="password" class="form-input" formControlname="password"/>
+            <input type="password" class="form-input" formControlName="password"/>
         </div>
-        <button type='submit' class='btn btn-block'>
-            Sign In
+        <button type='submit' class='btn btn-block' routerLink='/dashboard'>
+            Register
         </button>
         <p>Already a member ? <a routerLink="/signin" class="member-btn">Signin</a></p>
     </form>

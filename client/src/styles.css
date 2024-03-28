@@ -50,7 +50,7 @@ html {
   --small-text: 0.875rem;
   --extra-small-text: 0.7em;
   /* rest of the vars */
-  --backgroundColor: var(--grey-50);
+  --backgroundColor: var(--grey-100);
   --textColor: var(--grey-900);
   --borderRadius: 0.25rem;
   --letterSpacing: 1px;
@@ -126,6 +126,7 @@ small,
 a {
   text-decoration: none;
   letter-spacing: var(--letterSpacing);
+  font-size: 1.25rem;
 }
 a,
 button {
@@ -297,3 +298,39 @@ ul {
 .full-page {
   min-height: 100vh;
 }
+.title {
+  font-weight: 700;
+  margin-bottom: 0;
+  span {
+    color: var(--primary-500);
+  }
+}
+.card-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.card {
+  display: flex;
+  background-color: var(--white);
+  padding: 1.5rem;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+
+  h4 {
+    margin-bottom: 0.5rem;
+  }
+}
+.vertical {
+  flex-direction: column;
+  gap: 1rem;
+}
+section {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 992px) {
+  .card{
+    width: 25%;
+  }
+} 

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -11,8 +11,16 @@ import { RouterLink } from '@angular/router';
   styleUrl: './signup.component.css'
 })
 export class SignupComponent {
-  signUpForm = new FormGroup({
-    password: new FormControl(''),
-    email: new FormControl('')
-  });
+form: FormGroup
+  constructor(private fb: FormBuilder) {
+    this.form = fb.group({
+      name: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
+    })
+  }
+
+  signup() {
+    console.log(this.form.value)
+  }
 }

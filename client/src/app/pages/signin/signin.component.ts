@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -10,9 +10,16 @@ import { RouterLink } from '@angular/router';
   templateUrl: './signin.component.html',
   styleUrl: './signin.component.css'
 })
-export class SigninComponent {
-  signInForm = new FormGroup({
-    password: new FormControl(''),
-    email: new FormControl('')
-  });
+export class SigninComponent {  
+  form: FormGroup;
+  constructor(private fb: FormBuilder) {
+  this.form = fb.group({
+    password: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]]
+  })
+  }
+
+  signin() {
+    console.log(this.form.value)
+  }
 }

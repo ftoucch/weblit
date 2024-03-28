@@ -1,17 +1,17 @@
 <main class="full-page">
-    <form class="form" [formGroup] = "signInForm">
+    <form class="form" [formGroup] = "form" (submit)="signin()">
         <h4>Login</h4>
         <div class="form-row">
             <label for="email" class="form-label">
               Email Address
             </label>
-            <input id="email" type="email" class="form-input" formControlname="email"/>
+            <input id="email" type="email" [class.input-error]="form['controls']['email'].errors && form['controls']['email'].touched" class="form-input" formControlName="email" placeholder="johnwick@example.com" />
         </div>
         <div class="form-row">
             <label for="password" class="form-label">
               Password
             </label>
-            <input type="password" class="form-input" formControlname="password"/>
+            <input type="password" class="form-input" [class.input-error] = "form['controls']['password'].errors && form['controls']['password'].touched" placeholder="********"  formControlName="password"/>
         </div>
         <button type='submit' class='btn btn-block'>
             Sign In
