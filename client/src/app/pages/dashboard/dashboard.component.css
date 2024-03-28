@@ -87,8 +87,10 @@
     .dashboard-page {
       width: 90%;
     }
-    nav {position: sticky;
+    nav {
+        position: sticky;
         top: 0;
+        margin-top: 2rem;
     }
     .nav-center {
       width: 90%;
@@ -128,7 +130,7 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
-        padding-left: 5px;
+        padding-inline: 1.5rem;
       }
       .nav-link {
         display: flex;
@@ -151,9 +153,9 @@
         place-items: center;
       }
       .active {
-        color: var(--text-secondary-color);
+        color: var(--primary-600);
         background-color: var(--backgroundColor);
-        border-radius: var(--borderRadius) 0px 0px var(--borderRadius);
+        border-radius: var(--borderRadius);
         border-left: 3px solid var(--primary-600);
       }
       .pending {

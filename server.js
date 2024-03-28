@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 
 // routers
 import authRouter from './routes/authRoutes.js';
-import jobsRouter from './routes/researchRoutes.js';
+import researchRouter from './routes/researchRoutes.js';
 
 // import for default view
 
@@ -27,6 +27,7 @@ app.use(express.urlencoded({extended: false}));
 const port = process.env.PORT || 5100;
 
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/research', researchRouter)
 
 app.get('*', (req,res)=>{
     res.sendFile(path.resolve(__dirname, 'index.html'));
