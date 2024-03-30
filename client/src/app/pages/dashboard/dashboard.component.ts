@@ -15,5 +15,18 @@ export class DashboardComponent implements OnInit {
     private userService: UserService,
     private generalService: GeneralService
   ) {}
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.refreshToken();
+  }
+
+  refreshToken() {
+    this.userService.refreshToken().subscribe({
+      next: (res: any) => {
+        this.generalService.saveUser(res);
+      },
+    });
+  }
+  logOut() {
+    this.generalService.logOutUser();
+  }
 }

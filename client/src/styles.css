@@ -300,9 +300,9 @@ ul {
 .title {
   font-weight: 700;
   margin-bottom: 0;
-  span {
-    color: var(--primary-500);
-  }
+}
+.title span {
+  color: var(--primary-500);
 }
 .card-wrapper {
   display: flex;
@@ -316,10 +316,9 @@ ul {
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
     rgba(17, 17, 26, 0.05) 0px 8px 32px;
   border-radius: var(--borderRadius);
-
-  h4 {
-    margin-bottom: 0.5rem;
-  }
+}
+.card h4 {
+  margin-bottom: 0.5rem;
 }
 .vertical {
   flex-direction: column;
