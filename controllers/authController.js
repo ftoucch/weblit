@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import { StatusCodes } from "http-status-codes";
 import attachCookie from '../utils/attachCookie.js';
+import { createJWT } from "../utils/tokenUtils.js";
+import UnAuthenticatedError from "../errors/unauthenticated.js";
 
 const register = async (req, res) => {
     const {name, email, password} = req.body;
@@ -14,13 +16,14 @@ const register = async (req, res) => {
     }
     const user = await User.create({name, email, password})
 
-    const token = user.createJWT();
+    const token = createJWT({userId: user._id, emaiil: user.email});
     attachCookie({ res, token });
 
     res.status(StatusCodes.CREATED).json({
         user: {
             name: user.name,
-            email: user.email
+            email: user.email,
+            message: 'user created successfully'
         }
     })
 }
@@ -41,11 +44,10 @@ const login = async (req, res) => {
     if (!isPasswordCorrect) {
       throw new UnAuthenticatedError('Invalid Credentials');
     }
-    const token = user.createJWT();
+    const token = createJWT({userId: user._id, emaiil: user.email});
     attachCookie({ res, token });
-    user.password = undefined;
   
-    res.status(StatusCodes.OK).json({ name: user.name, email: user.email });
+    res.status(StatusCodes.OK).json({ name: user.name, email: user.email, message: 'user created successfully'});
 
 }
     

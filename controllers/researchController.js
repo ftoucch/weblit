@@ -1,44 +1,47 @@
-import Research from "../models/Research.js";
+import PrimaryStudy from "../models/PrimaryStudies.js";
 import { StatusCodes } from "http-status-codes";
-import attachCookie from '../utils/attachCookie.js';
 import dotenv from 'dotenv'
 dotenv.config();
 import axios from "axios";
 import OpenAI from "openai";
+import SystematicReviewScholar from "../models/SystematicReview.js";
+import SystematicReview from "../models/SystematicReview.js";
+import FilterQuery from "../models/FilterQuery.js";
 
 const openai = new OpenAI({
     apiKey: process.env.OPEN_API_SECRET_KEY,
   });
 
 const createResearch = async (req,res) => {
-    const { title, description, researchField, inclusionCriteria, exclusionCriteria } = req.body;
+    const { searchString, description, researchQuestion, inclusionCriteria, exclusionCriteria, filterQuery, systematicReviewId, user } = req.body;
     try {
         // Call Semantic Scholar API
-        const semanticResponse = await axios.get(`https://api.semanticscholar.org/graph/v1/paper/search/bulk?query=${title}&fields=title,abstract,authors&limit=10`, {
+        const semanticResponse = await axios.get(`https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&fields=title,abstract,authors,openAccessPdf&limit=3`, {
             headers: {
                 'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY
             }
         });
-
-        const response = await openai.chat.completions.create({
+        
+       const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
               {
                 "role": "system",
-                "content": "You will be provided with json code that contains project title abstract and authors id you will also be provided a description, inclusion and exclusion criteria you will need to remove items in the Json with abstract that does not meet the inclusion, exclusion criteria and is not related to the description and return a valid json response"
+                "content": `You will be provided with a pair of research papers (in json format) about ${title} a description, inclusion and an exclusion criteria will also be provided. First read the papers in the json then compare each to the value in the inclusion and exclusion criteria, then check the ones that are similar to what the description says. then return a new JSON of papers with title abstract and the match rate`
               },
               {
                 "role": "user",
-                "content": `json file : ${semanticResponse.data}, inclusion criteia : ${inclusionCriteria}, exclusion criteria: ${exclusionCriteria}, Description: ${description}`
+                "content": `research Papers : ${semanticResponse.data}, inclusion criteia : ${inclusionCriteria}, exclusion criteria: ${exclusionCriteria}, Description: ${description}`
               }
             ],
             temperature: 0.7,
-            max_tokens: 164,
+            max_tokens: 1000,
             top_p: 1,
-          });
-
+          }); 
+         let message = response.choices[0].message.content;
+        let json = JSON.parse(message)
         
-        res.status(StatusCodes.OK).json(response);
+        res.status(StatusCodes.OK).json(research);
     }
     catch(error)
     {
@@ -47,7 +50,16 @@ const createResearch = async (req,res) => {
 }
 
 const allResearch = async (req,res) => {
-
 }
-
-export {createResearch, allResearch}
+const test = async (req,res) => {
+    const {inclusionCriteria, exclusionCriteria, searchString, systematicReviewId, researchQuestion} = req.body
+    const filterQuery = await FilterQuery.create({inclusionCriteria, exclusionCriteria, searchString, systematicReviewId, researchQuestion})
+    res.status(StatusCodes.CREATED).json({
+        researchQuestion: researchQuestion,
+        inclusionCriteria: inclusionCriteria,
+        exclusionCriteria: exclusionCriteria,
+        searchString: searchString,
+        systematicReviewId: systematicReviewId
+    });
+}
+export {createResearch, allResearch, test}

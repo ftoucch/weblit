@@ -5,7 +5,7 @@
             <label for="name" class="form-label">
               Name
             </label>
-            <input id="name" type="text" class="form-input"  formControlName="name"placeholder="John Wick" />
+            <input id="name" type="text" class="form-input" [class.input-error]="form['controls']['name'].errors && form['controls']['name'].touched"  formControlName="name"placeholder="John Wick" />
         </div>
         <div class="form-row">
             <label for="email" class="form-label">
@@ -17,9 +17,9 @@
             <label for="password" class="form-label">
               Password
             </label>
-            <input type="password" class="form-input" formControlName="password"/>
+            <input type="password" class="form-input" [class.input-error]="form['controls']['password'].errors && form['controls']['password'].touched" formControlName="password"/>
         </div>
-        <button type='submit' class='btn btn-block' routerLink='/dashboard'>
+        <button type='submit' class='btn btn-block'>
             Register
         </button>
         <p>Already a member ? <a routerLink="/signin" class="member-btn">Signin</a></p>

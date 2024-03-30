@@ -22,7 +22,18 @@ export const routes: Routes = [
             },
             {
                 path:'research',
-                loadComponent: () => import('./pages/dashboard/research/research.component').then((c)=> c.ResearchComponent)
+                loadComponent: () => import('./pages/dashboard/research/research.component').then((c)=> c.ResearchComponent),
+                children: 
+                [
+                    {
+                        path:'',
+                        loadComponent: () => import('./pages/dashboard/research/home/home.component').then((c)=>c.HomeComponent)
+                    },
+                    {
+                    path:'details',
+                    loadComponent: () => import('./pages/dashboard/research/details/details.component').then((c)=>c.DetailsComponent)
+                    }
+                ]
             },
             {
                 path:'documents',
