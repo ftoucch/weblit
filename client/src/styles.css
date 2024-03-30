@@ -1,6 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 /* fonts */
-@import url('https://fonts.googleapis.com/css2?family=Cabin&family=Roboto+Condensed:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cabin&family=Roboto+Condensed:wght@400;700&display=swap");
 
 *,
 ::after,
@@ -14,17 +14,15 @@ html {
 
 :root {
   /* colors */
-  --primary-50: #EAE2F8;
-  --primary-100: #D4BEE8;
-  --primary-200: #BE9AD8;
-  --primary-300: #A875C7;
-  --primary-400: #9345B6;
+  --primary-50: #eae2f8;
+  --primary-100: #d4bee8;
+  --primary-200: #be9ad8;
+  --primary-300: #a875c7;
+  --primary-400: #9345b6;
   --primary-500: #743884; /* Your base color */
-  --primary-600: #622D6E;
+  --primary-600: #622d6e;
   --primary-700: #512457;
-  --primary-800: #411B40;
-
-  
+  --primary-800: #411b40;
 
   /* grey */
   --grey-50: #f0f4f8;
@@ -46,8 +44,8 @@ html {
   --green-dark: #0f5132;
 
   /* fonts  */
-  --headingFont: 'Roboto Condensed', Sans-Serif;
-  --bodyFont: 'Cabin', Sans-Serif;
+  --headingFont: "Roboto Condensed", Sans-Serif;
+  --bodyFont: "Cabin", Sans-Serif;
   --small-text: 0.875rem;
   --extra-small-text: 0.7em;
   /* rest of the vars */
@@ -127,7 +125,7 @@ small,
 a {
   text-decoration: none;
   letter-spacing: var(--letterSpacing);
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 a,
 button {
@@ -315,7 +313,8 @@ ul {
   display: flex;
   background-color: var(--white);
   padding: 1.5rem;
-  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
+    rgba(17, 17, 26, 0.05) 0px 8px 32px;
   border-radius: var(--borderRadius);
 
   h4 {
@@ -332,7 +331,7 @@ section {
 }
 
 @media (min-width: 992px) {
-  .card{
+  .card {
     width: 25%;
   }
-} 
+}

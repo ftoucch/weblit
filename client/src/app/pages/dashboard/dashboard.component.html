@@ -1,19 +1,60 @@
 <main class="dashboard">
-    <aside class="sidebar-container">
-        <div class="content">
-            <div class="nav-links">
-                <a routerLink="/dashboard/" routerLinkActive="active" [routerLinkActiveOptions] = "{exact: true}" #dashboardLink = "routerLinkActive" class="nav-link"><span class="icon" nz-icon nzType="dashboard" nzTheme="fill"></span>Dashboard</a>
-                <a routerLink="/dashboard/research" routerLinkActive="active" class="nav-link"><span class="icon" nz-icon nzType="book" nzTheme="fill"></span>Researchs</a>
-                <a routerLink = "/dashboard/documents" routerLinkActive="active" class="nav-link"><span class="icon" nz-icon nzType="file" nzTheme="fill"></span>Documents</a>
-                <a routerLink = "/dashboard/profile" routerLinkActive="active" class="nav-link"><span class="icon" nz-icon nzType="profile" nzTheme="fill"></span>Profile </a>
-                <a routerLink = "/dashboard/settings"  routerLinkActive="active" class="nav-link"><span class="icon" nz-icon nzType="setting" nzTheme="fill"></span>Settings </a>
-            </div>
-        </div>
-    </aside>
-    <div>
-        <nav><div class="nav-center"><h2 class="title">Your title</h2><button class="btn btn-add-new">Create new review</button></div></nav>
-        <article class="dashboard-page">
-            <router-outlet></router-outlet>
-        </article>
+  <aside class="sidebar-container">
+    <div class="content">
+      <div class="nav-links">
+        <a
+          routerLink="/dashboard/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          #dashboardLink="routerLinkActive"
+          class="nav-link"
+          ><span class="icon" nz-icon nzType="dashboard" nzTheme="fill"></span
+          >Dashboard</a
+        >
+        <a
+          routerLink="/dashboard/research"
+          routerLinkActive="active"
+          class="nav-link"
+          ><span class="icon" nz-icon nzType="book" nzTheme="fill"></span
+          >Researchs</a
+        >
+        <a
+          routerLink="/dashboard/documents"
+          routerLinkActive="active"
+          class="nav-link"
+          ><span class="icon" nz-icon nzType="file" nzTheme="fill"></span
+          >Documents</a
+        >
+        <a
+          routerLink="/dashboard/profile"
+          routerLinkActive="active"
+          class="nav-link"
+          ><span class="icon" nz-icon nzType="profile" nzTheme="fill"></span
+          >Profile
+        </a>
+        <a
+          routerLink="/dashboard/settings"
+          routerLinkActive="active"
+          class="nav-link"
+          ><span class="icon" nz-icon nzType="setting" nzTheme="fill"></span
+          >Settings
+        </a>
+        <button class="nav-link btn-signout">
+          <i class="icon" nz-icon nzType="logout" nzTheme="outline"></i>
+          Signout
+        </button>
+      </div>
     </div>
+  </aside>
+  <div>
+    <nav>
+      <div class="nav-center">
+        <h2 class="title">Your title</h2>
+        <button class="btn btn-add-new">Create new review</button>
+      </div>
+    </nav>
+    <article class="dashboard-page">
+      <router-outlet></router-outlet>
+    </article>
+  </div>
 </main>
