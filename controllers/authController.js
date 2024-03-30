@@ -16,7 +16,7 @@ const register = async (req, res) => {
     }
     const user = await User.create({name, email, password})
 
-    const token = createJWT({userId: user._id, emaiil: user.email});
+    const token = createJWT({userId: user._id, email: user.email});
     attachCookie({ res, token });
 
     res.status(StatusCodes.CREATED).json({
@@ -44,7 +44,7 @@ const login = async (req, res) => {
     if (!isPasswordCorrect) {
       throw new UnAuthenticatedError('Invalid Credentials');
     }
-    const token = createJWT({userId: user._id, emaiil: user.email});
+    const token = createJWT({userId: user._id, email: user.email});
     attachCookie({ res, token });
   
     res.status(StatusCodes.OK).json({ name: user.name, email: user.email, message: 'user created successfully'});
@@ -58,6 +58,7 @@ const logout = async (req, res) => {
       });
       res.status(StatusCodes.OK).json({ msg: 'user logged out!' });
 }
-        
+  
+
 export {register, login, logout};
 
