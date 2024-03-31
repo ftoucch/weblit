@@ -13,6 +13,8 @@ const authMiddleware = async (req, res, next) => {
     const { userId, email } = verifyJWT(token);
     req.user = { userId, email, token };
     next();
+
+    
   } catch (error) {
     throw new UnAuthenticatedError('Authentication Invalid');
   }
