@@ -42,7 +42,7 @@ export const routes: Routes = [
               ),
           },
           {
-            path: 'details',
+            path: ':id',
             loadComponent: () =>
               import(
                 './pages/dashboard/research/details/details.component'

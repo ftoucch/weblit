@@ -1,12 +1,15 @@
 <section class="card-wrapper">
-    <article class="card vertical">
-        <div class="details-wrapper"><h4>Research title</h4><span>Loreum Ipsum</span></div>
-        <div class="details-wrapper"><h4>Description</h4><span>Loreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum Ipsum</span></div>
-        <button class="btn btn-view">View Research</button>
-    </article>
-    <article class="card vertical">
-        <div class="details-wrapper"><h4>Research title</h4><span>Loreum Ipsum</span></div>
-        <div class="details-wrapper"><h4>Description</h4><span>Loreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum IpsumLoreum Ipsum</span></div>
-        <button class="btn btn-view">View Research</button>
-    </article>
+  <article class="card vertical" *ngFor="let research of researchs">
+    <div class="details-wrapper">
+      <h4>Research title</h4>
+      <span>{{ research.title }}</span>
+    </div>
+    <div class="details-wrapper">
+      <h4>Description</h4>
+      <span>{{ research.description }}</span>
+    </div>
+    <button class="btn btn-view" [routerLink]="research._id">
+      View Research
+    </button>
+  </article>
 </section>

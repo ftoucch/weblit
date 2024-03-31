@@ -28,7 +28,12 @@ const createResearch = async (req, res) => {
     .json({ message: 'Systematic Literature Review Created sucessfully' });
 };
 
-const allResearch = async (req, res) => {};
+const allResearch = async (req, res) => {
+  const systematicReviews = await SystematicReview.find();
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'successfull', data: systematicReviews });
+};
 
 const test = async (req, res) => {
   const {
