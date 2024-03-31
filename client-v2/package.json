@@ -1,13 +1,12 @@
 {
-  "name": "client",
+  "name": "client-v2",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:client": "node dist/client/server/server.mjs"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
@@ -18,10 +17,7 @@
     "@angular/forms": "^17.3.0",
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
-    "@angular/platform-server": "^17.3.0",
     "@angular/router": "^17.3.0",
-    "@angular/ssr": "^17.3.1",
-    "express": "^4.18.2",
     "ng-zorro-antd": "^17.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -31,9 +27,7 @@
     "@angular-devkit/build-angular": "^17.3.1",
     "@angular/cli": "^17.3.1",
     "@angular/compiler-cli": "^17.3.0",
-    "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^18.18.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

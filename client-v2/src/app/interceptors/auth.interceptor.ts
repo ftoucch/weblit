@@ -6,7 +6,6 @@ import { catchError, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const generalService = inject(GeneralService);
   const apiToken = generalService.getToken();
-
   const authReq = req.clone({
     setHeaders: {
       Authorization: `Bearer ${apiToken}`,

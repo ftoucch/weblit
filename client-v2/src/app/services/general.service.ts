@@ -10,18 +10,13 @@ export class GeneralService {
     sessionStorage.setItem('user', JSON.stringify(user));
   }
   getToken() {
-    const userItem = sessionStorage.getItem('user');
-    if (!userItem) {
+    let res: any = sessionStorage.getItem('user') ?? undefined;
+
+    if (!res || res == '') {
       return '';
     }
 
-    try {
-      const user = JSON.parse(userItem);
-      return user.token || '';
-    } catch (error) {
-      console.error('Error parsing user data from sessionStorage:', error);
-      return '';
-    }
+    return JSON.parse(res).token;
   }
 
   logOutUser() {

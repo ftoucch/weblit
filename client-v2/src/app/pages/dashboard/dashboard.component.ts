@@ -6,7 +6,7 @@ import { GeneralService } from '../../services/general.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NzIconModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NzIconModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })

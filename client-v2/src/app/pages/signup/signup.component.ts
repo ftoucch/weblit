@@ -61,9 +61,9 @@ export class SignupComponent implements OnInit {
         this.notification.create(
           'success',
           'Success',
-          'Registeration Successfull'
+          'Registeration Successfull sign in to continue'
         );
-        this.router.navigateByUrl('/dashboard');
+        this.router.navigateByUrl('/signin');
       },
       error: (error: any) => {
         this.processLoading = false;
