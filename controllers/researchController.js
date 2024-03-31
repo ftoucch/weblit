@@ -15,7 +15,7 @@ const openai = new OpenAI({
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
-  const user = req.user.userId;
+  const user = req.user.use-v2rId;
   if (!title || !description)
     throw new UnAuthenticatedError('please enter all field');
   const systematicReview = await SystematicReview.create({
