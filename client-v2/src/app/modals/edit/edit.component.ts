@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { ResearchService } from '../../services/research.service';
+import { systematicReview } from '../../models/research';
 
 @Component({
   selector: 'app-edit',
@@ -12,18 +14,25 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
   styleUrl: './edit.component.css'
 })
 export class EditComponent {
-  @Input() researchTitle: string | null = null;
-  @Input() researchDescription: string | null = null;
-  @Input() researchId: string | null = null;
-  
   processLoading: boolean = false;
   form: FormGroup;
   isVisible = false;
-  research: any;
-  constructor( private fb: FormBuilder){
+  constructor( private fb: FormBuilder, private researchService : ResearchService){
     this.form = fb.group({
       title: ['', Validators.required],
       description: ['', Validators.required],
+    });
+  }
+
+
+  ngOnInit(): void {
+    this.researchService.selectedResearch$.subscribe((research) => {
+      if (research) {
+        this.form.patchValue({
+          title: research.title,
+          description: research.description,
+        });
+      }
     });
   }
 

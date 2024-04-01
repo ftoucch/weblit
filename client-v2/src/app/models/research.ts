@@ -1,5 +1,5 @@
-export class Research {
+export class systematicReview {
     title: any = '';
     description: any = '';
-    _id: any ='';
+    user: any = '';
 }

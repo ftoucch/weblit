@@ -17,4 +17,13 @@ export class UserService {
   refreshToken() {
     return this.apiService.get('users/me');
   }
+  getUser() {
+    let res: any = sessionStorage.getItem('user') ?? undefined;
+
+    if (!res || res == '') {
+      return '';
+    }
+
+    return JSON.parse(res).id;
+  }
 }

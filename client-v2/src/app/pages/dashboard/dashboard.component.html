@@ -50,11 +50,12 @@
     <nav>
       <div class="nav-center">
         <h2 class="title">{{title}}</h2>
-        <button class="btn btn-add-new">Create new review</button>
+        <button class="btn btn-add-new" (click)="showCreateModal()">Create new review</button>
       </div>
     </nav>
     <article class="dashboard-page">
       <router-outlet></router-outlet>
+      <app-create-review></app-create-review>
     </article>
   </div>
 </main>

@@ -31,4 +31,8 @@ export class ApiService {
   post(endpoint: string, body: any, reqOpts?: any) {
     return this.http.post(this.url + endpoint, body, reqOpts);
   }
+
+  delete(endpoint: string, reqOpts?: any) {
+    return this.http.delete(this.url + endpoint, reqOpts);
+  }
 }

@@ -22,11 +22,11 @@ const createResearch = async (req, res) => {
   });
   res
     .status(StatusCodes.CREATED)
-    .json({ message: 'Systematic Literature Review Created sucessfully' });
+    .json({ message: 'Systematic Literature Review Created sucessfully', id:systematicReview.id });
 };
 
 const allResearch = async (req, res) => {
-  const systematicReviews = await SystematicReview.find();
+  const systematicReviews = await SystematicReview.find({user: req.user.userId});
   res
     .status(StatusCodes.OK)
     .json({ message: 'successfull', data: systematicReviews });
@@ -38,6 +38,19 @@ const getResearch = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ title: systematicReview.title, description: systematicReview.description });
 }
+
+const deleteResearch = async (req, res) => {
+
+  const systematicReview = await SystematicReview.findOne({ _id: req.params.id });
+
+  if (!systematicReview) {
+    throw new NotFoundError(`No job with id :${jobId}`);
+  }
+
+  await job.remove();
+
+  res.status(StatusCodes.OK).json({ msg: 'Success! Job removed' });
+};
 
 const createQuery = async (req, res) => {
   const {researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId} = req.body
@@ -65,4 +78,4 @@ const createQuery = async (req, res) => {
         console.log(error)
     }
 }
-export { createResearch, allResearch, getResearch, createQuery};
+export { createResearch, allResearch, getResearch, createQuery, deleteResearch};

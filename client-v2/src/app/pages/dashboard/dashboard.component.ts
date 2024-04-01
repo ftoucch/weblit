@@ -1,19 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { UserService } from '../../services/user.service';
 import { GeneralService } from '../../services/general.service';
 import { Location } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
+import { CreateReviewComponent } from '../../modals/create-review/create-review.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, NzIconModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, NzIconModule, CreateReviewComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild(CreateReviewComponent, {static:false}) createModal! : CreateReviewComponent
   title: string = '';
+  isVisible = false
   constructor(
     private userService: UserService,
     private generalService: GeneralService,
@@ -44,5 +47,9 @@ export class DashboardComponent implements OnInit {
   }
   logOut() {
     this.generalService.logOutUser();
+  }
+
+  showCreateModal(): void {
+    this.createModal.showModal();
   }
 }

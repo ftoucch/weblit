@@ -4,8 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { EditComponent } from '../../../../modals/edit/edit.component';
-import { NzModalModule } from 'ng-zorro-antd/modal';
-import { Research } from '../../../../models/research';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 
 @Component({
   selector: 'app-home',
@@ -17,16 +16,13 @@ import { Research } from '../../../../models/research';
 export class HomeComponent {
   @ViewChild(EditComponent, { static: false }) editModal!: EditComponent;
   isVisible = false
-  selectedResearch: Research | null = null
-
   researchs: Array<any> = [];
-  constructor(private researchService: ResearchService) {
+  constructor(private researchService: ResearchService, private modal: NzModalService) {
     this.getAllResearch();
   }
 
   selectResearchForEdit(research: any): void {
-    this.selectedResearch = research;
-    console.log(this.selectedResearch)
+    this.researchService.setSelectedResearch(research);
     this.showEditModal();
   }
 
@@ -38,6 +34,17 @@ export class HomeComponent {
       next: (res: any) => {
         this.researchs = res.data;
       },
+    });
+  }
+ 
+  showDeleteConfirm(researchID: any): void {
+    this.modal.confirm({
+      nzTitle: 'Are you sure delete this task?',
+      nzContent: '<b style="color: red;">Some descriptions</b>',
+      nzOkText: 'Delete',
+      nzOkDanger: true,
+      nzOnOk: () => console.log(researchID),
+      nzCancelText: 'Cancel',
     });
   }
 }

@@ -12,7 +12,7 @@
       <button class="btn btn-view" [routerLink]="research._id">
         View Research
       </button>
-      <button class="btn btn-danger">
+      <button class="btn btn-danger" (click) = "showDeleteConfirm(research._id)">
         <span nz-icon nzType="delete" nzTheme="fill"></span>
       </button>
       <button class="btn btn-edit" (click)="selectResearchForEdit(research)">
@@ -21,4 +21,4 @@
     </div>
   </article>
 </section>
-<app-edit [researchTitle]="selectedResearch?.title" [researchDescription]="selectedResearch?.description" [researchId]="selectedResearch?._id"></app-edit>
+<app-edit></app-edit>

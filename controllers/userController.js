@@ -5,7 +5,7 @@ const getCurrentUser = async (req, res) => {
   const user = await User.findOne({ _id: req.user.userId });
   res
     .status(StatusCodes.OK)
-    .json({ email: user.email, name: user.name, token: req.user.token });
+    .json({id: user.id, email: user.email, name: user.name, token: req.user.token });
 };
 
 export { getCurrentUser };

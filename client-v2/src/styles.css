@@ -346,6 +346,9 @@ section {
   display: flex;
   gap:.5rem
 }
+.input-error {
+  border: 1px solid var(--red-dark)
+}
 
 @media (min-width: 992px) {
   .card {
