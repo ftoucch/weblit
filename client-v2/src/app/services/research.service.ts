@@ -9,4 +9,7 @@ export class ResearchService {
   getAllResearch() {
     return this.apiService.get('research/all');
   }
+  getResearch(id:string) {
+    return this.apiService.get(`research/${id}`);
+  }
 }

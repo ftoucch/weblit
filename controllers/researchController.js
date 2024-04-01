@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
 import OpenAI from 'openai';
-import SystematicReviewScholar from '../models/SystematicReview.js';
 import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
@@ -15,7 +14,7 @@ const openai = new OpenAI({
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
-  const user = req.user.use-v2rId;
+  const user = req.user.userId;
   if (!title || !description)
     throw new UnAuthenticatedError('please enter all field');
   const systematicReview = await SystematicReview.create({
@@ -34,6 +33,13 @@ const allResearch = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: 'successfull', data: systematicReviews });
 };
+
+const getResearch = async (req, res) => {
+  const systematicReview = await SystematicReview.findOne({_id: req.params.id})
+  res
+    .status(StatusCodes.OK)
+    .json({ title: systematicReview.title, description: systematicReview.description });
+}
 
 const test = async (req, res) => {
   const {
@@ -58,4 +64,4 @@ const test = async (req, res) => {
     systematicReviewId: systematicReviewId,
   });
 };
-export { createResearch, allResearch, test };
+export { createResearch, allResearch, getResearch, test };

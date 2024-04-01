@@ -13,14 +13,13 @@ import { RouterLink } from '@angular/router';
 export class HomeComponent {
   researchs: Array<any> = [];
   constructor(private researchService: ResearchService) {
-    this.getResearch();
+    this.getAllResearch();
   }
 
-  getResearch() {
+  getAllResearch() {
     this.researchService.getAllResearch().subscribe({
       next: (res: any) => {
         this.researchs = res.data;
-        console.log(this.researchs);
       },
     });
   }

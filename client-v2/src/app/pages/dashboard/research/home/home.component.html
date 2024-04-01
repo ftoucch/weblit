@@ -1,12 +1,12 @@
 <section class="card-wrapper">
   <article class="card vertical" *ngFor="let research of researchs">
     <div class="details-wrapper">
-      <h4>Research title</h4>
-      <span>{{ research.title }}</span>
+      <span><strong>title</strong></span>
+      <h5>{{ research.title }}</h5>
     </div>
     <div class="details-wrapper">
-      <h4>Description</h4>
-      <span>{{ research.description }}</span>
+      <span><strong>Description</strong></span>
+      <p>{{ research.description }}</p>
     </div>
     <button class="btn btn-view" [routerLink]="research._id">
       View Research
