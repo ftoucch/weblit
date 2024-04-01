@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { UserService } from '../../services/user.service';
 import { GeneralService } from '../../services/general.service';
+import { Location } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -11,12 +13,26 @@ import { GeneralService } from '../../services/general.service';
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
+  title: string = '';
   constructor(
     private userService: UserService,
-    private generalService: GeneralService
-  ) {}
+    private generalService: GeneralService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location
+  ) {
+    this.getTitle();
+    this.location.onUrlChange(() => {
+      this.getTitle();
+    })
+  }
   ngOnInit(): void {
     this.refreshToken();
+  }
+
+  async getTitle() {
+    
+    this.title = (await firstValueFrom(this.route.children[0].data))["title"];
   }
 
   refreshToken() {

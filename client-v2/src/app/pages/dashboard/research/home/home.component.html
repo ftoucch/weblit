@@ -8,8 +8,17 @@
       <span><strong>Description</strong></span>
       <p>{{ research.description }}</p>
     </div>
-    <button class="btn btn-view" [routerLink]="research._id">
-      View Research
-    </button>
+    <div class="button-group">
+      <button class="btn btn-view" [routerLink]="research._id">
+        View Research
+      </button>
+      <button class="btn btn-danger">
+        <span nz-icon nzType="delete" nzTheme="fill"></span>
+      </button>
+      <button class="btn btn-edit" (click)="selectResearchForEdit(research)">
+        <span nz-icon nzType="edit" nzTheme="fill"></span>
+      </button>
+    </div>
   </article>
 </section>
+<app-edit [researchTitle]="selectedResearch?.title" [researchDescription]="selectedResearch?.description" [researchId]="selectedResearch?._id"></app-edit>

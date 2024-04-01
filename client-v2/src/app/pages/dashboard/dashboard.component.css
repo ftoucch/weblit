@@ -50,6 +50,7 @@ nav {
   gap: 0 0.5rem;
   position: relative;
   box-shadow: var(--shadow-2);
+  max-width: fit-content;
 }
 .btn-signout {
   background-color: transparent;

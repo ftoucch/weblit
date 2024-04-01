@@ -1,0 +1,18 @@
+<nz-modal [(nzVisible)]="isVisible" nzTitle="Edit" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()">
+    <ng-container *nzModalContent>
+        <form  [formGroup] = "form">
+            <div class="form-row">
+                <label for="email" class="form-label">
+                  Title
+                </label>
+                <input id="email" type="email" [class.input-error]="form['controls']['title'].errors && form['controls']['title'].touched" class="form-input" formControlName="title" placeholder=""  />
+            </div>
+            <div class="form-row">
+                <label for="password" class="form-label">
+                  description
+                </label>
+                <textarea type="text" class="form-input large" [class.input-error] = "form['controls']['description'].errors && form['controls']['description'].touched" placeholder=" "  formControlName="description"></textarea>
+            </div>
+        </form>
+    </ng-container>
+  </nz-modal>

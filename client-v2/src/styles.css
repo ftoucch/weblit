@@ -36,6 +36,8 @@ html {
   --grey-700: #334e68;
   --grey-800: #243b53;
   --grey-900: #102a43;
+
+  --grey-default : #626262;
   /* rest of the colors */
   --black: #222;
   --white: #fff;
@@ -167,6 +169,16 @@ ul {
 .btn-hipster {
   color: var(--primary-500);
   background: var(--primary-200);
+}
+.btn-edit {
+  color: var(--grey-default);
+  background: transparent;
+  border:  2px solid var(--grey-default);
+}
+
+.btn-edit:hover {
+  background: var(--grey-default);
+  color: var(--white)
 }
 .btn-hipster:hover {
   color: var(--primary-200);
@@ -316,7 +328,7 @@ ul {
   padding: 1.5rem;
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
     rgba(17, 17, 26, 0.05) 0px 8px 32px;
-  border-radius: var(--borderRadius);
+  border-radius: 0.5rem;
 }
 .card h4 {
   margin-bottom: 0.5rem;
@@ -330,8 +342,14 @@ section {
   margin-bottom: 1rem;
 }
 
+.button-group {
+  display: flex;
+  gap:.5rem
+}
+
 @media (min-width: 992px) {
   .card {
     width: 25%;
+    justify-content: space-around;
   }
 }

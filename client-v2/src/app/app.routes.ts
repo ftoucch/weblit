@@ -22,6 +22,9 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        data: {
+          title: "Dashboard"
+        },
         loadComponent: () =>
           import('./pages/dashboard/home/home.component').then(
             (c) => c.HomeComponent
@@ -29,6 +32,9 @@ export const routes: Routes = [
       },
       {
         path: 'research',
+        data: {
+          title: "Systematic Reviews"
+        },
         loadComponent: () =>
           import('./pages/dashboard/research/research.component').then(
             (c) => c.ResearchComponent
@@ -52,6 +58,9 @@ export const routes: Routes = [
       },
       {
         path: 'documents',
+        data: {
+          title: "Documents"
+        },
         loadComponent: () =>
           import('./pages/dashboard/documents/documents.component').then(
             (c) => c.DocumentsComponent
@@ -59,6 +68,9 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
+        data: {
+          title: "Settings"
+        },
         loadComponent: () =>
           import('./pages/dashboard/settings/settings.component').then(
             (c) => c.SettingsComponent
@@ -66,6 +78,9 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
+        data: {
+          title: "Profile"
+        },
         loadComponent: () =>
           import('./pages/dashboard/profile/profile.component').then(
             (c) => c.ProfileComponent

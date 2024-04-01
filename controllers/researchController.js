@@ -3,14 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
-import OpenAI from 'openai';
 import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
+import filterScholarresponse from '../utils/filterScholarResponse.js';
+import openAiRequest from '../utils/openAiRequest.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPEN_API_SECRET_KEY,
-});
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
@@ -41,27 +39,30 @@ const getResearch = async (req, res) => {
     .json({ title: systematicReview.title, description: systematicReview.description });
 }
 
-const test = async (req, res) => {
-  const {
-    inclusionCriteria,
-    exclusionCriteria,
-    searchString,
-    systematicReviewId,
-    researchQuestion,
-  } = req.body;
-  const filterQuery = await FilterQuery.create({
-    inclusionCriteria,
-    exclusionCriteria,
-    searchString,
-    systematicReviewId,
-    researchQuestion,
-  });
-  res.status(StatusCodes.CREATED).json({
-    researchQuestion: researchQuestion,
-    inclusionCriteria: inclusionCriteria,
-    exclusionCriteria: exclusionCriteria,
-    searchString: searchString,
-    systematicReviewId: systematicReviewId,
-  });
-};
-export { createResearch, allResearch, getResearch, test };
+const createQuery = async (req, res) => {
+  const {researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId} = req.body
+
+  if(!researchQuestion || !inclusionCriteria || !exclusionCriteria || !searchString || !systematicReviewId) {
+    throw new UnAuthenticatedError('please enter all fields')
+  }
+
+  /*const filterQuery = await FilterQuery.create({
+    researchQuestion, inclusionCriteria, exclusionCriteria,searchString, systematicReviewId
+  }) */
+  try {
+    // Call Semantic Scholar API
+    const semanticResponse = await axios.get(`https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&fields=title,abstract,authors&limit=20`, {
+        headers: {
+            'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY
+        }
+    })
+  const filteredPapers = filterScholarresponse(semanticResponse.data)
+  const openAiResponse = await openAiRequest(filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion)
+  res.status(StatusCodes.OK).json(openAiResponse);
+  }
+  catch(error)
+    {
+        console.log(error)
+    }
+}
+export { createResearch, allResearch, getResearch, createQuery};
