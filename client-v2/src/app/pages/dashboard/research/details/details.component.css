@@ -1,3 +1,51 @@
 section .card {
     flex-direction: column;
 }
+p {
+    max-width: 100%;
+    font-size: 1rem;
+}
+.query-wrapper {
+    margin-top: 2rem;
+}
+.query {
+    margin-bottom: 1rem;
+}
+
+.review-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 2rem
+}
+ .card {
+    width: 100%;
+}
+.primary-studies {
+    margin-top: 0;
+    justify-content: flex-start;
+}
+.top-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.top-row .btn {
+    height: fit-content;
+}
+
+.right-hand {
+    display: flex;
+    gap: 2rem;
+}
+.document.card {
+    background:var(--grey-50);
+    box-shadow: none;
+    margin-bottom: 2rem;
+}
+
+.documents-wrapper {
+    max-height: 100vh;
+    overflow-y: scroll;
+    padding-right: 1.5rem;
+}

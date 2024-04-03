@@ -28,7 +28,10 @@ export class ResearchService {
   createResearch(data: systematicReview) {
     return this.apiService.post('research/create' , data)
   }
-  deleteResearch() {
-    
+  deleteResearch(id:string) {
+    return this.apiService.delete(`research/${id}`);
+  }
+  updateResearch(id:string, data: systematicReview) {
+    return this.apiService.update(`research/${id}`, data)
   }
 }

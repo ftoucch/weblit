@@ -35,4 +35,7 @@ export class ApiService {
   delete(endpoint: string, reqOpts?: any) {
     return this.http.delete(this.url + endpoint, reqOpts);
   }
+  update(endpoint: string, reqOpts?: any) {
+    return this.http.patch(this.url + endpoint, reqOpts);
+  }
 }

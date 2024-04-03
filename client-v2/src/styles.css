@@ -352,6 +352,7 @@ section {
 
 @media (min-width: 992px) {
   .card {
+    min-width: min-content;
     width: 25%;
     justify-content: space-around;
   }

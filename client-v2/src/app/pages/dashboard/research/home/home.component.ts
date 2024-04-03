@@ -1,10 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { ResearchService } from '../../../../services/research.service';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { EditComponent } from '../../../../modals/edit/edit.component';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService  } from 'ng-zorro-antd/modal'; 
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +18,8 @@ export class HomeComponent {
   @ViewChild(EditComponent, { static: false }) editModal!: EditComponent;
   isVisible = false
   researchs: Array<any> = [];
-  constructor(private researchService: ResearchService, private modal: NzModalService) {
+  researchID = ''
+  constructor(private researchService: ResearchService, private modal: NzModalService, private notification: NzNotificationService, private router: Router) {
     this.getAllResearch();
   }
 
@@ -36,14 +38,27 @@ export class HomeComponent {
       },
     });
   }
- 
+
+  
   showDeleteConfirm(researchID: any): void {
+    this.researchID = researchID;
     this.modal.confirm({
-      nzTitle: 'Are you sure delete this task?',
+      nzTitle: 'Are you sure you want to delete this review ?',
       nzContent: '<b style="color: red;">Some descriptions</b>',
       nzOkText: 'Delete',
       nzOkDanger: true,
-      nzOnOk: () => console.log(researchID),
+      nzOnOk: () => {
+        this.researchService.deleteResearch(this.researchID).subscribe({
+          next: (res:any) => {
+            this.notification.create(
+              'success',
+              'Success',
+              'Review was successfully deleted'
+            );
+            this.getAllResearch();
+          }
+        })
+      },
       nzCancelText: 'Cancel',
     });
   }

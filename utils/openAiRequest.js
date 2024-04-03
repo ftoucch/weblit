@@ -6,24 +6,30 @@ const openai = new OpenAI({
     apiKey: process.env.OPEN_API_SECRET_KEY,
   });
 
-const openAiRequest = async (filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion) => {
-     const response = await openai.chat.completions.create({
-        model: "gpt-4-0125-preview",
-        messages: [
-          {
-            "role": "system",
-            "content": "You will be provided with an array containing an object of research papers, each paper contains a title an abstract, authors. You will also be provided with an inclusion criteria, exclusion criteria and a research question. You task is to compare each paper and remove each that does not meet the inclusion criteria, the exclusion criteria and does not answer the research question. filter the original array and return your selected papers in a valid json format."
-          },
-          {
-            "role": "user",
-            "content": `array : ${filteredPapers}, inclusion criteia : ${inclusionCriteria}, exclusion criteria: ${exclusionCriteria}, research question: ${researchQuestion}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-        top_p: 1,
-      });
-return (response);
+  const openAiRequest = async (filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion) => {
+    const response = await openai.chat.completions.create({
+       model: "gpt-3.5-turbo",
+       messages: [
+         {
+           "role": "system",
+           "content": "You will be provided with research papers in a JavaScript array of objects, including abstract, title, id, and author for each paper. Given a research question, inclusion criteria, and exclusion criteria, identify papers that match these requirements. Do not provide explanations or reasoning. Return only a JavaScript array of the papers that match, including title, abstract, id, authors, and match rate in percentage. Follow the structure exactly without adding any additional commentary or summaries."
+         },
+         {
+           "role": "user",
+           "content": `${JSON.stringify(filteredPapers)}`
+         },
+         {
+           "role" : "assistant",
+           "content" : `inclusionCriteria: ${inclusionCriteria}, exclusionCriteria: ${exclusionCriteria}, researchQuestion: ${researchQuestion}`
+         }
+         
+       ],
+       temperature: 0,
+       max_tokens: 4096,
+       top_p: 1,
+       frequency_penalty: 0,
+       presence_penalty: 0,
+     });
+ return (JSON.parse(response.choices[0].message.content));
 }
-
 export default openAiRequest

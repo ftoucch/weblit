@@ -44,13 +44,18 @@ const deleteResearch = async (req, res) => {
   const systematicReview = await SystematicReview.findOne({ _id: req.params.id });
 
   if (!systematicReview) {
-    throw new NotFoundError(`No job with id :${jobId}`);
+    throw new NotFoundError(`No systematic Review with id :${req.params.id}`);
   }
 
-  await job.remove();
+  await systematicReview.deleteOne({_id : req.params.id});
 
-  res.status(StatusCodes.OK).json({ msg: 'Success! Job removed' });
+  res.status(StatusCodes.OK).json({ message: 'Success! systematic review removed' });
 };
+
+const updateResearch = async (req,res) => {
+  const updatedSystematicReview = await SystematicReview.findByIdAndUpdate(req.params.id, req.body)
+  res.status(StatusCodes.OK).json({message: 'systematic review edited successfully', id: updatedSystematicReview.id})
+}
 
 const createQuery = async (req, res) => {
   const {researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId} = req.body
@@ -78,4 +83,4 @@ const createQuery = async (req, res) => {
         console.log(error)
     }
 }
-export { createResearch, allResearch, getResearch, createQuery, deleteResearch};
+export { createResearch, allResearch, getResearch, createQuery, deleteResearch, updateResearch};

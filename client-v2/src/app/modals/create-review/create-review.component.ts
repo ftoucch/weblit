@@ -51,7 +51,6 @@ export class CreateReviewComponent {
         );
         this.isVisible = false;
         this.router.navigateByUrl(`dashboard/research/${res.id}`);
-        console.log(res.id)
       },
       error: (error: any) => {
         this.notification.create('error', 'error', 'an error occured');

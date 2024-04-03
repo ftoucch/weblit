@@ -93,11 +93,6 @@ nav {
   .dashboard-page {
     width: 90%;
   }
-  nav {
-    position: sticky;
-    top: 0;
-    margin-top: 2rem;
-  }
   .nav-center {
     width: 90%;
   }
