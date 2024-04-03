@@ -28,6 +28,10 @@ export class HomeComponent {
     this.showEditModal();
   }
 
+  selectResearch(research: any): void {
+    this.researchService.setSelectedResearch(research);
+  }
+  
   showEditModal(): void {
     this.editModal.showModal();
   }

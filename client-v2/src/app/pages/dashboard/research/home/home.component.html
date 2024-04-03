@@ -9,7 +9,7 @@
       <p>{{ research.description }}</p>
     </div>
     <div class="button-group">
-      <button class="btn btn-view" [routerLink]="research._id">
+      <button class="btn btn-view" (click) = "selectResearch(research)" [routerLink]="research._id">
         View Research
       </button>
       <button class="btn btn-danger" (click) = "showDeleteConfirm(research._id)">

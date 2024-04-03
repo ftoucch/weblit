@@ -6,6 +6,7 @@ import { GeneralService } from '../../services/general.service';
 import { Location } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { CreateReviewComponent } from '../../modals/create-review/create-review.component';
+import { ResearchService } from '../../services/research.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -17,16 +18,25 @@ export class DashboardComponent implements OnInit {
   @ViewChild(CreateReviewComponent, {static:false}) createModal! : CreateReviewComponent
   title: string = '';
   isVisible = false
+  researchID = ''
   constructor(
     private userService: UserService,
     private generalService: GeneralService,
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private researchService: ResearchService
   ) {
     this.getTitle();
     this.location.onUrlChange(() => {
-      this.getTitle();
+      this.researchService.selectedResearch$.subscribe((research) => {
+        if (research) {
+          this.title = research.title
+        }
+        else {
+          this.getTitle();
+        }
+      });
     })
   }
   ngOnInit(): void {

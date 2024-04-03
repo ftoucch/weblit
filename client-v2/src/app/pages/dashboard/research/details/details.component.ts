@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { ResearchService } from '../../../../services/research.service';
 import { ActivatedRoute } from '@angular/router';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'app-details',
   standalone: true,
-  imports: [],
+  imports: [NzIconModule],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css'
 })

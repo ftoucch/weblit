@@ -1,3 +1,6 @@
+nav {
+    display: none;
+}
 section .card {
     flex-direction: column;
 }
@@ -5,7 +8,7 @@ p {
     max-width: 100%;
     font-size: 1rem;
 }
-.query-wrapper {
+.queries {
     margin-top: 2rem;
 }
 .query {
@@ -23,6 +26,8 @@ p {
 .primary-studies {
     margin-top: 0;
     justify-content: flex-start;
+    padding-left: 2rem;
+    border-left: 1px solid var(--grey-200);
 }
 .top-row {
     display: flex;
@@ -39,8 +44,6 @@ p {
     gap: 2rem;
 }
 .document.card {
-    background:var(--grey-50);
-    box-shadow: none;
     margin-bottom: 2rem;
 }
 
@@ -48,4 +51,37 @@ p {
     max-height: 100vh;
     overflow-y: scroll;
     padding-right: 1.5rem;
+}
+
+.documents-wrapper::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  .documents-wrapper::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background-color: #e7e7e7;
+    border: 1px solid #cacaca;
+  }
+  
+  .documents-wrapper::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: var(--grey-200);
+  }
+
+.add-new-query {
+    background: white;
+    color: black;
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    box-shadow:  rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+    border-radius: 0.5rem;
+    span {
+        color: var(--primary-500);
+    }
+}
+
+.primary-studies p, .primary-studies h5 {
+    margin-bottom: 0.2rem;
 }
