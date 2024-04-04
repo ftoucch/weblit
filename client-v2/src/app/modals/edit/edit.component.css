@@ -1,4 +1,8 @@
 .form-input.large {
-    min-height: 300px;
-    
+  min-height: 300px;
+}
+.form-input,
+.form-textarea,
+.form-select {
+  background: transparent;
 }

@@ -1,0 +1,70 @@
+<nz-modal
+  [(nzVisible)]="isVisible"
+  nzTitle="Create Query"
+  (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="form">
+      <div class="form-row">
+        <label for="searchString" class="form-label"> Search String </label>
+        <input
+          id="searchString"
+          type="searchString"
+          [class.input-error]="
+            form['controls']['searchString'].errors &&
+            form['controls']['searchString'].touched
+          "
+          class="form-input"
+          formControlName="searchString"
+          placeholder=""
+        />
+      </div>
+      <div class="form-row">
+        <label for="researchQuestion" class="form-label">
+          Research question
+        </label>
+        <textarea
+          type="text"
+          class="form-input large"
+          [class.input-error]="
+            form['controls']['researchQuestion'].errors &&
+            form['controls']['researchQuestion'].touched
+          "
+          placeholder=" "
+          formControlName="researchQuestion"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <label for="inclusionCriteria" class="form-label">
+          Inclusion Criteria
+        </label>
+        <textarea
+          type="text"
+          class="form-input large"
+          [class.input-error]="
+            form['controls']['inclusionCriteria'].errors &&
+            form['controls']['inclusionCriteria'].touched
+          "
+          placeholder=" "
+          formControlName="inclusionCriteria"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <label for="exclusionCriteria" class="form-label">
+          Exclusion Criteria
+        </label>
+        <textarea
+          type="text"
+          class="form-input large"
+          [class.input-error]="
+            form['controls']['exclusionCriteria'].errors &&
+            form['controls']['exclusionCriteria'].touched
+          "
+          placeholder=" "
+          formControlName="exclusionCriteria"
+        ></textarea>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

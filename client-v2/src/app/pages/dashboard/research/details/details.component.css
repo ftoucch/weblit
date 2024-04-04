@@ -1,87 +1,129 @@
 nav {
-    display: none;
+  display: none;
 }
 section .card {
-    flex-direction: column;
+  flex-direction: column;
 }
 p {
-    max-width: 100%;
-    font-size: 1rem;
+  max-width: 100%;
+  font-size: 1rem;
 }
 .queries {
-    margin-top: 2rem;
+  margin-top: 2rem;
 }
 .query {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .review-dashboard {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    gap: 2rem
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 2rem;
 }
- .card {
-    width: 100%;
+.card {
+  width: 100%;
 }
 .primary-studies {
-    margin-top: 0;
-    justify-content: flex-start;
-    padding-left: 2rem;
-    border-left: 1px solid var(--grey-200);
+  margin-top: 0;
+  justify-content: flex-start;
+  padding-left: 2rem;
+  border-left: 1px solid var(--grey-200);
 }
 .top-row {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
-
 .top-row .btn {
-    height: fit-content;
+  height: fit-content;
 }
 
 .right-hand {
-    display: flex;
-    gap: 2rem;
+  display: flex;
+  gap: 2rem;
 }
 .document.card {
-    margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 .documents-wrapper {
-    max-height: 100vh;
-    overflow-y: scroll;
-    padding-right: 1.5rem;
+  max-height: 100vh;
+  overflow-y: scroll;
+  padding-right: 1.5rem;
 }
 
 .documents-wrapper::-webkit-scrollbar {
-    width: 10px;
-  }
-  
-  .documents-wrapper::-webkit-scrollbar-track {
-    border-radius: 8px;
-    background-color: #e7e7e7;
-    border: 1px solid #cacaca;
-  }
-  
-  .documents-wrapper::-webkit-scrollbar-thumb {
-    border-radius: 8px;
-    background-color: var(--grey-200);
-  }
-
-.add-new-query {
-    background: white;
-    color: black;
-    width: 100%;
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    box-shadow:  rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
-    border-radius: 0.5rem;
-    span {
-        color: var(--primary-500);
-    }
+  width: 10px;
 }
 
-.primary-studies p, .primary-studies h5 {
-    margin-bottom: 0.2rem;
+.documents-wrapper::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background-color: #e7e7e7;
+  border: 1px solid #cacaca;
+}
+
+.documents-wrapper::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background-color: var(--grey-200);
+}
+
+.add-new-query {
+  background: white;
+  color: black;
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
+    rgba(17, 17, 26, 0.05) 0px 8px 32px;
+  border-radius: 0.5rem;
+}
+.add-new-query span {
+  color: var(--primary-500);
+}
+
+.primary-studies p,
+.primary-studies h5,
+.query p {
+  margin-bottom: 0.2rem;
+}
+.meta-value {
+  display: flex;
+  gap: 1rem;
+}
+.query {
+  gap: 0.2rem;
+}
+
+.selected-filter {
+  width: 40%;
+}
+.search {
+  width: 100%;
+  position: relative;
+}
+.search-input {
+  border-radius: 1rem;
+  width: 100%;
+  background: transparent;
+  padding-inline: 1rem;
+}
+.search span {
+  position: absolute;
+  right: 15px;
+  top: 8px;
+  font-size: 1rem;
+}
+.chatbox-toggle {
+  position: sticky;
+  left: 100%;
+  bottom: 5%;
+  display: flex;
+  justify-content: end;
+}
+.btn-chat-toggle {
+  border-radius: 100%;
+  font-size: 2rem;
+  width: 80px;
+  height: 80px;
 }

@@ -1,87 +1,154 @@
 <section class="main review-dashboard">
-    <aside class="top_row">
-        <div class="query-wrapper">
-            <h3>My queries</h3>
-            <button class="btn add-new-query"><span nz-icon nzType="plus" nzTheme="outline"></span> New Query</button>
-            <div class="queries">
-                <div class="card query">
-                    <strong>Search String</strong>
-                    <p>this is my search string</p>
-                    <strong>Inclusion Criteria</strong>
-                    <p>sample inclusion criteria</p>
-                    <strong>Exclusion Criteria</strong>
-                    <p>Sample exclusion criteria</p>
-                    <strong>Research Question</strong>
-                    <p>sample researchh questtion</p>
-                    <span><strong>Total Research paper: </strong> 12</span>
-                </div>
-                <div class="card query">
-                    <strong>Search String</strong>
-                    <p>this is my search string</p>
-                    <strong>Inclusion Criteria</strong>
-                    <p>sample inclusion criteria</p>
-                    <strong>Exclusion Criteria</strong>
-                    <p>Sample exclusion criteria</p>
-                    <strong>Research Question</strong>
-                    <p>sample researchh questtion</p>
-                    <span><strong>Total Research paper: </strong> 12</span>
-                </div>
-            </div>
+  <aside class="top_row">
+    <div class="query-wrapper">
+      <h3>My queries</h3>
+      <button class="btn add-new-query" (click)="showCreateQueryModal()">
+        <span nz-icon nzType="plus" nzTheme="outline"></span> New Query
+      </button>
+      <div class="queries">
+        <div class="card query">
+          <strong>Search String</strong>
+          <p>this is my search string</p>
+          <strong>Inclusion Criteria</strong>
+          <p>sample inclusion criteria</p>
+          <strong>Exclusion Criteria</strong>
+          <p>Sample exclusion criteria</p>
+          <strong>Research Question</strong>
+          <p>sample researchh questtion</p>
+          <span><strong>Total Research paper: </strong> 12</span>
         </div>
-    </aside>
-    <section class="primary-studies">
-        <div class="top-row"><h3>Selected Primary Studies</h3></div>
-        <div class="documents-wrapper">
-            <div class="document card">
-                <strong>Title</strong>
-                <h5>Machine Learning</h5>
-                <strong>Abstract</strong>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <strong>Authors</strong>
-                <p>John Doe, Jane Smith
-                </p>
-                <span><strong>Cited:</strong> 267 times</span>
-                <div class="match--rate">
-                    <span><strong>Query Match rate: </strong>70%</span>
-                </div>
-            </div>
-            <div class="document card">
-                <strong>Title</strong>
-                <h5>Machine Learning</h5>
-                <strong>Abstract</strong>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <strong>Authors</strong>
-                <p>John Doe, Jane Smith
-                </p>
-                <span><strong>Cited:</strong> 267 times</span>
-                <div class="match--rate">
-                    <span><strong>Query Match rate: </strong>70%</span>
-                </div>
-            </div><div class="document card">
-                <strong>Title</strong>
-                <h5>Machine Learning</h5>
-                <strong>Abstract</strong>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <strong>Authors</strong>
-                <p>John Doe, Jane Smith
-                </p>
-                <span><strong>Cited:</strong> 267 times</span>
-                <div class="match--rate">
-                    <span><strong>Query Match rate: </strong>70%</span>
-                </div>
-            </div><div class="document card">
-                <strong>Title</strong>
-                <h5>Machine Learning</h5>
-                <strong>Abstract</strong>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                <strong>Authors</strong>
-                <p>John Doe, Jane Smith
-                </p>
-                <span><strong>Cited:</strong> 267 times</span>
-                <div class="match--rate">
-                    <span><strong>Query Match rate: </strong>70%</span>
-                </div>
-            </div>
+        <div class="card query">
+          <strong>Search String</strong>
+          <p>this is my search string</p>
+          <strong>Inclusion Criteria</strong>
+          <p>sample inclusion criteria</p>
+          <strong>Exclusion Criteria</strong>
+          <p>Sample exclusion criteria</p>
+          <strong>Research Question</strong>
+          <p>sample researchh questtion</p>
+          <span><strong>Total Research paper: </strong> 12</span>
         </div>
-    </section>
+      </div>
+    </div>
+  </aside>
+  <section class="primary-studies">
+    <div class="top-row">
+      <h3>Selected Primary Studies</h3>
+      <div class="selected-filter">
+        <div class="search">
+          <input type="text" class="search-input" /><span
+            nz-icon
+            nzType="search"
+            nzTheme="outline"
+          ></span>
+        </div>
+      </div>
+    </div>
+    <div class="documents-wrapper">
+      <div class="document card">
+        <strong>Title</strong>
+        <h5>Machine Learning</h5>
+        <strong>Abstract</strong>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+        <strong>Authors</strong>
+        <p>John Doe, Jane Smith</p>
+        <div class="match--rate meta-value">
+          <span><strong>Cited:</strong> 267 times</span>
+          <span><strong>referenceCount:</strong> 72 times</span>
+          <span><strong>Query Match rate: </strong>70%</span>
+          <span><strong>Year: </strong>2015</span>
+          <span><strong>Open Access: </strong>No</span>
+          <span><strong>Download: </strong>No</span>
+        </div>
+      </div>
+      <div class="document card">
+        <strong>Title</strong>
+        <h5>Machine Learning</h5>
+        <strong>Abstract</strong>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+        <strong>Authors</strong>
+        <p>John Doe, Jane Smith</p>
+        <div class="meta-value">
+          <span><strong>Cited:</strong> 267 times</span>
+          <span><strong>referenceCount:</strong> 72 times</span>
+          <span><strong>Query Match rate: </strong>70%</span>
+          <span><strong>Year: </strong>2015</span>
+          <span><strong>Open Access: </strong>No</span>
+          <span><strong>Download: </strong>No</span>
+        </div>
+      </div>
+      <div class="document card">
+        <strong>Title</strong>
+        <h5>Machine Learning</h5>
+        <strong>Abstract</strong>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+        <strong>Authors</strong>
+        <p>John Doe, Jane Smith</p>
+        <span><strong>Cited:</strong> 267 times</span>
+        <div class="meta-value">
+          <span><strong>Cited:</strong> 267 times</span>
+          <span><strong>referenceCount:</strong> 72 times</span>
+          <span><strong>Query Match rate: </strong>70%</span>
+          <span><strong>Year: </strong>2015</span>
+          <span><strong>Open Access: </strong>No</span>
+          <span><strong>Download: </strong>No</span>
+        </div>
+      </div>
+      <div class="document card">
+        <strong>Title</strong>
+        <h5>Machine Learning</h5>
+        <strong>Abstract</strong>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+          aliquip ex ea commodo consequat. Duis aute irure dolor in
+          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+          culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+        <strong>Authors</strong>
+        <p>John Doe, Jane Smith</p>
+        <span><strong>Cited:</strong> 267 times</span>
+        <div class="meta-value">
+          <span><strong>Cited:</strong> 267 times</span>
+          <span><strong>referenceCount:</strong> 72 times</span>
+          <span><strong>Query Match rate: </strong>70%</span>
+          <span><strong>Year: </strong>2015</span>
+          <span><strong>Open Access: </strong>No</span>
+          <span><strong>Download: </strong>No</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="chatbox-toggle">
+    <button class="btn btn-chat-toggle">
+      <span nz-icon nzType="robot" nzTheme="outline"></span>
+    </button>
+  </section>
 </section>
+<app-create-query></app-create-query>
