@@ -3,6 +3,7 @@ import { ResearchService } from '../../../../services/research.service';
 import { ActivatedRoute } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzCollapseModule } from 'ng-zorro-antd/collapse';
 import { CreateQueryComponent } from '../../../../modals/create-query/create-query.component';
 import { CommonModule } from '@angular/common';
 @Component({
