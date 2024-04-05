@@ -6,14 +6,23 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { filterQuery } from '../../models/research';
+import { ResearchService } from '../../services/research.service';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @Component({
   selector: 'app-create-query',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NzModalModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    NzModalModule,
+    NzSpinModule,
+  ],
   templateUrl: './create-query.component.html',
   styleUrl: './create-query.component.css',
 })
@@ -21,26 +30,28 @@ export class CreateQueryComponent {
   processLoading: boolean = false;
   form: FormGroup;
   isVisible = false;
-  researchID = '';
+  isSpinning = false;
+  researchId = '';
+  filterQuery: Array<any> = [];
   constructor(
     private fb: FormBuilder,
-    private notification: NzNotificationService
+    private notification: NzNotificationService,
+    private researchService: ResearchService,
+    private activeRoute: ActivatedRoute
   ) {
     this.form = fb.group({
       searchString: ['', Validators.required],
       researchQuestion: ['', Validators.required],
       inclusionCriteria: ['', Validators.required],
       exclusionCriteria: ['', Validators.required],
-      systematicReviewId: ['', Validators.required],
     });
+    this.researchId = this.activeRoute.snapshot.params['id'];
   }
-
   showModal(): void {
     this.isVisible = true;
   }
 
   handleOk(): void {
-    console.log(this.form.value);
     this.form.markAllAsTouched();
     this.form.markAsDirty();
     if (!this.form.valid) {
@@ -51,10 +62,33 @@ export class CreateQueryComponent {
       );
       return;
     }
-    this.isVisible = false;
+    let data = new filterQuery();
+    data = { ...data, ...this.form.value, systematicReviewId: this.researchId };
+    this.isSpinning = true;
+    this.researchService.createQuery(data).subscribe({
+      next: (res: any) => {
+        this.notification.create(
+          'success',
+          'Success',
+          'You have successfully created a filter query'
+        );
+        this.isVisible = false;
+        this.getAllQuery();
+        window.location.reload();
+      },
+    });
   }
 
   handleCancel(): void {
     this.isVisible = false;
+  }
+
+  getAllQuery() {
+    this.researchService.getAllQuery(this.researchId).subscribe({
+      next: (res: any) => {
+        this.filterQuery = res.data;
+        console.log(this.filterQuery);
+      },
+    });
   }
 }

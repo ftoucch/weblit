@@ -89,10 +89,6 @@ const createQuery = async (req, res) => {
   ) {
     throw new UnAuthenticatedError('please enter all fields');
   }
-
-  /*const filterQuery = await FilterQuery.create({
-    researchQuestion, inclusionCriteria, exclusionCriteria,searchString, systematicReviewId
-  }) */
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
@@ -115,10 +111,28 @@ const createQuery = async (req, res) => {
       exclusionCriteria,
       researchQuestion
     );
+    const totalFound = openAiResponse.length;
+    const filterQuery = await FilterQuery.create({
+      researchQuestion,
+      inclusionCriteria,
+      exclusionCriteria,
+      searchString,
+      systematicReviewId,
+      totalFound,
+    });
     res.status(StatusCodes.OK).json(openAiResponse);
   } catch (error) {
     console.log(error);
   }
+};
+
+const allQuery = async (req, res) => {
+  const filterQueries = await FilterQuery.find({
+    systematicReviewId: req.params.id,
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'successfull', data: filterQueries });
 };
 export {
   createResearch,
@@ -127,4 +141,5 @@ export {
   createQuery,
   deleteResearch,
   updateResearch,
+  allQuery,
 };

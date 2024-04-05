@@ -5,28 +5,20 @@
       <button class="btn add-new-query" (click)="showCreateQueryModal()">
         <span nz-icon nzType="plus" nzTheme="outline"></span> New Query
       </button>
-      <div class="queries">
+      <div class="queries" *ngFor="let filterQuery of filterQueries">
         <div class="card query">
           <strong>Search String</strong>
-          <p>this is my search string</p>
-          <strong>Inclusion Criteria</strong>
-          <p>sample inclusion criteria</p>
-          <strong>Exclusion Criteria</strong>
-          <p>Sample exclusion criteria</p>
+          <p>{{ filterQuery.searchString }}</p>
           <strong>Research Question</strong>
-          <p>sample researchh questtion</p>
-          <span><strong>Total Research paper: </strong> 12</span>
-        </div>
-        <div class="card query">
-          <strong>Search String</strong>
-          <p>this is my search string</p>
+          <p>{{ filterQuery.researchQuestion }}</p>
           <strong>Inclusion Criteria</strong>
-          <p>sample inclusion criteria</p>
+          <p>{{ filterQuery.inclusionCriteria }}</p>
           <strong>Exclusion Criteria</strong>
-          <p>Sample exclusion criteria</p>
-          <strong>Research Question</strong>
-          <p>sample researchh questtion</p>
-          <span><strong>Total Research paper: </strong> 12</span>
+          <p>{{ filterQuery.exclusionCriteria }}</p>
+          <span
+            ><strong>Total Research paper: </strong>
+            {{ filterQuery.totalFound }}</span
+          >
         </div>
       </div>
     </div>

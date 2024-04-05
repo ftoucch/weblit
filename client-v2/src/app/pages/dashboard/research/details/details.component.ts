@@ -4,10 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { CreateQueryComponent } from '../../../../modals/create-query/create-query.component';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-details',
   standalone: true,
-  imports: [NzIconModule, NzInputModule, CreateQueryComponent],
+  imports: [CommonModule, NzIconModule, NzInputModule, CreateQueryComponent],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css',
 })
@@ -16,12 +17,14 @@ export class DetailsComponent {
   createReviewModal!: CreateQueryComponent;
   research: any;
   researchId: string = ' ';
+  filterQueries: Array<any> = [];
   constructor(
     private route: ActivatedRoute,
     private researchService: ResearchService
   ) {
     this.researchId = this.route.snapshot.params['id'];
     this.getResearch();
+    this.getAllQuery();
   }
   getResearch() {
     this.researchService.getResearch(this.researchId).subscribe({
@@ -31,6 +34,13 @@ export class DetailsComponent {
     });
   }
 
+  getAllQuery() {
+    this.researchService.getAllQuery(this.researchId).subscribe({
+      next: (res: any) => {
+        this.filterQueries = res.data;
+      },
+    });
+  }
   showCreateQueryModal() {
     this.createReviewModal.showModal();
   }
