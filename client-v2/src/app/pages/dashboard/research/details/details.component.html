@@ -37,101 +37,31 @@
       </div>
     </div>
     <div class="documents-wrapper">
-      <div class="document card">
+      <div class="document card" *ngFor="let primaryStudy of primaryStudies">
         <strong>Title</strong>
-        <h5>Machine Learning</h5>
+        <h5>{{ primaryStudy.title }}</h5>
         <strong>Abstract</strong>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
+        <p>{{ primaryStudy.abstract }}</p>
         <strong>Authors</strong>
-        <p>John Doe, Jane Smith</p>
+        <p>
+          <span *ngFor="let author of primaryStudy.authors"
+            >{{ author.name }},
+          </span>
+        </p>
         <div class="match--rate meta-value">
-          <span><strong>Cited:</strong> 267 times</span>
-          <span><strong>referenceCount:</strong> 72 times</span>
-          <span><strong>Query Match rate: </strong>70%</span>
-          <span><strong>Year: </strong>2015</span>
-          <span><strong>Open Access: </strong>No</span>
-          <span><strong>Download: </strong>No</span>
-        </div>
-      </div>
-      <div class="document card">
-        <strong>Title</strong>
-        <h5>Machine Learning</h5>
-        <strong>Abstract</strong>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-        <strong>Authors</strong>
-        <p>John Doe, Jane Smith</p>
-        <div class="meta-value">
-          <span><strong>Cited:</strong> 267 times</span>
-          <span><strong>referenceCount:</strong> 72 times</span>
-          <span><strong>Query Match rate: </strong>70%</span>
-          <span><strong>Year: </strong>2015</span>
-          <span><strong>Open Access: </strong>No</span>
-          <span><strong>Download: </strong>No</span>
-        </div>
-      </div>
-      <div class="document card">
-        <strong>Title</strong>
-        <h5>Machine Learning</h5>
-        <strong>Abstract</strong>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-        <strong>Authors</strong>
-        <p>John Doe, Jane Smith</p>
-        <span><strong>Cited:</strong> 267 times</span>
-        <div class="meta-value">
-          <span><strong>Cited:</strong> 267 times</span>
-          <span><strong>referenceCount:</strong> 72 times</span>
-          <span><strong>Query Match rate: </strong>70%</span>
-          <span><strong>Year: </strong>2015</span>
-          <span><strong>Open Access: </strong>No</span>
-          <span><strong>Download: </strong>No</span>
-        </div>
-      </div>
-      <div class="document card">
-        <strong>Title</strong>
-        <h5>Machine Learning</h5>
-        <strong>Abstract</strong>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-        <strong>Authors</strong>
-        <p>John Doe, Jane Smith</p>
-        <span><strong>Cited:</strong> 267 times</span>
-        <div class="meta-value">
-          <span><strong>Cited:</strong> 267 times</span>
-          <span><strong>referenceCount:</strong> 72 times</span>
-          <span><strong>Query Match rate: </strong>70%</span>
-          <span><strong>Year: </strong>2015</span>
-          <span><strong>Open Access: </strong>No</span>
+          <span
+            ><strong>Cited: </strong>
+            {{ primaryStudy.citationCount }} times</span
+          >
+          <span
+            ><strong>referenceCount: </strong
+            >{{ primaryStudy.referenceCount }} times</span
+          >
+          <span><strong>Year: </strong>{{ primaryStudy.year }}</span>
+          <span
+            ><strong>Open Access: </strong
+            >{{ primaryStudy.openAccessPdf["url"] }}</span
+          >
           <span><strong>Download: </strong>No</span>
         </div>
       </div>

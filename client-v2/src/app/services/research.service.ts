@@ -41,4 +41,7 @@ export class ResearchService {
   getAllQuery(id: string) {
     return this.apiService.get(`research/query/all/${id}`);
   }
+  getAllPrimaryStudies(id: string) {
+    return this.apiService.get(`research/primarystudies/${id}`);
+  }
 }

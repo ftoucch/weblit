@@ -120,8 +120,30 @@ const createQuery = async (req, res) => {
       systematicReviewId,
       totalFound,
     });
+
+    const additionalData = {
+      systematicReviewId: filterQuery.systematicReviewId,
+      filterQuery: filterQuery.id,
+      user: req.user.userId,
+    };
+    try {
+      const researchPaper = openAiResponse.map((item) => ({
+        ...item,
+        ...additionalData,
+      }));
+
+      const primaryStudy = await PrimaryStudy.insertMany(researchPaper);
+    } catch (error) {
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'error something Happened' });
+      console.log(error);
+    }
     res.status(StatusCodes.OK).json(openAiResponse);
   } catch (error) {
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: 'error something Happened' });
     console.log(error);
   }
 };
@@ -134,6 +156,15 @@ const allQuery = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: 'successfull', data: filterQueries });
 };
+
+const getAllPrimaryStudy = async (req, res) => {
+  const primaryStudies = await PrimaryStudy.find({
+    systematicReviewId: req.params.id,
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'successfull', data: primaryStudies });
+};
 export {
   createResearch,
   allResearch,
@@ -142,4 +173,5 @@ export {
   deleteResearch,
   updateResearch,
   allQuery,
+  getAllPrimaryStudy,
 };

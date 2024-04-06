@@ -1,5 +1,19 @@
 import mongoose from 'mongoose';
 
+const AuthorSchema = new mongoose.Schema(
+  {
+    authorId: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const PrimaryStudySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -8,15 +22,14 @@ const PrimaryStudySchema = new mongoose.Schema({
   abstract: {
     type: String,
   },
-  author: [
-    {
-      type: String,
-    },
-  ],
+  authors: [AuthorSchema],
   referenceCount: {
     type: Number,
   },
   referenceCount: {
+    type: Number,
+  },
+  citationCount: {
     type: Number,
   },
   year: {

@@ -19,6 +19,7 @@ export class DetailsComponent {
   research: any;
   researchId: string = ' ';
   filterQueries: Array<any> = [];
+  primaryStudies: Array<any> = [];
   constructor(
     private route: ActivatedRoute,
     private researchService: ResearchService
@@ -26,6 +27,7 @@ export class DetailsComponent {
     this.researchId = this.route.snapshot.params['id'];
     this.getResearch();
     this.getAllQuery();
+    this.getAllPrimaryStudies();
   }
   getResearch() {
     this.researchService.getResearch(this.researchId).subscribe({
@@ -39,6 +41,14 @@ export class DetailsComponent {
     this.researchService.getAllQuery(this.researchId).subscribe({
       next: (res: any) => {
         this.filterQueries = res.data;
+      },
+    });
+  }
+  getAllPrimaryStudies() {
+    this.researchService.getAllPrimaryStudies(this.researchId).subscribe({
+      next: (res: any) => {
+        this.primaryStudies = res.data;
+        console.log(this.primaryStudies);
       },
     });
   }
