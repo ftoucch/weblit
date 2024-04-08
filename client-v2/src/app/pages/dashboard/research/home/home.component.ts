@@ -32,6 +32,7 @@ export class HomeComponent {
     private router: Router
   ) {
     this.getAllResearch();
+    this.researchService.clearSelectedResearch();
   }
 
   selectResearchForEdit(research: any): void {

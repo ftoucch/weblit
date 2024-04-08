@@ -19,6 +19,14 @@
             ><strong>Total Research paper: </strong>
             {{ filterQuery.totalFound }}</span
           >
+          <div class="button-wrapper">
+            <button
+              class="btn btn-danger"
+              (click)="deleteQuery(filterQuery._id)"
+            >
+              <span nz-icon nzType="delete" nzTheme="fill"></span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -37,32 +45,40 @@
       </div>
     </div>
     <div class="documents-wrapper">
+      <div class="empty-container" *ngIf="primaryStudies.length === 0">
+        <app-empty [createQuery]="showCreateQueryModal.bind(this)"></app-empty>
+      </div>
       <div class="document card" *ngFor="let primaryStudy of primaryStudies">
         <strong>Title</strong>
-        <h5>{{ primaryStudy.title }}</h5>
+        <h5>{{ primaryStudy.title ?? "no title available" }}</h5>
         <strong>Abstract</strong>
-        <p>{{ primaryStudy.abstract }}</p>
+        <p>{{ primaryStudy.abstract ?? "abstract not found" }}</p>
         <strong>Authors</strong>
         <p>
           <span *ngFor="let author of primaryStudy.authors"
-            >{{ author.name }},
+            >{{ author.name ?? "authors not found" }},
           </span>
         </p>
         <div class="match--rate meta-value">
           <span
             ><strong>Cited: </strong>
-            {{ primaryStudy.citationCount }} times</span
+            {{ primaryStudy.citationCount ?? 0 }} times</span
           >
           <span
             ><strong>referenceCount: </strong
-            >{{ primaryStudy.referenceCount }} times</span
+            >{{ primaryStudy.referenceCount ?? 0 }} times</span
           >
-          <span><strong>Year: </strong>{{ primaryStudy.year }}</span>
           <span
-            ><strong>Open Access: </strong
-            >{{ primaryStudy.openAccessPdf["url"] }}</span
+            ><strong>Year: </strong
+            >{{ primaryStudy.year ?? "Year is missing" }}</span
           >
-          <span><strong>Download: </strong>No</span>
+          <span *ngIf="primaryStudy.openAccessPdf?.url">
+            <strong>Open Access: </strong>
+            <a [href]="primaryStudy.openAccessPdf.url">download pdf</a>
+          </span>
+          <span *ngIf="!primaryStudy.openAccessPdf?.url"
+            ><strong>Open Access: </strong>Not Available</span
+          >
         </div>
       </div>
     </div>

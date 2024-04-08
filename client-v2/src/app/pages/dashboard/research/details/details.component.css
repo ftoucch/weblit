@@ -45,11 +45,16 @@ p {
 .document.card {
   margin-bottom: 2rem;
 }
-
+.empty-container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .documents-wrapper {
-  max-height: 100vh;
   overflow-y: scroll;
   padding-right: 1.5rem;
+  height: 80vh;
 }
 
 .documents-wrapper::-webkit-scrollbar {

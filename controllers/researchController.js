@@ -156,6 +156,21 @@ const allQuery = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: 'successfull', data: filterQueries });
 };
+const deleteQuery = async (req, res) => {
+  const query = await FilterQuery.findOne({
+    _id: req.params.id,
+  });
+  if (!query) {
+    throw new NotFoundError(`No query with id :${req.params.id}`);
+  }
+
+  await query.deleteOne({ _id: req.params.id });
+  await PrimaryStudy.deleteMany({ filterQuery: req.params.id });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'Success! Query Successfully removed' });
+};
 
 const getAllPrimaryStudy = async (req, res) => {
   const primaryStudies = await PrimaryStudy.find({
@@ -173,5 +188,6 @@ export {
   deleteResearch,
   updateResearch,
   allQuery,
+  deleteQuery,
   getAllPrimaryStudy,
 };

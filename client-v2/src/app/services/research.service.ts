@@ -41,6 +41,9 @@ export class ResearchService {
   getAllQuery(id: string) {
     return this.apiService.get(`research/query/all/${id}`);
   }
+  deleteQuery(id: string) {
+    return this.apiService.delete(`research/query/${id}`);
+  }
   getAllPrimaryStudies(id: string) {
     return this.apiService.get(`research/primarystudies/${id}`);
   }

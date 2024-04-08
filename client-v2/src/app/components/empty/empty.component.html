@@ -1,0 +1,16 @@
+<nz-empty
+  nzNotFoundImage="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
+  [nzNotFoundContent]="contentTpl"
+  [nzNotFoundFooter]="footerTpl"
+>
+  <ng-template #contentTpl>
+    <span>
+      You currently have no primary study please create a new query to begin.
+    </span>
+  </ng-template>
+  <ng-template #footerTpl>
+    <button nz-button (click)="handleClick()" class="btn btn-primary">
+      Create Now
+    </button>
+  </ng-template>
+</nz-empty>
