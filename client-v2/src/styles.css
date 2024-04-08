@@ -347,7 +347,12 @@ section {
 .input-error {
   border: 1px solid var(--red-dark);
 }
-
+.empty-container {
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 @media (min-width: 992px) {
   .card {
     min-width: min-content;

@@ -9,9 +9,13 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 })
 export class EmptyComponent {
   @Input() createQuery!: Function;
+  @Input() createReview!: Function;
   handleClick(): void {
     if (this.createQuery) {
       this.createQuery();
+    }
+    if (this.createReview) {
+      this.createReview();
     }
   }
 }

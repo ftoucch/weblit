@@ -1,3 +1,6 @@
+<div class="empty-container" *ngIf="researchs.length === 0">
+  <app-empty [createReview]="showCreateReviewModal.bind(this)"></app-empty>
+</div>
 <section class="card-wrapper">
   <article class="card vertical" *ngFor="let research of researchs">
     <div class="details-wrapper">
@@ -9,10 +12,14 @@
       <p>{{ research.description }}</p>
     </div>
     <div class="button-group">
-      <button class="btn btn-view" (click) = "selectResearch(research)" [routerLink]="research._id">
+      <button
+        class="btn btn-view"
+        (click)="selectResearch(research)"
+        [routerLink]="research._id"
+      >
         View Research
       </button>
-      <button class="btn btn-danger" (click) = "showDeleteConfirm(research._id)">
+      <button class="btn btn-danger" (click)="showDeleteConfirm(research._id)">
         <span nz-icon nzType="delete" nzTheme="fill"></span>
       </button>
       <button class="btn btn-edit" (click)="selectResearchForEdit(research)">
@@ -22,3 +29,4 @@
   </article>
 </section>
 <app-edit></app-edit>
+<app-create-review></app-create-review>

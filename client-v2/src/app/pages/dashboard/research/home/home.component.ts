@@ -6,6 +6,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { EditComponent } from '../../../../modals/edit/edit.component';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { EmptyComponent } from '../../../../components/empty/empty.component';
+import { CreateReviewComponent } from '../../../../modals/create-review/create-review.component';
 
 @Component({
   selector: 'app-home',
@@ -16,12 +18,16 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
     NzIconModule,
     EditComponent,
     NzModalModule,
+    EmptyComponent,
+    CreateReviewComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent {
   @ViewChild(EditComponent, { static: false }) editModal!: EditComponent;
+  @ViewChild(CreateReviewComponent, { static: false })
+  createModal!: CreateReviewComponent;
   isVisible = false;
   researchs: Array<any> = [];
   researchID = '';
@@ -75,5 +81,9 @@ export class HomeComponent {
       },
       nzCancelText: 'Cancel',
     });
+  }
+
+  showCreateReviewModal() {
+    this.createModal.showModal();
   }
 }

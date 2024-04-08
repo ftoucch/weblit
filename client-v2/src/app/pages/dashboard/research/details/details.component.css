@@ -17,8 +17,11 @@ p {
 
 .review-dashboard {
   display: grid;
-  grid-template-columns: 1fr 3fr;
   gap: 2rem;
+}
+
+.with-query {
+  grid-template-columns: 1fr 3fr;
 }
 .card {
   width: 100%;
@@ -26,6 +29,8 @@ p {
 .primary-studies {
   margin-top: 0;
   justify-content: flex-start;
+}
+.with-query .primary-studies {
   padding-left: 2rem;
   border-left: 1px solid var(--grey-200);
 }
@@ -45,18 +50,13 @@ p {
 .document.card {
   margin-bottom: 2rem;
 }
-.empty-container {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .documents-wrapper {
-  overflow-y: scroll;
   padding-right: 1.5rem;
   height: 80vh;
 }
-
+.with-query .documents-wrapper {
+  overflow-y: scroll;
+}
 .documents-wrapper::-webkit-scrollbar {
   width: 10px;
 }

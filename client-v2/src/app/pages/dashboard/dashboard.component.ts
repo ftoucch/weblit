@@ -1,5 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+  Router,
+} from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { UserService } from '../../services/user.service';
 import { GeneralService } from '../../services/general.service';
@@ -10,15 +16,22 @@ import { ResearchService } from '../../services/research.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, NzIconModule, CreateReviewComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    NzIconModule,
+    CreateReviewComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
-  @ViewChild(CreateReviewComponent, {static:false}) createModal! : CreateReviewComponent
+  @ViewChild(CreateReviewComponent, { static: false })
+  createModal!: CreateReviewComponent;
   title: string = '';
-  isVisible = false
-  researchID = ''
+  isVisible = false;
+  researchID = '';
   constructor(
     private userService: UserService,
     private generalService: GeneralService,
@@ -31,21 +44,19 @@ export class DashboardComponent implements OnInit {
     this.location.onUrlChange(() => {
       this.researchService.selectedResearch$.subscribe((research) => {
         if (research) {
-          this.title = research.title
-        }
-        else {
+          this.title = research.title;
+        } else {
           this.getTitle();
         }
       });
-    })
+    });
   }
   ngOnInit(): void {
     this.refreshToken();
   }
 
   async getTitle() {
-    
-    this.title = (await firstValueFrom(this.route.children[0].data))["title"];
+    this.title = (await firstValueFrom(this.route.children[0].data))['title'];
   }
 
   refreshToken() {

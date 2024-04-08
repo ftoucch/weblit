@@ -1,6 +1,12 @@
-<section class="main review-dashboard">
+<section
+  class="main review-dashboard"
+  [ngClass]="{
+    'query-wrapper': true,
+    'with-query': primaryStudies.length > 0
+  }"
+>
   <aside class="top_row">
-    <div class="query-wrapper">
+    <div class="query-wrapper" *ngIf="primaryStudies.length > 0">
       <h3>My queries</h3>
       <button class="btn add-new-query" (click)="showCreateQueryModal()">
         <span nz-icon nzType="plus" nzTheme="outline"></span> New Query
@@ -84,9 +90,10 @@
     </div>
   </section>
   <section class="chatbox-toggle">
-    <button class="btn btn-chat-toggle">
-      <span nz-icon nzType="robot" nzTheme="outline"></span>
+    <button class="btn btn-chat-toggle" (click)="showChatBox()">
+      <i nz-icon nzType="wechat" nzTheme="outline"></i>
     </button>
   </section>
 </section>
 <app-create-query></app-create-query>
+<app-chatbox></app-chatbox>

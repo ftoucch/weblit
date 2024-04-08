@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
@@ -12,12 +17,18 @@ import { UserService } from '../../services/user.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, NzModalModule],
   templateUrl: './create-review.component.html',
-  styleUrl: './create-review.component.css'
+  styleUrl: './create-review.component.css',
 })
 export class CreateReviewComponent {
-  isVisible = false
-  form: FormGroup
-  constructor(private fb: FormBuilder, private notification: NzNotificationService, private researchService : ResearchService, private router : Router, private userService: UserService){
+  isVisible = false;
+  form: FormGroup;
+  constructor(
+    private fb: FormBuilder,
+    private notification: NzNotificationService,
+    private researchService: ResearchService,
+    private router: Router,
+    private userService: UserService
+  ) {
     this.form = fb.group({
       title: ['', Validators.required],
       description: ['', Validators.required],
@@ -40,10 +51,10 @@ export class CreateReviewComponent {
       return;
     }
     let data = new systematicReview();
-    const userID = this.userService.getUser()
-    data = { ...data, ...this.form.value, "user":userID };
+    const userID = this.userService.getUser();
+    data = { ...data, ...this.form.value, user: userID };
     this.researchService.createResearch(data).subscribe({
-      next: (res:any) => {
+      next: (res: any) => {
         this.notification.create(
           'success',
           'Success',
@@ -55,7 +66,7 @@ export class CreateReviewComponent {
       error: (error: any) => {
         this.notification.create('error', 'error', 'an error occured');
       },
-    })
+    });
   }
 
   handleCancel(): void {

@@ -23,7 +23,7 @@ export const routes: Routes = [
       {
         path: '',
         data: {
-          title: "Dashboard"
+          title: 'Home',
         },
         loadComponent: () =>
           import('./pages/dashboard/home/home.component').then(
@@ -33,7 +33,7 @@ export const routes: Routes = [
       {
         path: 'research',
         data: {
-          title: "Systematic Reviews"
+          title: 'Systematic Reviews',
         },
         loadComponent: () =>
           import('./pages/dashboard/research/research.component').then(
@@ -59,7 +59,7 @@ export const routes: Routes = [
       {
         path: 'documents',
         data: {
-          title: "Documents"
+          title: 'Documents',
         },
         loadComponent: () =>
           import('./pages/dashboard/documents/documents.component').then(
@@ -69,7 +69,7 @@ export const routes: Routes = [
       {
         path: 'settings',
         data: {
-          title: "Settings"
+          title: 'Settings',
         },
         loadComponent: () =>
           import('./pages/dashboard/settings/settings.component').then(
@@ -79,7 +79,7 @@ export const routes: Routes = [
       {
         path: 'profile',
         data: {
-          title: "Profile"
+          title: 'Profile',
         },
         loadComponent: () =>
           import('./pages/dashboard/profile/profile.component').then(

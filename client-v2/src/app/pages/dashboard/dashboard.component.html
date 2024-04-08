@@ -11,13 +11,13 @@
           ><span class="icon" nz-icon nzType="dashboard" nzTheme="fill"></span
           >Dashboard</a
         >
-        <a
+        <!--- <a
           routerLink="/dashboard/research"
           routerLinkActive="active"
           class="nav-link"
           ><span class="icon" nz-icon nzType="book" nzTheme="fill"></span
           >Researchs</a
-        >
+        > -->
         <a
           routerLink="/dashboard/documents"
           routerLinkActive="active"
@@ -32,13 +32,13 @@
           ><span class="icon" nz-icon nzType="profile" nzTheme="fill"></span
           >Profile
         </a>
-        <a
+        <!-- <a
           routerLink="/dashboard/settings"
           routerLinkActive="active"
           class="nav-link"
           ><span class="icon" nz-icon nzType="setting" nzTheme="fill"></span
           >Settings
-        </a>
+        </a> -->
         <button class="nav-link btn-signout" (click)="logOut()">
           <i class="icon" nz-icon nzType="logout" nzTheme="outline"></i>
           Signout
@@ -49,8 +49,11 @@
   <div>
     <nav clas>
       <div class="nav-center">
-        <h2 class="title">{{title}}</h2>
-        <button class="btn btn-add-new" (click)="showCreateModal()"><span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new review</button>
+        <h2 class="title">{{ title }}</h2>
+        <button class="btn btn-add-new" (click)="showCreateModal()">
+          <span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new
+          review
+        </button>
       </div>
     </nav>
     <article class="dashboard-page">

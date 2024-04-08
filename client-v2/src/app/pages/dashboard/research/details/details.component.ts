@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EmptyComponent } from '../../../../components/empty/empty.component';
+import { ChatboxComponent } from '../../../../components/chatbox/chatbox.component';
 @Component({
   selector: 'app-details',
   standalone: true,
@@ -17,14 +18,17 @@ import { EmptyComponent } from '../../../../components/empty/empty.component';
     NzInputModule,
     CreateQueryComponent,
     EmptyComponent,
+    ChatboxComponent,
   ],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css',
 })
 export class DetailsComponent {
   @ViewChild(CreateQueryComponent, { static: false })
-  createReviewModal!: CreateQueryComponent;
-  createQueryModal!: EmptyComponent;
+  createQueryModal!: CreateQueryComponent;
+  @ViewChild(ChatboxComponent, { static: false })
+  openChatBox!: ChatboxComponent;
+  emptyModal!: EmptyComponent;
   research: any;
   researchId: string = ' ';
   filterQueries: Array<any> = [];
@@ -85,6 +89,9 @@ export class DetailsComponent {
     });
   }
   showCreateQueryModal() {
-    this.createReviewModal.showModal();
+    this.createQueryModal.showModal();
+  }
+  showChatBox() {
+    this.openChatBox.open();
   }
 }
