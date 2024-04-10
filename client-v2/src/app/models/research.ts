@@ -10,4 +10,6 @@ export class filterQuery {
   exclusionCriteria: string = '';
   searchString: string = '';
   systematicReviewId: any = '';
+  startYear: any = '';
+  endYear: any= '';
 }

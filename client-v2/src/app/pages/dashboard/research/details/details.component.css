@@ -132,3 +132,7 @@ p {
   width: 80px;
   height: 80px;
 }
+
+.flex {
+  display: flex;
+}

@@ -10,7 +10,7 @@
         <label for="searchString" class="form-label"> Search String </label>
         <input
           id="searchString"
-          type="searchString"
+          type="text"
           [class.input-error]="
             form['controls']['searchString'].errors &&
             form['controls']['searchString'].touched
@@ -19,6 +19,20 @@
           formControlName="searchString"
           placeholder=""
         />
+      </div>
+      <div class="form-row">
+        <label for="startYear" class="form-label"> Start Year </label>
+        <input id="startYear" type="text" class="form-input" formControlName ="startYear" placeholder="2000" [class.input-error]="
+        form['controls']['startYear'].errors &&
+        form['controls']['startYear'].touched
+      " />
+      </div>
+      <div class="form-row">
+        <label for="startYear" class="form-label"> End Year </label>
+        <input id="endYear" type="text" class="form-input" formControlName ="endYear" placeholder="2024" [class.input-error]="
+        form['controls']['endYear'].errors &&
+        form['controls']['endYear'].touched
+      " />
       </div>
       <div class="form-row">
         <label for="researchQuestion" class="form-label">

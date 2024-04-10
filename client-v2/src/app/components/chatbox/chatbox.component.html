@@ -3,12 +3,32 @@
   [nzWidth]="720"
   [nzVisible]="visible"
   nzPlacement="right"
-  nzTitle="Basic Drawer"
+  nzTitle="Chat"
   (nzOnClose)="close()"
 >
   <ng-container *nzDrawerContent>
-    <p>Some contents...</p>
-    <p>Some contents...</p>
-    <p>Some contents...</p>
+    <div class="initial-chat-component">
+      <span nz-icon nzType="smile" nzTheme="twotone" class="initial-icon"></span>
+      <span>How can i help you with your systematic Literature review:</span>
+      <strong>{{researchTitle}}</strong>
+    </div>
+    <!-- Chats container -->
+    <div class="chat-container flex">this is a test</div>
+    
+    <!-- Typing container -->
+    <div class="typing-container">
+      <div class="typing-content">
+        <div class="typing-textarea flex">
+          <input type="text" id="chat-input" spellcheck="false" placeholder="Enter a prompt here" required class="form-input">
+          <button class="btn btn-primary"><span nz-icon nzType="send" nzTheme="outline"></span></button>
+        </div>
+    </div>
+  </div>
   </ng-container>
 </nz-drawer>
+
+<div class="flex">
+
+</div>
+
+

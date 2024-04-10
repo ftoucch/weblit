@@ -22,6 +22,8 @@ const createResearch = async (req, res) => {
   res.status(StatusCodes.CREATED).json({
     message: 'Systematic Literature Review Created sucessfully',
     id: systematicReview.id,
+    title: systematicReview.title,
+    description: systematicReview.description
   });
 };
 
@@ -54,6 +56,8 @@ const deleteResearch = async (req, res) => {
   }
 
   await systematicReview.deleteOne({ _id: req.params.id });
+  await FilterQuery.deleteOne({systematicReviewId: req.params.id });
+  await PrimaryStudy.deleteMany({ systematicReviewId: req.params.id });
 
   res
     .status(StatusCodes.OK)
@@ -78,6 +82,8 @@ const createQuery = async (req, res) => {
     exclusionCriteria,
     searchString,
     systematicReviewId,
+    startYear,
+    endYear
   } = req.body;
 
   if (
@@ -92,7 +98,7 @@ const createQuery = async (req, res) => {
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=20`,
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=40`,
       {
         headers: {
           'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,

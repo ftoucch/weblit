@@ -61,6 +61,7 @@ export class CreateReviewComponent {
           'You have successfully created a systematic review'
         );
         this.isVisible = false;
+        this.researchService.setSelectedResearch(res);
         this.router.navigateByUrl(`dashboard/research/${res.id}`);
       },
       error: (error: any) => {

@@ -44,6 +44,8 @@ export class CreateQueryComponent {
       researchQuestion: ['', Validators.required],
       inclusionCriteria: ['', Validators.required],
       exclusionCriteria: ['', Validators.required],
+      startYear: ['', Validators.required],
+      endYear: ['', Validators.required]
     });
     this.researchId = this.activeRoute.snapshot.params['id'];
   }
@@ -75,6 +77,10 @@ export class CreateQueryComponent {
         this.isVisible = false;
         this.getAllQuery();
         window.location.reload();
+      },
+      error: (error: any) => {
+        this.isSpinning = false;
+        this.notification.create('error', 'error', 'an error occured');
       },
     });
   }

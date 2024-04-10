@@ -23,7 +23,7 @@ export const routes: Routes = [
       {
         path: '',
         data: {
-          title: 'Home',
+          title: 'Systematic Literature Reviews',
         },
         loadComponent: () =>
           import('./pages/dashboard/home/home.component').then(
