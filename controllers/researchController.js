@@ -7,23 +7,26 @@ import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
 import filterScholarresponse from '../utils/filterScholarResponse.js';
-import openAiRequest from '../utils/openAiRequest.js';
+import {processResearchPapers, createAssistant} from '../utils/openAiRequest.js';
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
   const user = req.user.userId;
   if (!title || !description)
     throw new UnAuthenticatedError('please enter all field');
+  const assistantId = await createAssistant()
   const systematicReview = await SystematicReview.create({
     title,
     description,
     user,
+    assistantId,
   });
   res.status(StatusCodes.CREATED).json({
     message: 'Systematic Literature Review Created sucessfully',
     id: systematicReview.id,
     title: systematicReview.title,
-    description: systematicReview.description
+    description: systematicReview.description,
+    assistantId: systematicReview.assistantId
   });
 };
 
@@ -43,6 +46,7 @@ const getResearch = async (req, res) => {
   res.status(StatusCodes.OK).json({
     title: systematicReview.title,
     description: systematicReview.description,
+    assistantId: systematicReview.assistantId
   });
 };
 
@@ -111,14 +115,13 @@ const createQuery = async (req, res) => {
         .json({ message: 'error something Happened' });
     }
     const filteredPapers = filterScholarresponse(semanticResponse.data);
-    const openAiResponse = await openAiRequest(
-      filteredPapers,
-      inclusionCriteria,
-      exclusionCriteria,
-      researchQuestion
-    );
+    const systematicReview = await SystematicReview.findOne({_id: systematicReviewId})
+    const assistantId = systematicReview.assistantId
+    const openAiResponse = await processResearchPapers(assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion);
+
     const totalFound = openAiResponse.length;
-    const filterQuery = await FilterQuery.create({
+    console.log(openAiResponse)
+    /*const filterQuery = await FilterQuery.create({
       researchQuestion,
       inclusionCriteria,
       exclusionCriteria,
@@ -145,7 +148,7 @@ const createQuery = async (req, res) => {
         .json({ message: 'error something Happened' });
       console.log(error);
     }
-    res.status(StatusCodes.OK).json(openAiResponse);
+    res.status(StatusCodes.OK).json(openAiResponse); */
   } catch (error) {
     res
       .status(StatusCodes.BAD_REQUEST)
