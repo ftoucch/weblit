@@ -7,14 +7,14 @@ import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
 import filterScholarresponse from '../utils/filterScholarResponse.js';
-import {processResearchPapers, createAssistant} from '../utils/openAiRequest.js';
+import {processResearchPapers, createResearchAssistant} from '../utils/openAiRequest.js';
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
   const user = req.user.userId;
   if (!title || !description)
     throw new UnAuthenticatedError('please enter all field');
-  const assistantId = await createAssistant()
+  const assistantId = await createResearchAssistant()
   const systematicReview = await SystematicReview.create({
     title,
     description,
@@ -102,7 +102,7 @@ const createQuery = async (req, res) => {
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=40`,
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=3`,
       {
         headers: {
           'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,
@@ -120,8 +120,7 @@ const createQuery = async (req, res) => {
     const openAiResponse = await processResearchPapers(assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion);
 
     const totalFound = openAiResponse.length;
-    console.log(openAiResponse)
-    /*const filterQuery = await FilterQuery.create({
+    const filterQuery = await FilterQuery.create({
       researchQuestion,
       inclusionCriteria,
       exclusionCriteria,
@@ -148,7 +147,7 @@ const createQuery = async (req, res) => {
         .json({ message: 'error something Happened' });
       console.log(error);
     }
-    res.status(StatusCodes.OK).json(openAiResponse); */
+    res.status(StatusCodes.OK).json(openAiResponse); 
   } catch (error) {
     res
       .status(StatusCodes.BAD_REQUEST)
