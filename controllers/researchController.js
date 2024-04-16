@@ -8,6 +8,7 @@ import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
 import filterScholarresponse from '../utils/filterScholarResponse.js';
 import {processResearchPapers, createResearchAssistant} from '../utils/openAiRequest.js';
+import ResearchPapers from '../models/ResearchPapers.js';
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
@@ -114,7 +115,8 @@ const createQuery = async (req, res) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: 'error something Happened' });
     }
-    const filteredPapers = filterScholarresponse(semanticResponse.data);
+    const semanticScholarData = semanticResponse.data
+    const filteredPapers = filterScholarresponse(semanticScholarData);
     const systematicReview = await SystematicReview.findOne({_id: systematicReviewId})
     const assistantId = systematicReview.assistantId
     const openAiResponse = await processResearchPapers(assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion);
@@ -128,19 +130,31 @@ const createQuery = async (req, res) => {
       systematicReviewId,
       totalFound,
     });
-
     const additionalData = {
       systematicReviewId: filterQuery.systematicReviewId,
       filterQuery: filterQuery.id,
       user: req.user.userId,
     };
     try {
+    const unfilteredResearch = semanticScholarData.data.map((item) => ({
+      ...item,
+      ...additionalData
+    }))
+    const unfilteredResearchData = await ResearchPapers.insertMany(unfilteredResearch);
+  }
+  catch(error) {
+    res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'error something Happened' });
+      console.log(error);
+  }
+    try {
       const researchPaper = openAiResponse.map((item) => ({
         ...item,
         ...additionalData,
-      }));
-
-      const primaryStudy = await PrimaryStudy.insertMany(researchPaper);
+      })
+    );
+    const primaryStudy = await PrimaryStudy.insertMany(researchPaper);
     } catch (error) {
       res
         .status(StatusCodes.BAD_REQUEST)
@@ -174,6 +188,7 @@ const deleteQuery = async (req, res) => {
 
   await query.deleteOne({ _id: req.params.id });
   await PrimaryStudy.deleteMany({ filterQuery: req.params.id });
+  await ResearchPapers.deleteMany({filterQuery: req.params.id });
 
   res
     .status(StatusCodes.OK)

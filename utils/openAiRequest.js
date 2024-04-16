@@ -48,8 +48,6 @@ const processResearchPapers = async (assistantId, filteredPapers, inclusionCrite
     } else {
       console.log(run.status);
     }
-    //const results = session.messages.find(msg => msg.role === 'assistant').content;
-    //return JSON.parse(results);
   } catch (error) {
     console.error("Failed to process research papers with assistant:", error);
     return null;
