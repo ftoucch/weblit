@@ -47,4 +47,7 @@ export class ResearchService {
   getAllPrimaryStudies(id: string) {
     return this.apiService.get(`research/primarystudies/${id}`);
   }
+  getUnfilteredPapers(id: string) {
+    return this.apiService.get(`research/un/papers/${id}`);
+  }
 }

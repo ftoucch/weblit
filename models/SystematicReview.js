@@ -14,7 +14,12 @@ const SystematicReviewSchema = new mongoose.Schema({
         ref: 'User',
         required: [true, 'Please provide user'],
       },
-    assistantId: {
+    researchAssistantId: {
+        type: String,
+        required: [true, 'please provide assistant ID']
+    },
+
+    chatAssistantId: {
         type: String,
         required: [true, 'please provide assistant ID']
     }

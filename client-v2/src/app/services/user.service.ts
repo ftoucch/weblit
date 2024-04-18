@@ -24,6 +24,6 @@ export class UserService {
       return '';
     }
 
-    return JSON.parse(res).id;
+    return JSON.parse(res);
   }
 }

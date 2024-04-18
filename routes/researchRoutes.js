@@ -9,6 +9,7 @@ import {
   allQuery,
   getAllPrimaryStudy,
   deleteQuery,
+  getAllResearchPaper,
 } from '../controllers/researchController.js';
 
 const router = express.Router();
@@ -24,5 +25,6 @@ router.route('/query/create').post(createQuery);
 router.route('/query/:id').delete(deleteQuery);
 router.route('/query/all/:id').get(allQuery);
 router.route('/primarystudies/:id').get(getAllPrimaryStudy);
+router.route('/un/papers/:id').get(getAllResearchPaper);
 
 export default router;

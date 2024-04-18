@@ -40,6 +40,11 @@ nav {
   display: flex;
   align-items: center;
 }
+.left-hand.flex {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
 .btn-container {
   position: relative;
 }

@@ -13,6 +13,7 @@ import authMiddleware from './middleware/authMiddleware.js';
 import authRouter from './routes/authRoutes.js';
 import researchRouter from './routes/researchRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import chatRouter from './routes/chatRoutes.js';
 
 // import for default view
 
@@ -34,6 +35,7 @@ const port = process.env.PORT || 5100;
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/research', authMiddleware, researchRouter);
 app.use('/api/v1/users', authMiddleware, userRouter);
+app.use('/api/v1/chat', authMiddleware, chatRouter)
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'index.html'));

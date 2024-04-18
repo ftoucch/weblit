@@ -13,6 +13,7 @@ import { Location } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { CreateReviewComponent } from '../../modals/create-review/create-review.component';
 import { ResearchService } from '../../services/research.service';
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -22,6 +23,7 @@ import { ResearchService } from '../../services/research.service';
     RouterOutlet,
     NzIconModule,
     CreateReviewComponent,
+    NzAvatarModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -32,6 +34,7 @@ export class DashboardComponent implements OnInit {
   title: string = '';
   isVisible = false;
   researchID = '';
+  user: any;
   constructor(
     private userService: UserService,
     private generalService: GeneralService,
@@ -41,6 +44,8 @@ export class DashboardComponent implements OnInit {
     private researchService: ResearchService
   ) {
     this.getTitle();
+    this.user = this.userService.getUser()
+    console.log(this.user)
     this.location.onUrlChange(() => {
       this.researchService.selectedResearch$.subscribe((research) => {
         if (research) {
@@ -72,5 +77,9 @@ export class DashboardComponent implements OnInit {
 
   showCreateModal(): void {
     this.createModal.showModal();
+  }
+  getInitials(name: string): string {
+    let initials = name.split(' ').map((n) => n[0]).join('').toUpperCase();
+    return initials;
   }
 }

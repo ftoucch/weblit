@@ -7,7 +7,7 @@ import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
 import filterScholarresponse from '../utils/filterScholarResponse.js';
-import {processResearchPapers, createResearchAssistant} from '../utils/openAiRequest.js';
+import {processResearchPapers, createResearchAssistant, createChatAssistant} from '../utils/openAiRequest.js';
 import ResearchPapers from '../models/ResearchPapers.js';
 
 const createResearch = async (req, res) => {
@@ -15,12 +15,14 @@ const createResearch = async (req, res) => {
   const user = req.user.userId;
   if (!title || !description)
     throw new UnAuthenticatedError('please enter all field');
-  const assistantId = await createResearchAssistant()
+  const researchAssistantId = await createResearchAssistant();
+  const chatAssistantId = await createChatAssistant();
   const systematicReview = await SystematicReview.create({
     title,
     description,
     user,
-    assistantId,
+    researchAssistantId,
+    chatAssistantId
   });
   res.status(StatusCodes.CREATED).json({
     message: 'Systematic Literature Review Created sucessfully',
@@ -118,7 +120,7 @@ const createQuery = async (req, res) => {
     const semanticScholarData = semanticResponse.data
     const filteredPapers = filterScholarresponse(semanticScholarData);
     const systematicReview = await SystematicReview.findOne({_id: systematicReviewId})
-    const assistantId = systematicReview.assistantId
+    const assistantId = systematicReview.researchAssistantId
     const openAiResponse = await processResearchPapers(assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion);
 
     const totalFound = openAiResponse.length;
@@ -140,7 +142,14 @@ const createQuery = async (req, res) => {
       ...item,
       ...additionalData
     }))
-    const unfilteredResearchData = await ResearchPapers.insertMany(unfilteredResearch);
+    unfilteredResearch.forEach(async paper => {
+      await ResearchPapers.updateOne(
+        { title: paper.title },
+        { $setOnInsert: paper },
+        { upsert: true }
+      )
+    })
+    console.log('unfiltered research paper updated successfully');
   }
   catch(error) {
     res
@@ -149,12 +158,20 @@ const createQuery = async (req, res) => {
       console.log(error);
   }
     try {
-      const researchPaper = openAiResponse.map((item) => ({
+      const researchPapers = openAiResponse.map((item) => ({
         ...item,
         ...additionalData,
       })
     );
-    const primaryStudy = await PrimaryStudy.insertMany(researchPaper);
+    researchPapers.forEach(async paper => {
+      await PrimaryStudy.updateOne(
+        { title: paper.title },
+        { $setOnInsert: paper },
+        { upsert: true }
+      );
+    });
+  
+    console.log('Primary study updated successfully');
     } catch (error) {
       res
         .status(StatusCodes.BAD_REQUEST)
@@ -203,6 +220,14 @@ const getAllPrimaryStudy = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ message: 'successfull', data: primaryStudies });
 };
+const getAllResearchPaper = async (req, res) => {
+  const researchPaper = await ResearchPapers.find({
+    systematicReviewId: req.params.id,
+  });
+  res
+    .status(StatusCodes.OK)
+    .json({ message: 'successfull', data: researchPaper });
+};
 export {
   createResearch,
   allResearch,
@@ -213,4 +238,5 @@ export {
   allQuery,
   deleteQuery,
   getAllPrimaryStudy,
+  getAllResearchPaper
 };

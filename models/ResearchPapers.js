@@ -4,11 +4,9 @@ const AuthorSchema = new mongoose.Schema(
   {
     authorId: {
       type: String,
-      required: true,
     },
     name: {
       type: String,
-      required: true,
     },
   },
   { _id: false }

@@ -51,8 +51,8 @@ export class CreateReviewComponent {
       return;
     }
     let data = new systematicReview();
-    const userID = this.userService.getUser();
-    data = { ...data, ...this.form.value, user: userID };
+    const user = this.userService.getUser();
+    data = { ...data, ...this.form.value, user: user.id };
     this.researchService.createResearch(data).subscribe({
       next: (res: any) => {
         this.notification.create(

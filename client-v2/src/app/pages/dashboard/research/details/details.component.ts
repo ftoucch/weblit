@@ -4,11 +4,13 @@ import { ActivatedRoute } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { CreateQueryComponent } from '../../../../modals/create-query/create-query.component';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { CommonModule } from '@angular/common';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EmptyComponent } from '../../../../components/empty/empty.component';
 import { ChatboxComponent } from '../../../../components/chatbox/chatbox.component';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-details',
   standalone: true,
@@ -19,6 +21,8 @@ import { ChatboxComponent } from '../../../../components/chatbox/chatbox.compone
     CreateQueryComponent,
     EmptyComponent,
     ChatboxComponent,
+    NzSwitchModule,
+    FormsModule
   ],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css',
@@ -33,6 +37,7 @@ export class DetailsComponent {
   researchId: string = ' ';
   filterQueries: Array<any> = [];
   primaryStudies: Array<any> = [];
+  showUnfilteredPapers = false;
   constructor(
     private route: ActivatedRoute,
     private researchService: ResearchService,
@@ -48,13 +53,20 @@ export class DetailsComponent {
     this.researchService.getResearch(this.researchId).subscribe({
       next: (res: any) => {
         this.research = res;
+        if(res.length == 0) {
+          this.notification.create(
+            'Sorry',
+            'Sorry',
+            'there are no reseearch matching your criteria'
+          );
+        }
       },
     });
   }
-
   getAllQuery() {
     this.researchService.getAllQuery(this.researchId).subscribe({
       next: (res: any) => {
+        if(res.data)
         this.filterQueries = res.data;
       },
     });
@@ -88,10 +100,28 @@ export class DetailsComponent {
       },
     });
   }
+
+  getUnfilteredPaper() {
+    this.researchService.getUnfilteredPapers(this.researchId).subscribe({
+      next: (res: any) => {
+        this.primaryStudies = res.data
+      }
+    })
+  }
   showCreateQueryModal() {
     this.createQueryModal.showModal();
   }
   showChatBox() {
     this.openChatBox.open();
   }
+
+  onSwitchChange(switchState: boolean): void {
+    if (switchState) {
+      this.getUnfilteredPaper();
+    }
+    else {
+      this.getAllPrimaryStudies();
+    }
+  }
+
 }

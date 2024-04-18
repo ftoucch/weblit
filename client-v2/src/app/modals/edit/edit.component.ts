@@ -56,8 +56,8 @@ export class EditComponent {
       return;
     }
     let data = new systematicReview();
-    const userID = this.userService.getUser()
-    data = { ...data, ...this.form.value, "user":userID };
+    const user = this.userService.getUser()
+    data = { ...data, ...this.form.value, "user":user.id };
     this.researchService.updateResearch(this.researchID, data).subscribe({
       next: (res:any) => {
         this.notification.create(

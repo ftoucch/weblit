@@ -49,6 +49,7 @@
           ></span>
         </div>
       </div>
+      <div class="unfiltered-result-toggle"><nz-switch [(ngModel)]="showUnfilteredPapers" (ngModelChange)="onSwitchChange($event)"></nz-switch><span>Show all result</span> </div>
     </div>
     <div class="documents-wrapper">
       <div class="empty-container" *ngIf="primaryStudies.length === 0">
@@ -85,6 +86,11 @@
           <span *ngIf="!primaryStudy.openAccessPdf?.url"
             ><strong>Open Access: </strong>Not Available</span
           >
+          <div class="button-group">
+            <button class="btn btn-danger">
+              <span nz-icon nzType="delete" nzTheme="fill"></span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
