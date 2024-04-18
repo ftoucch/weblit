@@ -11,7 +11,7 @@ const createResearchAssistant = async () => {
     name: "Research Paper Filter",
     description: "An assistant to filter research papers based on specific criteria such as inclusion and exclusion criteria.",
     instructions: "You are an academic researcher You will be provided with a JavaScript array of research papers, each represented as an object containing the fields: abstract, title, id, referenceCount, citationCount, year, openAccessPdf, and author. You will also be Given specific inclusion criteria, exclusion criteria, and a research question, identify and return only the papers that meet these criteria. The result should be a JSON array including only the matching papers' title, abstract, id, authors, referenceCount, citationCount, year, openAccessPdf, and match rate in percentage.",
-    model: "gpt-4-turbo",  // Updated to the latest model for better performance
+    model: "gpt-4-turbo",
     tools: [{ type: "code_interpreter" }],
   });
 return assistant.id
