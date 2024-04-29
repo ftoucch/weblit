@@ -41,7 +41,7 @@ const Startchat = async (req, res) => {
         }
     const threadId = chat.threadId
      const chatResponse = await assistantChat(assistantId, researchPapers, userQuestion, threadId);
-     res.status(StatusCodes.OK).json({'assistant':chatResponse });
+     res.status(StatusCodes.OK).json({'userQuestion' : userQuestion, 'assistant':chatResponse });
 
     } catch (error) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error handling the chat', error: error.message });
@@ -49,4 +49,10 @@ const Startchat = async (req, res) => {
     }
 };
 
-export { Startchat };
+const addMessage = async(req,res) => {
+    
+}
+const getChatHistory = async(req,res) => {
+
+}
+export { Startchat, addMessage, getChatHistory };

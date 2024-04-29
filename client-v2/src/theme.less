@@ -50,3 +50,34 @@
 .ant-drawer-body .initial-icon {
   font-size: 4rem;
 }
+
+
+.ant-drawer-body .chat-container.flex  {
+  flex-direction: column;
+  margin-bottom: 2rem;
+  max-height: 90vh;
+  overflow-y: scroll;
+}
+
+.chat-container.flex::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+.chat-container.flex::-webkit-scrollbar
+{
+	width: 8px;
+	background-color: #F5F5F5;
+}
+
+.chat-container.flex::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: var(--primary-100);
+}
+.ant-drawer-body .chat-container.flex p {
+  font-size: 1rem;
+}

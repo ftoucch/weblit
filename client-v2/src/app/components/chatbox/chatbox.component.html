@@ -1,37 +1,33 @@
-<nz-drawer
-  [nzClosable]="false"
-  [nzWidth]="720"
-  [nzVisible]="visible"
-  nzPlacement="right"
-  nzTitle="Chat"
-  (nzOnClose)="close()"
->
+<nz-drawer [nzClosable]="false" [nzWidth]="720" [nzVisible]="visible" nzPlacement="right" nzTitle="Chat" (nzOnClose)="close()">
   <ng-container *nzDrawerContent>
-    <div class="initial-chat-component">
+    <div class="initial-chat-component" *ngIf="chatHistory.length === 0">
       <span nz-icon nzType="smile" nzTheme="twotone" class="initial-icon"></span>
-      <span>How can i help you with your systematic Literature review:</span>
-      <strong>{{researchTitle}}</strong>
+      <span>How can I help you with your systematic Literature review:</span>
+      <strong>{{ researchTitle }}</strong>
     </div>
     <!-- Chats container -->
-    <div class="chat-container flex">this is a test</div>
+    <div class="chat-container flex">
+      <div *ngFor="let chat of chatHistory">
+        <p><strong>{{ chat.role }}:</strong> {{ chat.message }}</p>
+      </div>
+      <!-- Show spinner when waiting for assistant's response -->
+      <div class="spinner">
+        <nz-spin *ngIf="processLoading" [nzSize]="'small'" [nzSpinning]="true">
+          <span><strong>Research Assistant:</strong> Processing...</span>
+        </nz-spin>
+      </div>
+    </div>
     
     <!-- Typing container -->
-    <form  [formGroup] = "form" (submit)="startChat()">
+    <form [formGroup]="form" (submit)="startChat()">
       <div class="typing-container">
         <div class="typing-content">
-            <div class="typing-textarea flex">
-              <input type="text" class="form-input" [class.input-error] = "form['controls']['userQuestion'].errors && form['controls']['userQuestion'].touched" placeholder="....."  formControlName="userQuestion"/>
-              <button class="btn btn-primary"><span nz-icon nzType="send" nzTheme="outline"></span></button>
-            </div>
+          <div class="typing-textarea flex">
+            <input type="text" class="form-input" [class.input-error]="form.controls['userQuestion'].errors && form.controls['userQuestion'].touched" placeholder="Type your question..." formControlName="userQuestion"/>
+            <button class="btn btn-primary"><span nz-icon nzType="send" nzTheme="outline"></span></button>
+          </div>
         </div>
       </div>
-  </form>
-
+    </form>
   </ng-container>
 </nz-drawer>
-
-<div class="flex">
-
-</div>
-
-

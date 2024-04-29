@@ -65,32 +65,30 @@ const processResearchPapers = async (assistantId, filteredPaper, inclusionCriter
 }
 const assistantChat = async (assistantId, researchPapers, userQuestion, threadId) => {
   try {
-    const formattedPapers = JSON.stringify({researchPapers})
-    const message = await openai.beta.threads.messages.create(
-      threadId,
-      {
-        role: "user",
-        content: `Here are some research papers: ${formattedPapers} Based on these papers, can you answer the question: ${userQuestion}?`,
-      }
-    );
+    const formattedPapers = JSON.stringify({ researchPapers });
+    const userMessage = await openai.beta.threads.messages.create(threadId, {
+      role: "user",
+      content: `Here are some research papers: ${formattedPapers}. Based on these papers, can you answer the question: ${userQuestion}?`,
+    });
 
-    let run = await openai.beta.threads.runs.createAndPoll(
-      threadId,
-      { 
-        assistant_id: assistantId,
-        instructions: "Please answer the question strictly using the information from the research papers provided."
-      }
-    );
+    const questionTimestamp = new Date(userMessage.created_at);
+
+    let run = await openai.beta.threads.runs.createAndPoll(threadId, {
+      assistant_id: assistantId,
+      instructions: "Please answer the question strictly using the information from the research papers provided."
+    });
+
     if (run.status === 'completed') {
       const messages = await openai.beta.threads.messages.list(run.thread_id);
-      for (const message of messages.data.reverse()) {
-        if(message.role === 'assistant') {
-          if (message.content && message.content.length > 0 && message.content[0].type === 'text') {
-            const result = message.content[0].text.value;
-            console.log(userQuestion); // Debug log
-            console.log(result);       // Debug log
-            return result;
-          }
+      const relevantMessages = messages.data.filter(m => 
+        m.role === 'assistant' && new Date(m.created_at) > questionTimestamp
+      ).reverse();
+      for (const message of relevantMessages) {
+        if (message.content && message.content.length > 0 && message.content[0].type === 'text') {
+          const result = message.content[0].text.value;
+          console.log("Question: ", userQuestion);
+          console.log("Response: ", result);     
+          return result;
         }
       }
     }

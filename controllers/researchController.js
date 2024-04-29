@@ -105,7 +105,7 @@ const createQuery = async (req, res) => {
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=5`,
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=2`,
       {
         headers: {
           'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,
