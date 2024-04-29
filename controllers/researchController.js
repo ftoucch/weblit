@@ -105,7 +105,7 @@ const createQuery = async (req, res) => {
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=15`,
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=5`,
       {
         headers: {
           'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,
@@ -121,9 +121,7 @@ const createQuery = async (req, res) => {
     const filteredPapers = filterScholarresponse(semanticScholarData);
     const systematicReview = await SystematicReview.findOne({_id: systematicReviewId})
     const assistantId = systematicReview.researchAssistantId
-    const openAiResponse = await processResearchPapers(assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion);
-
-    const totalFound = openAiResponse.length;
+    let totalFound = 0
     const filterQuery = await FilterQuery.create({
       researchQuestion,
       inclusionCriteria,
@@ -132,53 +130,33 @@ const createQuery = async (req, res) => {
       systematicReviewId,
       totalFound,
     });
-    const additionalData = {
-      systematicReviewId: filterQuery.systematicReviewId,
-      filterQuery: filterQuery.id,
-      user: req.user.userId,
-    };
-    try {
-    const unfilteredResearch = semanticScholarData.data.map((item) => ({
-      ...item,
-      ...additionalData
-    }))
-    unfilteredResearch.forEach(async paper => {
+    for (const filteredPaper of filteredPapers) {
       await ResearchPapers.updateOne(
-        { title: paper.title },
-        { $setOnInsert: paper },
-        { upsert: true }
-      )
-    })
-    console.log('unfiltered research paper updated successfully');
-  }
-  catch(error) {
-    res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'error something Happened' });
-      console.log(error);
-  }
-    try {
-      const researchPapers = openAiResponse.map((item) => ({
-        ...item,
-        ...additionalData,
-      })
-    );
-    researchPapers.forEach(async paper => {
-      await PrimaryStudy.updateOne(
-        { title: paper.title },
-        { $setOnInsert: paper },
+        { title: filteredPaper.title },
+        { $setOnInsert: { ...filteredPaper,systematicReviewId: filterQuery.systematicReviewId,
+          filterQuery: filterQuery.id,
+          user: req.user.userId, } },
         { upsert: true }
       );
-    });
-  
-    console.log('Primary study updated successfully');
-    } catch (error) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'error something Happened' });
-      console.log(error);
+      const openAiResponse = await processResearchPapers(assistantId, filteredPaper, inclusionCriteria, exclusionCriteria, researchQuestion);
+      if (openAiResponse === 'Yes') {
+        totalFound++;
+        await PrimaryStudy.updateOne(
+          { title: filteredPaper.title }, 
+          {
+            $setOnInsert: {
+              ...filteredPaper,
+              systematicReviewId: filterQuery.systematicReviewId,
+              filterQuery: filterQuery.id,
+              user: req.user.userId,
+            }
+          },
+          { upsert: true }
+        );
+      }
     }
-    res.status(StatusCodes.OK).json(openAiResponse); 
+    await FilterQuery.updateOne({_id: filterQuery.id}, {$set: {totalFound}});
+    res.status(StatusCodes.OK).json({message: 'Primary study selection successfull'}); 
   } catch (error) {
     res
       .status(StatusCodes.BAD_REQUEST)

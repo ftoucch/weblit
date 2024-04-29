@@ -10,7 +10,7 @@ const createResearchAssistant = async () => {
   const assistant = await openai.beta.assistants.create({
     name: "Research Paper Filter",
     description: "An assistant to filter research papers based on specific criteria such as inclusion and exclusion criteria.",
-    instructions: "You are an academic researcher You will be provided with a JavaScript array of research papers, each represented as an object containing the fields: abstract, title, id, referenceCount, citationCount, year, openAccessPdf, and author. You will also be Given specific inclusion criteria, exclusion criteria, and a research question, identify and return only the papers that meet these criteria. The result should be a JSON array including only the matching papers' title, abstract, id, authors, referenceCount, citationCount, year, openAccessPdf, and match rate in percentage.",
+    instructions: "You are an academic researcher You will be provided with a research paper, containing the fields: abstract, title, id, referenceCount, citationCount, year, openAccessPdf, and author. You will also be Given specific inclusion criteria, exclusion criteria, and a research question, identify and return Yes if the paper meets the inclusion criteria, exclusion criteria and research question and no if it does not meet the inclusion criteria, exclusion criteria and the research queustion",
     model: "gpt-4-turbo",
     tools: [{ type: "code_interpreter" }],
   });
@@ -21,18 +21,18 @@ const createChatAssistant = async () => {
     name: "research Chat assistant",
     description: "An assistant that answers question based on an array of research papers",
     instructions: "you are an academic researcher You will be provided with a JavaScript array of research papers, each represented as an object containing the fields: abstract, title, id, referenceCount, citationCount, year, openAccessPdf, and author. You will be required to answer questions based on the research papers. Strictly answer Question based on the research papers provided",
-    model: "gpt-4-turbo",
+    model: "gpt-3.5-turbo",
   })
   return assistant.id
 }
-const processResearchPapers = async (assistantId, filteredPapers, inclusionCriteria, exclusionCriteria, researchQuestion) => {
+const processResearchPapers = async (assistantId, filteredPaper, inclusionCriteria, exclusionCriteria, researchQuestion) => {
   const thread = await openai.beta.threads.create();
   try {
     const message = await openai.beta.threads.messages.create(
       thread.id,
         {
           role: "user",
-          content: `papers: ${JSON.stringify({ filteredPapers })}, inclusion criteria : ${inclusionCriteria}, exclusion criteria ${exclusionCriteria}, research question ${researchQuestion}`,
+          content: `Evaluate this paper based on the following criteria: ${JSON.stringify(filteredPaper)}, Inclusion criteria: ${inclusionCriteria}, Exclusion criteria: ${exclusionCriteria}, Research question: ${researchQuestion}`
         }
     );
 
@@ -40,24 +40,26 @@ const processResearchPapers = async (assistantId, filteredPapers, inclusionCrite
       thread.id,
       { 
         assistant_id: assistantId,
-        instructions: "just return a JSON array including only the matching papers' title, abstract, id, authors, referenceCount, citationCount, year, openAccessPdf. Ensure no additional explanations or summaries are included."
+        instructions: "Review the criteria and paper information provided and return 'Yes' if the paper meets all criteria and 'No' if it does not. Ensure no additional explanation is given"
       }
     );
     if (run.status === 'completed') {
-      const messages = await openai.beta.threads.messages.list(
-        run.thread_id
-      );
+      const messages = await openai.beta.threads.messages.list(run.thread_id);
       for (const message of messages.data.reverse()) {
         if(message.role === 'assistant') {
-          const results = message.content[0].text.value
-          return (JSON.parse(results))
+          if (message.content && message.content.length > 0 && message.content[0].type === 'text') {
+            const result = message.content[0].text.value;
+            console.log(result)
+            return result;
+          }
         }
       }
     } else {
-      console.log(run.status);
+      console.log("Run status:", run.status);
+      return run.status;
     }
   } catch (error) {
-    console.error("Failed to process research papers with assistant:", error);
+    console.error("Failed to process research papers with assistant:", error.message);
     return null;
   }
 }
