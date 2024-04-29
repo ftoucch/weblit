@@ -21,7 +21,7 @@ const createChatAssistant = async () => {
     name: "research Chat assistant",
     description: "An assistant that answers question based on an array of research papers",
     instructions: "you are an academic researcher You will be provided with a JavaScript array of research papers, each represented as an object containing the fields: abstract, title, id, referenceCount, citationCount, year, openAccessPdf, and author. You will be required to answer questions based on the research papers. Strictly answer Question based on the research papers provided",
-    model: "gpt-3.5-turbo",
+    model: "gpt-4-turbo",
   })
   return assistant.id
 }
@@ -63,38 +63,40 @@ const processResearchPapers = async (assistantId, filteredPaper, inclusionCriter
     return null;
   }
 }
-  const assistantChat = async (assistantId, researchPapers, userQuestion, threadId) => {
-     try {
-      const message = await openai.beta.threads.messages.create(
-        threadId,
-          {
-            role: "user",
-            content: `Given the following research papers: ${JSON.stringify(researchPapers)}. Based on these papers, answer the question: ${userQuestion}`,
-          }
-      );
-  
-      let run = await openai.beta.threads.runs.createAndPoll(
-        threadId,
-        { 
-          assistant_id: assistantId,
-          instructions: `Please answer the question strictly using the information from the research papers provided.`
-        }
-      );
-      if (run.status === 'completed') {
-        const messages = await openai.beta.threads.messages.list(
-          run.thread_id
-        );
-        for (const message of messages.data.reverse()) {
-          if(message.role === 'assistant') {
-            return message.content;
-          }
-        }
-      } else {
-        console.log(run.status);
+const assistantChat = async (assistantId, researchPapers, userQuestion, threadId) => {
+  try {
+    const formattedPapers = JSON.stringify({researchPapers})
+    const message = await openai.beta.threads.messages.create(
+      threadId,
+      {
+        role: "user",
+        content: `Here are some research papers: ${formattedPapers} Based on these papers, can you answer the question: ${userQuestion}?`,
       }
-     }
-     catch(error) {
+    );
 
-     }
-}
+    let run = await openai.beta.threads.runs.createAndPoll(
+      threadId,
+      { 
+        assistant_id: assistantId,
+        instructions: "Please answer the question strictly using the information from the research papers provided."
+      }
+    );
+    if (run.status === 'completed') {
+      const messages = await openai.beta.threads.messages.list(run.thread_id);
+      for (const message of messages.data.reverse()) {
+        if(message.role === 'assistant') {
+          if (message.content && message.content.length > 0 && message.content[0].type === 'text') {
+            const result = message.content[0].text.value;
+            console.log(userQuestion); // Debug log
+            console.log(result);       // Debug log
+            return result;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error in assistant chat:", error);
+    return "An error occurred while processing your request.";
+  }
+};
 export {processResearchPapers, createResearchAssistant, createChatAssistant, assistantChat}

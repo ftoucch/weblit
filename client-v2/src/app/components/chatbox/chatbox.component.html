@@ -16,14 +16,17 @@
     <div class="chat-container flex">this is a test</div>
     
     <!-- Typing container -->
-    <div class="typing-container">
-      <div class="typing-content">
-        <div class="typing-textarea flex">
-          <input type="text" id="chat-input" spellcheck="false" placeholder="Enter a prompt here" required class="form-input">
-          <button class="btn btn-primary"><span nz-icon nzType="send" nzTheme="outline"></span></button>
+    <form  [formGroup] = "form" (submit)="startChat()">
+      <div class="typing-container">
+        <div class="typing-content">
+            <div class="typing-textarea flex">
+              <input type="text" class="form-input" [class.input-error] = "form['controls']['userQuestion'].errors && form['controls']['userQuestion'].touched" placeholder="....."  formControlName="userQuestion"/>
+              <button class="btn btn-primary"><span nz-icon nzType="send" nzTheme="outline"></span></button>
+            </div>
         </div>
-    </div>
-  </div>
+      </div>
+  </form>
+
   </ng-container>
 </nz-drawer>
 

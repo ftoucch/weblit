@@ -45,7 +45,6 @@ export class DashboardComponent implements OnInit {
   ) {
     this.getTitle();
     this.user = this.userService.getUser()
-    console.log(this.user)
     this.location.onUrlChange(() => {
       this.researchService.selectedResearch$.subscribe((research) => {
         if (research) {
