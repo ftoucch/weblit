@@ -21,6 +21,20 @@
         />
       </div>
       <div class="form-row">
+        <label for="maxResearch" class="form-label"> Maximum number of research</label>
+        <input
+          id="maxResearch"
+          type="text"
+          [class.input-error]="
+            form['controls']['maxResearch'].errors &&
+            form['controls']['maxResearch'].touched
+          "
+          class="form-input"
+          formControlName="maxResearch"
+          placeholder="5"
+        />
+      </div>
+      <div class="form-row">
         <label for="startYear" class="form-label"> Start Year </label>
         <input id="startYear" type="text" class="form-input" formControlName ="startYear" placeholder="2000" [class.input-error]="
         form['controls']['startYear'].errors &&

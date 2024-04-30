@@ -12,9 +12,6 @@ export class ChatService {
   startChat(data:any, id: String) {
     return this.apiService.post(`chat/${id}`, data);
   }
-  addMessage(data:any, id: String) {
-    return this.apiService.update(`chat/${id}`, data);
-  }
   getChataHistory(id:String) {
     return this.apiService.get(`chat/${id}`)
   }

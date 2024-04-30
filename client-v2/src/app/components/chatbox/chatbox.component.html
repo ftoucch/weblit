@@ -1,4 +1,4 @@
-<nz-drawer [nzClosable]="false" [nzWidth]="720" [nzVisible]="visible" nzPlacement="right" nzTitle="Chat" (nzOnClose)="close()">
+<nz-drawer [nzClosable]="false" [nzWidth]="720" [nzVisible]="visible" nzPlacement="right" nzTitle="{{ researchTitle }} research assistant" (nzOnClose)="close()">
   <ng-container *nzDrawerContent>
     <div class="initial-chat-component" *ngIf="chatHistory.length === 0">
       <span nz-icon nzType="smile" nzTheme="twotone" class="initial-icon"></span>

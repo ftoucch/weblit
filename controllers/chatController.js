@@ -41,6 +41,9 @@ const Startchat = async (req, res) => {
         }
     const threadId = chat.threadId
      const chatResponse = await assistantChat(assistantId, researchPapers, userQuestion, threadId);
+        chat.messages.push({ role: 'user', message: userQuestion });
+        chat.messages.push({ role: 'assistant', message: chatResponse });
+        await chat.save();
      res.status(StatusCodes.OK).json({'userQuestion' : userQuestion, 'assistant':chatResponse });
 
     } catch (error) {
@@ -49,10 +52,11 @@ const Startchat = async (req, res) => {
     }
 };
 
-const addMessage = async(req,res) => {
-    
-}
 const getChatHistory = async(req,res) => {
-
+    const systematicReviewId = req.params.id;
+    const chatHistory = await Chat.findOne({systematicReviewId: systematicReviewId})
+    if(chatHistory) {
+        res.status(StatusCodes.OK).json({'messages': chatHistory.messages });
+    }
 }
-export { Startchat, addMessage, getChatHistory };
+export { Startchat, getChatHistory };

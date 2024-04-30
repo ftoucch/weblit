@@ -20,6 +20,9 @@ const PrimaryStudySchema = new mongoose.Schema({
   abstract: {
     type: String,
   },
+  url: {
+    type: String
+  },
   authors: [AuthorSchema],
   referenceCount: {
     type: Number,

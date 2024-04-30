@@ -86,11 +86,14 @@
           <span *ngIf="!primaryStudy.openAccessPdf?.url"
             ><strong>Open Access: </strong>Not Available</span
           >
-          <div class="button-group">
+          <span *ngIf="primaryStudy.url">
+            <a [href]="primaryStudy.url">View Online</a>
+          </span>
+          <!-- <div class="button-group">
             <button class="btn btn-danger">
               <span nz-icon nzType="delete" nzTheme="fill"></span>
             </button>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

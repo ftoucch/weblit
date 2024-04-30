@@ -45,7 +45,8 @@ export class CreateQueryComponent {
       inclusionCriteria: ['', Validators.required],
       exclusionCriteria: ['', Validators.required],
       startYear: ['', Validators.required],
-      endYear: ['', Validators.required]
+      endYear: ['', Validators.required],
+      maxResearch: ['', Validators.required]
     });
     this.researchId = this.activeRoute.snapshot.params['id'];
   }

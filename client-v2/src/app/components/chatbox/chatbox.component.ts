@@ -34,6 +34,9 @@ constructor(
     userQuestion: ['', [Validators.required]],
   })
 }
+ngOnInit() {
+  this.getChatHistory();
+}
   open(): void {
     this.visible = true;
     this.researchTitle =  this.research.title
@@ -42,29 +45,36 @@ constructor(
   close(): void {
     this.visible = false;
   }
+  getChatHistory() {
+    const id = this.route.snapshot.params['id']
+    this.chatService.getChataHistory(id).subscribe({
+      next: (res:any) => {
+        this.chatHistory = res.messages;
+      }
+    })
+  }
+
   startChat() {
     this.form.markAllAsTouched();
     this.form.markAsDirty();
-    if(!this.form.valid) {
-      this.notification.create(
-        'error',
-        'error',
-        'please enter message'
-      );
+    if (this.form.invalid) {
+      this.notification.create('error', 'Error', 'Please enter a message');
       return;
     }
-    this.processLoading = true
+    this.processLoading = true;
     const userQuestion = this.form.value.userQuestion;
+    const id = this.route.snapshot.params['id'];
+    this.chatService.startChat({ userQuestion }, id).subscribe({
+      next: (res: any) => {
+        this.chatHistory.push({ role: 'assistant', message: res.assistant });
+        this.processLoading = false;
+      },
+      error: () => {
+        this.notification.create('error', 'Error', 'Failed to send message');
+        this.processLoading = false;
+      }
+    });
     this.chatHistory.push({ role: 'user', message: userQuestion });
-    let data: any;
-    const id = this.route.snapshot.params['id']
-    data = { ...data, ...this.form.value}
-    this.form.reset()
-   this.chatService.startChat(data, id).subscribe({
-    next: (res:any) => {
-      this.chatHistory.push({ role: 'assistant', message: res.assistant });
-      this.processLoading = false
-    }
-   })
+    this.form.reset();
   }
 }

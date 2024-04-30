@@ -85,9 +85,7 @@ const assistantChat = async (assistantId, researchPapers, userQuestion, threadId
       ).reverse();
       for (const message of relevantMessages) {
         if (message.content && message.content.length > 0 && message.content[0].type === 'text') {
-          const result = message.content[0].text.value;
-          console.log("Question: ", userQuestion);
-          console.log("Response: ", result);     
+          const result = message.content[0].text.value;    
           return result;
         }
       }
