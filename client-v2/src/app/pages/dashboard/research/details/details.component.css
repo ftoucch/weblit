@@ -8,8 +8,11 @@ p {
   max-width: 100%;
   font-size: 1rem;
 }
-.queries {
+.queries-wrapper {
   margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 .query {
   margin-bottom: 1rem;
@@ -52,22 +55,29 @@ p {
 }
 .documents-wrapper {
   padding-right: 1.5rem;
-  height: 80vh;
+  height: 100vh;
 }
 .with-query .documents-wrapper {
   overflow-y: scroll;
 }
-.documents-wrapper::-webkit-scrollbar {
+.documents-wrapper::-webkit-scrollbar,
+.queries-wrapper::-webkit-scrollbar {
   width: 10px;
 }
-
-.documents-wrapper::-webkit-scrollbar-track {
+.queries-wrapper {
+  height: 100vh;
+  overflow-y: scroll;
+  padding: 10px;
+}
+.documents-wrapper::-webkit-scrollbar-track,
+.queries-wrapper::-webkit-scrollbar-track {
   border-radius: 8px;
   background-color: #e7e7e7;
   border: 1px solid #cacaca;
 }
 
-.documents-wrapper::-webkit-scrollbar-thumb {
+.documents-wrapper::-webkit-scrollbar-thumb,
+.queries-wrapper::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background-color: var(--grey-200);
 }

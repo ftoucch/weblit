@@ -11,27 +11,29 @@
       <button class="btn add-new-query" (click)="showCreateQueryModal()">
         <span nz-icon nzType="plus" nzTheme="outline"></span> New Query
       </button>
-      <div class="queries" *ngFor="let filterQuery of filterQueries">
-        <div class="card query">
-          <strong>Search String</strong>
-          <p>{{ filterQuery.searchString }}</p>
-          <strong>Research Question</strong>
-          <p>{{ filterQuery.researchQuestion }}</p>
-          <strong>Inclusion Criteria</strong>
-          <p>{{ filterQuery.inclusionCriteria }}</p>
-          <strong>Exclusion Criteria</strong>
-          <p>{{ filterQuery.exclusionCriteria }}</p>
-          <span
-            ><strong>Total Research paper: </strong>
-            {{ filterQuery.totalFound }}</span
-          >
-          <div class="button-wrapper">
-            <button
-              class="btn btn-danger"
-              (click)="deleteQuery(filterQuery._id)"
+      <div class="queries-wrapper">
+        <div class="queries" *ngFor="let filterQuery of filterQueries">
+          <div class="card query">
+            <strong>Search String</strong>
+            <p>{{ filterQuery.searchString }}</p>
+            <strong>Research Question</strong>
+            <p>{{ filterQuery.researchQuestion }}</p>
+            <strong>Inclusion Criteria</strong>
+            <p>{{ filterQuery.inclusionCriteria }}</p>
+            <strong>Exclusion Criteria</strong>
+            <p>{{ filterQuery.exclusionCriteria }}</p>
+            <span
+              ><strong>Total Research paper: </strong>
+              {{ filterQuery.totalFound }}</span
             >
-              <span nz-icon nzType="delete" nzTheme="fill"></span>
-            </button>
+            <div class="button-wrapper">
+              <button
+                class="btn btn-danger"
+                (click)="deleteQuery(filterQuery._id)"
+              >
+                <span nz-icon nzType="delete" nzTheme="fill"></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -49,7 +51,13 @@
           ></span>
         </div>
       </div>
-      <div class="unfiltered-result-toggle"><nz-switch [(ngModel)]="showUnfilteredPapers" (ngModelChange)="onSwitchChange($event)"></nz-switch><span>Show all result</span> </div>
+      <div class="unfiltered-result-toggle">
+        <nz-switch
+          [(ngModel)]="showUnfilteredPapers"
+          (ngModelChange)="onSwitchChange($event)"
+        ></nz-switch
+        ><span>Show all result</span>
+      </div>
     </div>
     <div class="documents-wrapper">
       <div class="empty-container" *ngIf="primaryStudies.length === 0">
@@ -105,4 +113,4 @@
   </section>
 </section>
 <app-create-query></app-create-query>
-<app-chatbox [research] = "research"></app-chatbox>
+<app-chatbox [research]="research"></app-chatbox>

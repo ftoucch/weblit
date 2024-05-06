@@ -7,7 +7,11 @@ import SystematicReview from '../models/SystematicReview.js';
 import FilterQuery from '../models/FilterQuery.js';
 import UnAuthenticatedError from '../errors/unauthenticated.js';
 import filterScholarresponse from '../utils/filterScholarResponse.js';
-import {processResearchPapers, createResearchAssistant, createChatAssistant} from '../utils/openAiRequest.js';
+import {
+  processResearchPapers,
+  createResearchAssistant,
+  createChatAssistant,
+} from '../utils/openAiRequest.js';
 import ResearchPapers from '../models/ResearchPapers.js';
 import Chat from '../models/Chat.js';
 
@@ -23,14 +27,14 @@ const createResearch = async (req, res) => {
     description,
     user,
     researchAssistantId,
-    chatAssistantId
+    chatAssistantId,
   });
   res.status(StatusCodes.CREATED).json({
     message: 'Systematic Literature Review Created sucessfully',
     id: systematicReview.id,
     title: systematicReview.title,
     description: systematicReview.description,
-    assistantId: systematicReview.assistantId
+    assistantId: systematicReview.assistantId,
   });
 };
 
@@ -50,7 +54,7 @@ const getResearch = async (req, res) => {
   res.status(StatusCodes.OK).json({
     title: systematicReview.title,
     description: systematicReview.description,
-    assistantId: systematicReview.assistantId
+    assistantId: systematicReview.assistantId,
   });
 };
 
@@ -64,7 +68,7 @@ const deleteResearch = async (req, res) => {
   }
 
   await systematicReview.deleteOne({ _id: req.params.id });
-  await FilterQuery.deleteOne({systematicReviewId: req.params.id });
+  await FilterQuery.deleteOne({ systematicReviewId: req.params.id });
   await PrimaryStudy.deleteMany({ systematicReviewId: req.params.id });
 
   res
@@ -92,7 +96,7 @@ const createQuery = async (req, res) => {
     systematicReviewId,
     startYear,
     endYear,
-    maxResearch
+    maxResearch,
   } = req.body;
 
   if (
@@ -107,7 +111,7 @@ const createQuery = async (req, res) => {
   try {
     // Call Semantic Scholar API
     const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,url,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=${maxResearch}`,
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,url,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=${maxResearch}&offset=99`,
       {
         headers: {
           'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,
@@ -119,11 +123,13 @@ const createQuery = async (req, res) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: 'error something Happened' });
     }
-    const semanticScholarData = semanticResponse.data
+    const semanticScholarData = semanticResponse.data;
     const filteredPapers = filterScholarresponse(semanticScholarData);
-    const systematicReview = await SystematicReview.findOne({_id: systematicReviewId})
-    const assistantId = systematicReview.researchAssistantId
-    let totalFound = 0
+    const systematicReview = await SystematicReview.findOne({
+      _id: systematicReviewId,
+    });
+    const assistantId = systematicReview.researchAssistantId;
+    let totalFound = 0;
     const filterQuery = await FilterQuery.create({
       researchQuestion,
       inclusionCriteria,
@@ -135,30 +141,46 @@ const createQuery = async (req, res) => {
     for (const filteredPaper of filteredPapers) {
       await ResearchPapers.updateOne(
         { title: filteredPaper.title },
-        { $setOnInsert: { ...filteredPaper,systematicReviewId: filterQuery.systematicReviewId,
-          filterQuery: filterQuery.id,
-          user: req.user.userId, } },
+        {
+          $setOnInsert: {
+            ...filteredPaper,
+            systematicReviewId: filterQuery.systematicReviewId,
+            filterQuery: filterQuery.id,
+            user: req.user.userId,
+          },
+        },
         { upsert: true }
       );
-      const openAiResponse = await processResearchPapers(assistantId, filteredPaper, inclusionCriteria, exclusionCriteria, researchQuestion);
+      const openAiResponse = await processResearchPapers(
+        assistantId,
+        filteredPaper,
+        inclusionCriteria,
+        exclusionCriteria,
+        researchQuestion
+      );
       if (openAiResponse === 'Yes') {
         totalFound++;
         await PrimaryStudy.updateOne(
-          { title: filteredPaper.title }, 
+          { title: filteredPaper.title },
           {
             $setOnInsert: {
               ...filteredPaper,
               systematicReviewId: filterQuery.systematicReviewId,
               filterQuery: filterQuery.id,
               user: req.user.userId,
-            }
+            },
           },
           { upsert: true }
         );
       }
     }
-    await FilterQuery.updateOne({_id: filterQuery.id}, {$set: {totalFound}});
-    res.status(StatusCodes.OK).json({message: 'Primary study selection successfull'}); 
+    await FilterQuery.updateOne(
+      { _id: filterQuery.id },
+      { $set: { totalFound } }
+    );
+    res
+      .status(StatusCodes.OK)
+      .json({ message: 'Primary study selection successfull' });
   } catch (error) {
     res
       .status(StatusCodes.BAD_REQUEST)
@@ -185,8 +207,8 @@ const deleteQuery = async (req, res) => {
 
   await query.deleteOne({ _id: req.params.id });
   await PrimaryStudy.deleteMany({ filterQuery: req.params.id });
-  await ResearchPapers.deleteMany({filterQuery: req.params.id });
-  await Chat.deleteOne({user: req.user.userId})
+  await ResearchPapers.deleteMany({ filterQuery: req.params.id });
+  await Chat.deleteOne({ user: req.user.userId });
 
   res
     .status(StatusCodes.OK)
@@ -219,5 +241,5 @@ export {
   allQuery,
   deleteQuery,
   getAllPrimaryStudy,
-  getAllResearchPaper
+  getAllResearchPaper,
 };
