@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const MessageSchema = new mongoose.Schema({
     role: { type: String, required: true }, // 'user' or 'assistant'
-    message: { type: String, required: true },
+    message: { type: String },
     timestamp: { type: Date, default: Date.now }
 });
 
