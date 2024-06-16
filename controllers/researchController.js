@@ -108,28 +108,25 @@ const createQuery = async (req, res) => {
   ) {
     throw new UnAuthenticatedError('please enter all fields');
   }
+
   try {
-    // Call Semantic Scholar API
-    const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,url,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=${maxResearch}`,
-      {
-        headers: {
-          'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY,
-        },
-      }
-    );
-    if (!semanticResponse) {
-      res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'error something Happened' });
-    }
-    const semanticScholarData = semanticResponse.data;
-    const filteredPapers = filterScholarresponse(semanticScholarData);
     const systematicReview = await SystematicReview.findOne({
       _id: systematicReviewId,
     });
-    const assistantId = systematicReview.researchAssistantId;
+
+    if (!systematicReview) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Systematic review not found' });
+    }
+
+    const semanticResponse = await axios.get(
+      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,url,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=${maxResearch}`,
+      { headers: { 'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY } }
+    );
+
+    const semanticScholarData = semanticResponse.data;
+    const filteredPapers = filterScholarresponse(semanticScholarData);
     let totalFound = 0;
+
     const filterQuery = await FilterQuery.create({
       researchQuestion,
       inclusionCriteria,
@@ -138,56 +135,54 @@ const createQuery = async (req, res) => {
       systematicReviewId,
       totalFound,
     });
+
     for (const filteredPaper of filteredPapers) {
-      await ResearchPapers.updateOne(
-        { title: filteredPaper.title },
-        {
-          $setOnInsert: {
-            ...filteredPaper,
-            systematicReviewId: filterQuery.systematicReviewId,
-            filterQuery: filterQuery.id,
-            user: req.user.userId,
-          },
+      // Check and upsert research papers per systematic review
+      const upsertQuery = {
+        title: filteredPaper.title,
+        systematicReviewId: filterQuery.systematicReviewId
+      };
+
+      await ResearchPapers.updateOne(upsertQuery, {
+        $setOnInsert: {
+          ...filteredPaper,
+          filterQuery: filterQuery.id,
+          user: req.user.userId,
         },
-        { upsert: true }
-      );
+      }, { upsert: true });
+
       const openAiResponse = await processResearchPapers(
-        assistantId,
+        systematicReview.researchAssistantId,
         filteredPaper,
         inclusionCriteria,
         exclusionCriteria,
         researchQuestion
       );
+
       if (openAiResponse === 'Yes') {
         totalFound++;
-        await PrimaryStudy.updateOne(
-          { title: filteredPaper.title },
-          {
-            $setOnInsert: {
-              ...filteredPaper,
-              systematicReviewId: filterQuery.systematicReviewId,
-              filterQuery: filterQuery.id,
-              user: req.user.userId,
-            },
+        await PrimaryStudy.updateOne(upsertQuery, {
+          $setOnInsert: {
+            ...filteredPaper,
+            filterQuery: filterQuery.id,
+            user: req.user.userId,
           },
-          { upsert: true }
-        );
+        }, { upsert: true });
       }
     }
+
     await FilterQuery.updateOne(
       { _id: filterQuery.id },
       { $set: { totalFound } }
     );
-    res
-      .status(StatusCodes.OK)
-      .json({ message: 'Primary study selection successfull' });
+
+    res.status(StatusCodes.OK).json({ message: 'Primary study selection successful' });
   } catch (error) {
-    res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: 'error something Happened' });
-    console.log(error);
+    res.status(StatusCodes.BAD_REQUEST).json({ message: 'Error something happened' });
+    console.error(error);
   }
 };
+
 
 const allQuery = async (req, res) => {
   const filterQueries = await FilterQuery.find({
