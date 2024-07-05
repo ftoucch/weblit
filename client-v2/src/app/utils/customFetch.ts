@@ -1,3 +1,3 @@
 export const customFetch = ({
-  baseURL: 'http://localhost:5100/api/v1/',
+  baseURL: 'https://weblit.onrender.com/api/v1/',
 });
