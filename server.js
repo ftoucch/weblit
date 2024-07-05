@@ -4,7 +4,7 @@ dotenv.config();
 import connectDB from './db/connect.js';
 import cors from 'cors';
 const corsOptions = {
-  origin: 'http://localhost:4200',
+  origin: 'https://weblit-67862.web.app',
   credentials: true, // To accept cookies via cross-origin requests
 };
 import authMiddleware from './middleware/authMiddleware.js';
