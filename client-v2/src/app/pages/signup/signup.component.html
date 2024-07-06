@@ -39,7 +39,10 @@
         formControlName="password"
       />
     </div>
-    <button type="submit" class="btn btn-block">Register</button>
+    <button type="submit" class="btn btn-block">
+      <span *ngIf="!processLoading">Sign In</span>
+      <nz-spin [nzSpinning]="processLoading"></nz-spin>
+    </button>
     <p>
       Already a member ? <a routerLink="/signin" class="member-btn">Signin</a>
     </p>
