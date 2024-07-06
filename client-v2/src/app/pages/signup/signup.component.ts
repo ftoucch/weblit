@@ -12,11 +12,12 @@ import { UserService } from '../../services/user.service';
 import { Signup } from '../../models/auth';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { GeneralService } from '../../services/general.service';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, NzSpinModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css',
 })
