@@ -4,7 +4,6 @@ dotenv.config();
 import connectDB from './db/connect.js';
 import cors from 'cors';
 import authMiddleware from './middleware/authMiddleware.js';
-
 // routers
 import authRouter from './routes/authRoutes.js';
 import researchRouter from './routes/researchRoutes.js';
