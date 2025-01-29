@@ -1,6 +1,7 @@
 <main class="full-page">
+    <div class="image-container"></div>
     <form class="form" [formGroup]="form" (submit)="signin()">
-        <h4>Login</h4>
+        <div class="form-heading"> <h5 class="form-heading">Login</h5><p>Login to get started</p></div>
         <div class="form-row">
             <label for="email" class="form-label">Email Address</label>
             <input id="email" type="email" [class.input-error]="form['controls']['email'].errors && form['controls']['email'].touched" class="form-input" formControlName="email" placeholder="johnwick@example.com" />
@@ -14,6 +15,6 @@
             <span *ngIf="!processLoading">Sign In</span>
             <nz-spin [nzSpinning]="processLoading"></nz-spin>
         </button>
-        <p>Not a member yet? <a routerLink="/signup" class="member-btn">Register</a></p>
+        <p class="form-footer-link">Not a member yet? <a routerLink="/signup" class="member-btn">Register</a></p>
     </form>
 </main>
