@@ -1,3 +1,8 @@
+.header-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 .reviews {
     display: flex;
     flex-direction: column;
@@ -30,3 +35,14 @@ p {
 .date-nav span  {
     cursor: pointer;
 }
+
+.create-review {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: .5rem 1rem;
+    background-color: var(--grey-50);
+    border-radius: var(--borderRadius);
+    cursor: pointer;
+    align-items: center;
+  }

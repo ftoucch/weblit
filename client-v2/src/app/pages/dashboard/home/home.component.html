@@ -1,7 +1,10 @@
-<button class="btn btn-add-new" (click)="showCreateModal()">
-  <span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new
-  review
-</button>
+<div class="header-section">
+  <h3 class="title">Reviews</h3>
+  <div class="create-review" (click)="showCreateModal()">
+    <span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new
+    review
+  </div>
+</div>
 <div class="empty-container" *ngIf="researchs.length === 0">
   <app-empty [createReview]="showCreateReviewModal.bind(this)"></app-empty>
 </div>
@@ -11,18 +14,18 @@
       <div class="content">
         <span class="research-title">{{ research.title }}</span>
       </div>
-      <div class="date-nav">10:00am Dec 19 
+      <div class="date-nav"><span class="date sm-d-none">10:00am Dec 19 </span>
         <span (click)="$event.stopPropagation()" nz-dropdown nzTrigger="click" [nzDropdownMenu]="reviewActionMenu" nz-icon nzType="ellipsis" nzTheme="outline"></span>
         <nz-dropdown-menu #reviewActionMenu="nzDropdownMenu">
           <ul nz-menu>
             <li nz-menu-item (click)="selectResearch(research)" [routerLink]="['/dashboard/research', research._id]">
-              <span nz-icon nzType="delete" nzTheme="fill"></span><span>View Review</span>
+              <span nz-icon nzType="info" nzTheme="outline"></span><span class="menu-title">View Review</span>
             </li>
             <li nz-menu-item (click)="showDeleteConfirm(research._id)">
-              <span nz-icon nzType="delete" nzTheme="fill"></span><span>Delete Review</span>
+              <span nz-icon nzType="delete" nzTheme="outline"></span><span class="menu-title">Delete Review</span>
             </li>
             <li nz-menu-item (click)="selectResearchForEdit(research)">
-              <span nz-icon nzType="edit" nzTheme="fill"></span><span>Edit Review</span>
+              <span nz-icon nzType="edit" nzTheme="outline"></span><span class="menu-title">Edit Review</span>
             </li>
           </ul>
         </nz-dropdown-menu>

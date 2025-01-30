@@ -8,11 +8,11 @@
           [routerLinkActiveOptions]="{ exact: true }"
           #dashboardLink="routerLinkActive"
           class="nav-link"
-          ><span class="icon" nz-icon nzType="dashboard" nzTheme="fill"></span
+          ><span class="icon" nz-icon nzType="book" nzTheme="outline"></span
           >Literature Reviews</a
         >
         <div class="left-hand flex">
-          <div class="user-details"><a nz-dropdown nzTrigger="click" [nzDropdownMenu]="profile"><nz-avatar nzSize="small" nzText="{{getInitials(user.email)}}"></nz-avatar> {{user.email}} <span nz-icon nzType="down" nzTheme="outline"></span>
+          <div class="user-details"><a class="detail" nz-dropdown nzTrigger="click" [nzDropdownMenu]="profile"><nz-avatar nzSize="small" nzText="{{getInitials(user.email)}}"></nz-avatar> <span class="sm-d-none">{{user.email}}</span><span nz-icon nzType="down" nzTheme="outline"></span>
           </a><nz-dropdown-menu #profile="nzDropdownMenu">
             <ul nz-menu>
               <li nz-menu-item><a
@@ -32,7 +32,6 @@
       </div>
     </nav>
     <article class="dashboard-page">
-      <h3 class="title">{{ title }}</h3>
       <router-outlet></router-outlet>
       <app-create-review></app-create-review>
     </article>
