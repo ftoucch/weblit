@@ -2,9 +2,6 @@
   display: grid;
   grid-template-columns: 1fr;
 }
-aside {
-  display: none;
-}
 .dashboard-page {
   width: 90vw;
   margin: 0 auto;
@@ -92,9 +89,6 @@ nav {
 }
 
 @media (min-width: 992px) {
-  .dashboard {
-    grid-template-columns: auto 1fr;
-  }
   .dashboard-page {
     width: 90%;
   }
@@ -110,13 +104,6 @@ nav {
   aside {
     display: block;
     background-color: var(--white);
-  }
-  .sidebar-container {
-    background: var(--white);
-    min-height: 100vh;
-    height: 100%;
-    width: 350px;
-    transition: margin-left 0.3s ease-in-out;
   }
   .content {
     position: sticky;
@@ -141,20 +128,18 @@ nav {
   .nav-link {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: .5rem;
     color: var(--text-secondary-color);
     padding: 1rem 0;
-    padding-left: 2.5rem;
     text-transform: capitalize;
     transition: padding-left 0.3s ease-in-out;
   }
   .nav-link:hover {
-    padding-left: 3rem;
     color: var(--primary-500);
     transition: var(--transition);
   }
   .icon {
-    font-size: 1.5rem;
+    font-size: 1rem;
     display: grid;
     place-items: center;
   }
@@ -162,7 +147,6 @@ nav {
     color: var(--primary-600);
     background-color: var(--backgroundColor);
     border-radius: var(--borderRadius);
-    border-left: 3px solid var(--primary-600);
   }
   .pending {
     background: var(--background-color);

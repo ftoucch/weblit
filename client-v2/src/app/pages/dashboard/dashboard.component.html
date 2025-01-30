@@ -1,7 +1,7 @@
 <main class="dashboard">
-  <aside class="sidebar-container">
-    <div class="content">
-      <div class="nav-links">
+  <div>
+    <nav clas>
+      <div class="nav-center">
         <a
           routerLink="/dashboard/"
           routerLinkActive="active"
@@ -11,55 +11,28 @@
           ><span class="icon" nz-icon nzType="dashboard" nzTheme="fill"></span
           >Literature Reviews</a
         >
-        <!--- <a
-          routerLink="/dashboard/research"
-          routerLinkActive="active"
-          class="nav-link"
-          ><span class="icon" nz-icon nzType="book" nzTheme="fill"></span
-          >Researchs</a
-        > -->
-        <a
-          routerLink="/dashboard/documents"
-          routerLinkActive="active"
-          class="nav-link"
-          ><span class="icon" nz-icon nzType="file" nzTheme="fill"></span
-          >Documents</a
-        >
-        <a
-          routerLink="/dashboard/profile"
-          routerLinkActive="active"
-          class="nav-link"
-          ><span class="icon" nz-icon nzType="profile" nzTheme="fill"></span
-          >Profile
-        </a>
-        <!-- <a
-          routerLink="/dashboard/settings"
-          routerLinkActive="active"
-          class="nav-link"
-          ><span class="icon" nz-icon nzType="setting" nzTheme="fill"></span
-          >Settings
-        </a> -->
-        <button class="nav-link btn-signout" (click)="logOut()">
-          <i class="icon" nz-icon nzType="logout" nzTheme="outline"></i>
-          Signout
-        </button>
-      </div>
-    </div>
-  </aside>
-  <div>
-    <nav clas>
-      <div class="nav-center">
-        <h2 class="title">{{ title }}</h2>
         <div class="left-hand flex">
-          <button class="btn btn-add-new" (click)="showCreateModal()">
-            <span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new
-            review
-          </button>
-          <div class="user-details"><nz-avatar nzSize="large" nzText="{{getInitials(user.name)}}" style="background-color:#be9ad8;"></nz-avatar></div>
+          <div class="user-details"><a nz-dropdown nzTrigger="click" [nzDropdownMenu]="profile"><nz-avatar nzSize="small" nzText="{{getInitials(user.email)}}"></nz-avatar> {{user.email}}
+          </a><nz-dropdown-menu #profile="nzDropdownMenu">
+            <ul nz-menu>
+              <li nz-menu-item><a
+                routerLink="/dashboard/profile"
+                routerLinkActive="active"
+                class="nav-link"
+                ><span class="icon" nz-icon nzType="profile" nzTheme="fill"></span
+                >Profile
+              </a></li>
+              <li nz-menu-item> <button class="nav-link btn-signout" (click)="logOut()">
+                <i class="icon" nz-icon nzType="logout" nzTheme="outline"></i>
+                Signout
+              </button></li>
+            </ul>
+          </nz-dropdown-menu></div>
         </div>
       </div>
     </nav>
     <article class="dashboard-page">
+      <h3 class="title">{{ title }}</h3>
       <router-outlet></router-outlet>
       <app-create-review></app-create-review>
     </article>
