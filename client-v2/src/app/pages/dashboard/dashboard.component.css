@@ -88,7 +88,11 @@ nav {
   display: none;
   margin: 0;
 }
-
+.user-details .detail {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
 @media (min-width: 992px) {
   .nav-center {
     width: 90%;
