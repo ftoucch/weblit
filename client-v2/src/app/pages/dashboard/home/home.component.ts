@@ -86,4 +86,8 @@ export class HomeComponent {
   showCreateReviewModal() {
     this.createModal.showModal();
   }
+
+  showCreateModal(): void {
+    this.createModal.showModal();
+  }
 }
