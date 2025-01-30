@@ -8,6 +8,7 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EmptyComponent } from '../../../components/empty/empty.component';
 import { CreateReviewComponent } from '../../../modals/create-review/create-review.component';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +21,7 @@ import { CreateReviewComponent } from '../../../modals/create-review/create-revi
     NzModalModule,
     EmptyComponent,
     CreateReviewComponent,
+    NzDropDownModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
