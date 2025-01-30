@@ -1,15 +1,17 @@
+<button class="btn btn-add-new" (click)="showCreateModal()">
+  <span nz-icon nzType="plus-circle" nzTheme="outline"></span>Create new
+  review
+</button>
 <div class="empty-container" *ngIf="researchs.length === 0">
   <app-empty [createReview]="showCreateReviewModal.bind(this)"></app-empty>
 </div>
-<section class="card-wrapper">
-  <article class="card vertical" *ngFor="let research of researchs">
-    <div class="details-wrapper">
-      <span><strong>title</strong></span>
-      <h5>{{ research.title }}</h5>
-    </div>
-    <div class="details-wrapper">
-      <span><strong>Description</strong></span>
-      <p>{{ research.description }}</p>
+<section class="wrapper">
+  <article class="reviews" *ngFor="let research of researchs">
+    <div class="review">
+      <div class="content">
+        <h5>{{ research.title }}</h5>
+        <p>{{ research.description }}</p>
+      </div>
     </div>
     <div class="button-group">
       <button
