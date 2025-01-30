@@ -9,6 +9,7 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EmptyComponent } from '../../../components/empty/empty.component';
 import { CreateReviewComponent } from '../../../modals/create-review/create-review.component';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 
 @Component({
   selector: 'app-home',
@@ -21,18 +22,21 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
     NzModalModule,
     EmptyComponent,
     CreateReviewComponent,
-    NzDropDownModule
+    NzDropDownModule,
+    NzSkeletonModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent {
   @ViewChild(EditComponent, { static: false }) editModal!: EditComponent;
-  @ViewChild(CreateReviewComponent, { static: false })
-  createModal!: CreateReviewComponent;
+  @ViewChild(CreateReviewComponent, { static: false }) createModal!: CreateReviewComponent;
+
   isVisible = false;
   researchs: Array<any> = [];
   researchID = '';
+  loading = true;  // New loading state
+
   constructor(
     private researchService: ResearchService,
     private modal: NzModalService,
@@ -41,6 +45,19 @@ export class HomeComponent {
   ) {
     this.getAllResearch();
     this.researchService.clearSelectedResearch();
+  }
+
+  getAllResearch() {
+    this.loading = true;
+    this.researchService.getAllResearch().subscribe({
+      next: (res: any) => {
+        this.researchs = res.data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
   }
 
   selectResearchForEdit(research: any): void {
@@ -55,28 +72,17 @@ export class HomeComponent {
   showEditModal(): void {
     this.editModal.showModal();
   }
-  getAllResearch() {
-    this.researchService.getAllResearch().subscribe({
-      next: (res: any) => {
-        this.researchs = res.data;
-      },
-    });
-  }
 
   showDeleteConfirm(researchID: any): void {
     this.researchID = researchID;
     this.modal.confirm({
-      nzTitle: 'Are you sure you want to delete this review ?',
+      nzTitle: 'Are you sure you want to delete this review?',
       nzOkText: 'Delete',
       nzOkDanger: true,
       nzOnOk: () => {
         this.researchService.deleteResearch(this.researchID).subscribe({
-          next: (res: any) => {
-            this.notification.create(
-              'success',
-              'Success',
-              'Review was successfully deleted'
-            );
+          next: () => {
+            this.notification.create('success', 'Success', 'Review was successfully deleted');
             this.getAllResearch();
           },
         });
