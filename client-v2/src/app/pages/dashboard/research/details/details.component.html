@@ -1,116 +1,80 @@
-<section
-  class="main review-dashboard"
-  [ngClass]="{
-    'query-wrapper': true,
-    'with-query': primaryStudies.length > 0
-  }"
->
-  <aside class="top_row">
-    <div class="query-wrapper" *ngIf="primaryStudies.length > 0">
-      <h3>My queries</h3>
-      <button class="btn add-new-query" (click)="showCreateQueryModal()">
-        <span nz-icon nzType="plus" nzTheme="outline"></span> New Query
-      </button>
-      <div class="queries-wrapper">
-        <div class="queries" *ngFor="let filterQuery of filterQueries">
-          <div class="card query">
-            <strong>Search String</strong>
-            <p>{{ filterQuery.searchString }}</p>
-            <strong>Research Question</strong>
-            <p>{{ filterQuery.researchQuestion }}</p>
-            <strong>Inclusion Criteria</strong>
-            <p>{{ filterQuery.inclusionCriteria }}</p>
-            <strong>Exclusion Criteria</strong>
-            <p>{{ filterQuery.exclusionCriteria }}</p>
-            <span
-              ><strong>Total Research paper: </strong>
-              {{ filterQuery.totalFound }}</span
+<section>
+  <!-- Skeleton Loader -->
+  <section *ngIf="loading" class="loading-wrapper">
+    <article class="skeleton-item" *ngFor="let i of [1,2,3,4]">
+      <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
+    </article>
+  </section>
+  <div class="results-container">
+  <aside>
+    <div class="header"><h5>{{research?.title}}</h5></div>
+    <div class="query-container">
+      <div class="queries" *ngFor="let filterQuery of filterQueries">
+        <div class="query">
+          <strong>Search String</strong>
+          <p>{{ filterQuery.searchString }}</p>
+          <strong>Research Question</strong>
+          <p>{{ filterQuery.researchQuestion }}</p>
+          <strong>Inclusion Criteria</strong>
+          <p>{{ filterQuery.inclusionCriteria }}</p>
+          <strong>Exclusion Criteria</strong>
+          <p>{{ filterQuery.exclusionCriteria }}</p>
+          <span
+            ><strong>Total Research paper: </strong>
+            {{ filterQuery.totalFound }}</span
+          >
+          <div class="button-wrapper">
+            <button
+              class="btn btn-danger"
+              (click)="deleteQuery(filterQuery._id)"
             >
-            <div class="button-wrapper">
-              <button
-                class="btn btn-danger"
-                (click)="deleteQuery(filterQuery._id)"
-              >
-                <span nz-icon nzType="delete" nzTheme="fill"></span>
-              </button>
-            </div>
+              <span nz-icon nzType="delete" nzTheme="fill"></span>
+            </button>
           </div>
         </div>
       </div>
     </div>
   </aside>
-  <section class="primary-studies">
-    <div class="top-row">
-      <h3>Selected Primary Studies</h3>
-      <div class="selected-filter">
-        <div class="search">
-          <input type="text" class="search-input" /><span
-            nz-icon
-            nzType="search"
-            nzTheme="outline"
-          ></span>
+  <!-- Research Papers -->
+    <div class="primary-studies" *ngIf="!loading">
+      <div class="documents-wrapper">
+        <div class="empty-container" *ngIf="primaryStudies.length === 0">
+          <app-empty [createQuery]="showCreateQueryModal.bind(this)"></app-empty>
         </div>
-      </div>
-      <div class="unfiltered-result-toggle">
-        <nz-switch
-          [(ngModel)]="showUnfilteredPapers"
-          (ngModelChange)="onSwitchChange($event)"
-        ></nz-switch
-        ><span>Show all result</span>
+
+        <article class="document" *ngFor="let primaryStudy of primaryStudies; let i = index">
+          <div class="document-header">
+            <!-- Title is now always an <a> tag with a class -->
+            <a class="document-title" [href]="primaryStudy.url || '#'">
+              {{ primaryStudy.title ?? "No title available" }}
+            </a>
+          </div>
+
+          <!-- Truncated Abstract -->
+          <p class="abstract">
+            {{ truncateText(primaryStudy.abstract, i) }}
+            <span class="read-more" *ngIf="primaryStudy.abstract?.split(' ').length > 20" (click)="toggleAbstract(i)">
+              {{ expandedAbstracts[i] ? "Show Less" : "Read More" }}
+            </span>
+          </p>
+
+          <p class="authors">
+            <span *ngFor="let author of primaryStudy.authors">{{ author.name ?? "Author not found" }}, </span>
+          </p>
+
+          <!-- Metadata -->
+          <div class="meta-data">
+            <span>cited by {{ primaryStudy.citationCount ?? 0 }}</span>
+            <span>referenced {{ primaryStudy.referenceCount ?? 0 }} times</span>
+            <span>{{ primaryStudy.year ?? "N/A" }}</span>
+
+            <!-- Open Access (Download PDF) - Removed "Not Available" message -->
+            <span *ngIf="primaryStudy.openAccessPdf?.url">
+              <a  class="download" [href]="primaryStudy.openAccessPdf.url"><span nz-icon nzType="download" nzTheme="outline"></span></a>
+            </span>
+          </div>
+        </article>
       </div>
     </div>
-    <div class="documents-wrapper">
-      <div class="empty-container" *ngIf="primaryStudies.length === 0">
-        <app-empty [createQuery]="showCreateQueryModal.bind(this)"></app-empty>
-      </div>
-      <div class="document card" *ngFor="let primaryStudy of primaryStudies">
-        <strong>Title</strong>
-        <h5>{{ primaryStudy.title ?? "no title available" }}</h5>
-        <strong>Abstract</strong>
-        <p>{{ primaryStudy.abstract ?? "abstract not found" }}</p>
-        <strong>Authors</strong>
-        <p>
-          <span *ngFor="let author of primaryStudy.authors"
-            >{{ author.name ?? "authors not found" }},
-          </span>
-        </p>
-        <div class="match--rate meta-value">
-          <span
-            ><strong>Cited: </strong>
-            {{ primaryStudy.citationCount ?? 0 }} times</span
-          >
-          <span
-            ><strong>referenceCount: </strong
-            >{{ primaryStudy.referenceCount ?? 0 }} times</span
-          >
-          <span
-            ><strong>Year: </strong
-            >{{ primaryStudy.year ?? "Year is missing" }}</span
-          >
-          <span *ngIf="primaryStudy.openAccessPdf?.url">
-            <strong>Open Access: </strong>
-            <a [href]="primaryStudy.openAccessPdf.url">download pdf</a>
-          </span>
-          <span *ngIf="!primaryStudy.openAccessPdf?.url"
-            ><strong>Open Access: </strong>Not Available</span
-          >
-          <span *ngIf="primaryStudy.url">
-            <a [href]="primaryStudy.url">View Online</a>
-          </span>
-          <!-- <div class="button-group">
-            <button class="btn btn-danger">
-              <span nz-icon nzType="delete" nzTheme="fill"></span>
-            </button>
-          </div> -->
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="chatbox-toggle">
-    <button class="btn btn-chat-toggle" (click)="showChatBox()">
-      <i nz-icon nzType="wechat" nzTheme="outline"></i>
-    </button>
-  </section>
+  </div>
 </section>
-<app-create-query></app-create-query>
-<app-chatbox [research]="research"></app-chatbox>
