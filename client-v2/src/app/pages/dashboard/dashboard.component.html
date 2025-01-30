@@ -12,7 +12,7 @@
           >Literature Reviews</a
         >
         <div class="left-hand flex">
-          <div class="user-details"><a nz-dropdown nzTrigger="click" [nzDropdownMenu]="profile"><nz-avatar nzSize="small" nzText="{{getInitials(user.email)}}"></nz-avatar> {{user.email}}
+          <div class="user-details"><a nz-dropdown nzTrigger="click" [nzDropdownMenu]="profile"><nz-avatar nzSize="small" nzText="{{getInitials(user.email)}}"></nz-avatar> {{user.email}} <span nz-icon nzType="down" nzTheme="outline"></span>
           </a><nz-dropdown-menu #profile="nzDropdownMenu">
             <ul nz-menu>
               <li nz-menu-item><a

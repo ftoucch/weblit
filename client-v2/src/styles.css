@@ -15,7 +15,7 @@ html {
 :root {
   /* colors */
   /* colors */
-  --primary-50: #e4eaec;
+  --primary-50: #eaf0f5;
   --primary-100: #c4d0d4; 
   --primary-200: #a5b6bd;
   --primary-300: #859da6;
@@ -27,16 +27,16 @@ html {
 
    --off-white: #F4FAFE;
   /* grey */
-  --grey-50: #f0f4f8;
-  --grey-100: #d9e2ec;
-  --grey-200: #bcccdc;
-  --grey-300: #9fb3c8;
-  --grey-400: #829ab1;
-  --grey-500: #627d98;
-  --grey-600: #486581;
-  --grey-700: #334e68;
-  --grey-800: #243b53;
-  --grey-900: #102a43;
+  --grey-50:  #e6eef0;   /* Very light desaturated cyan */
+  --grey-100: #cfdde0;
+  --grey-200: #b1c5c9;
+  --grey-300: #94acb1;
+  --grey-400: #78939a;
+  --grey-500: #5f7b82;   /* Muted teal-gray */
+  --grey-600: #486168;
+  --grey-700: #344952;
+  --grey-800: #223238;
+  --grey-900: #101E24; 
 
   --grey-default: #626262;
   /* rest of the colors */
@@ -56,7 +56,7 @@ html {
   --backgroundColor: var(--off-white);
   --textColor: var(--primary-500);
   --borderRadius: 0.25rem;
-  --letterSpacing: 1px;
+  --letterSpacing: .8px;
   --transition: 0.3s ease-in-out all;
   --max-width: 1120px;
   --fixed-width: 500px;

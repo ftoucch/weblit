@@ -1,0 +1,32 @@
+.reviews {
+    display: flex;
+    flex-direction: column;
+    gap: 2rems;
+}
+
+.reviews .review {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    padding: 1rem;
+    border-radius: var(--borderRadius);
+}
+.reviews .review:hover {
+    background-color: var(--grey-50);
+}
+p {
+    margin-bottom: 0;
+}
+.research-title {
+    text-transform: capitalize;
+    font-size: 1.1rem;
+}
+.date-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.date-nav span  {
+    cursor: pointer;
+}

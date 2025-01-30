@@ -3,7 +3,8 @@
   grid-template-columns: 1fr;
 }
 .dashboard-page {
-  width: 90vw;
+  max-width: 80rem;
+  width: 80%;
   margin: 0 auto;
   padding: 2rem 0;
 }
@@ -89,9 +90,6 @@ nav {
 }
 
 @media (min-width: 992px) {
-  .dashboard-page {
-    width: 90%;
-  }
   .nav-center {
     width: 90%;
   }
