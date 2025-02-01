@@ -35,7 +35,6 @@
       </div>
     </div>
   </aside>
-  <!-- Research Papers -->
     <div class="primary-studies" *ngIf="!loading">
       <div class="documents-wrapper">
         <div class="empty-container" *ngIf="primaryStudies.length === 0">
@@ -44,13 +43,10 @@
 
         <article class="document" *ngFor="let primaryStudy of primaryStudies; let i = index">
           <div class="document-header">
-            <!-- Title is now always an <a> tag with a class -->
             <a class="document-title" [href]="primaryStudy.url || '#'">
               {{ primaryStudy.title ?? "No title available" }}
             </a>
           </div>
-
-          <!-- Truncated Abstract -->
           <p class="abstract">
             {{ truncateText(primaryStudy.abstract, i) }}
             <span class="read-more" *ngIf="primaryStudy.abstract?.split(' ').length > 20" (click)="toggleAbstract(i)">
@@ -67,8 +63,6 @@
             <span>cited by {{ primaryStudy.citationCount ?? 0 }}</span>
             <span>referenced {{ primaryStudy.referenceCount ?? 0 }} times</span>
             <span>{{ primaryStudy.year ?? "N/A" }}</span>
-
-            <!-- Open Access (Download PDF) - Removed "Not Available" message -->
             <span *ngIf="primaryStudy.openAccessPdf?.url">
               <a  class="download" [href]="primaryStudy.openAccessPdf.url"><span nz-icon nzType="download" nzTheme="outline"></span></a>
             </span>
