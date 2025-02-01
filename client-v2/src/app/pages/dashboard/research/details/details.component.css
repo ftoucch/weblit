@@ -33,10 +33,41 @@
 .document-title:hover {
   color: var(--primary-400);
 }
+.query-title {
+  background-color: white;
+  border-radius: var(--borderRadius);
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  justify-content: space-between;
+}
 
+.total-found{
+  background-color: var(--backgroundColor);
+  padding: .3rem;
+  border-radius: var(--borderRadius);
+}
+
+.details {
+  padding-inline: 1rem;
+}
+.add-new-query {
+  width: 100%;
+  margin-bottom: 2rem;
+  min-height: 3rem;
+  background-color: transparent;
+  border: 1px dashed var(--grey-500);
+  color: var(--grey-500);
+  box-shadow: none;
+}
 @media(min-width:768px) {
   .results-container {
     grid-template-columns: 1fr 3fr;
-    gap: 1rem;
+    gap: 3rem;
   }
+
+
 }
