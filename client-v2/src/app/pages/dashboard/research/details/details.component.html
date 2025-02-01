@@ -6,35 +6,42 @@
     </article>
   </section>
   <div class="results-container">
-  <aside>
-    <div class="header"><h5>{{research?.title}}</h5></div>
-    <div class="query-container">
-      <div class="queries" *ngFor="let filterQuery of filterQueries">
-        <div class="query">
-          <strong>Search String</strong>
-          <p>{{ filterQuery.searchString }}</p>
-          <strong>Research Question</strong>
-          <p>{{ filterQuery.researchQuestion }}</p>
-          <strong>Inclusion Criteria</strong>
-          <p>{{ filterQuery.inclusionCriteria }}</p>
-          <strong>Exclusion Criteria</strong>
-          <p>{{ filterQuery.exclusionCriteria }}</p>
-          <span
-            ><strong>Total Research paper: </strong>
-            {{ filterQuery.totalFound }}</span
-          >
-          <div class="button-wrapper">
-            <button
-              class="btn btn-danger"
-              (click)="deleteQuery(filterQuery._id)"
-            >
-              <span nz-icon nzType="delete" nzTheme="fill"></span>
-            </button>
+    <aside>
+      <div class="header">
+        <h5>{{ research?.title }}</h5>
+      </div>
+      <div class="query-container">
+        <button class="btn add-new-query" (click)="showCreateQueryModal()">
+          <span nz-icon nzType="plus" nzTheme="outline"></span> Query
+        </button>
+        <div class="queries" *ngFor="let filterQuery of filterQueries; let i = index">
+          <div class="query" >
+            <div class="query-title" (click)="toggleQueryDetails(i)">
+              <span>{{ filterQuery.searchString }}</span>
+              <span class="total-found">{{ filterQuery.totalFound }}</span>
+            </div>
+            <!-- Hidden Details -->
+            <div class="details" *ngIf="expandedQueries[i]">
+              <strong>Search String:</strong>
+              <p>{{ filterQuery.searchString }}</p>
+              <strong>Research Question:</strong>
+              <p>{{ filterQuery.researchQuestion }}</p>
+              <strong>Inclusion Criteria:</strong>
+              <p>{{ filterQuery.inclusionCriteria }}</p>
+              <strong>Exclusion Criteria:</strong>
+              <p>{{ filterQuery.exclusionCriteria }}</p>
+    
+              <!-- Delete Button -->
+              <div class="button-wrapper">
+                <button class="btn btn-danger" (click)="deleteQuery(filterQuery._id)">
+                  <span nz-icon nzType="delete" nzTheme="fill"></span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </aside>
+    </aside>    
     <div class="primary-studies" *ngIf="!loading">
       <div class="documents-wrapper">
         <div class="empty-container" *ngIf="primaryStudies.length === 0">
@@ -72,3 +79,4 @@
     </div>
   </div>
 </section>
+<app-create-query></app-create-query>

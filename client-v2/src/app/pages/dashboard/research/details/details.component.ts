@@ -31,15 +31,18 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
   styleUrl: './details.component.css',
 })
 export class DetailsComponent {
-  @ViewChild(CreateQueryComponent, { static: false }) createQueryModal!: CreateQueryComponent;
-  @ViewChild(ChatboxComponent, { static: false }) openChatBox!: ChatboxComponent;
-
+  @ViewChild(CreateQueryComponent, { static: false })
+  createQueryModal!: CreateQueryComponent;
+  @ViewChild(ChatboxComponent, { static: false })
+  openChatBox!: ChatboxComponent;
+  
   research: any;
   researchId: string = '';
   filterQueries: Array<any> = [];
   primaryStudies: Array<any> = [];
   showUnfilteredPapers = false;
   loading = false; // Track loading state
+  expandedQueries: { [key: number]: boolean } = {};
   expandedAbstracts: { [key: number]: boolean } = {}; // Track expanded abstracts
 
   constructor(
@@ -139,5 +142,9 @@ export class DetailsComponent {
     if (this.expandedAbstracts[index]) return text; // Show full text if expanded
     const words = text.split(' ');
     return words.length > 20 ? words.slice(0, 20).join(' ') + '...' : text;
+  }
+
+  toggleQueryDetails(index: number): void {
+    this.expandedQueries[index] = !this.expandedQueries[index];
   }
 }
