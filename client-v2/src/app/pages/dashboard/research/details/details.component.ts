@@ -41,9 +41,9 @@ export class DetailsComponent {
   filterQueries: Array<any> = [];
   primaryStudies: Array<any> = [];
   showUnfilteredPapers = false;
-  loading = false; // Track loading state
+  loading = false;
   expandedQueries: { [key: number]: boolean } = {};
-  expandedAbstracts: { [key: number]: boolean } = {}; // Track expanded abstracts
+  expandedAbstracts: { [key: number]: boolean } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -131,15 +131,13 @@ export class DetailsComponent {
     switchState ? this.getUnfilteredPaper() : this.getAllPrimaryStudies();
   }
 
-  // Toggle abstract expansion
   toggleAbstract(index: number) {
     this.expandedAbstracts[index] = !this.expandedAbstracts[index];
   }
 
-  // Function to truncate abstract to 20 words
   truncateText(text: string, index: number): string {
     if (!text) return 'Abstract not available';
-    if (this.expandedAbstracts[index]) return text; // Show full text if expanded
+    if (this.expandedAbstracts[index]) return text;
     const words = text.split(' ');
     return words.length > 20 ? words.slice(0, 20).join(' ') + '...' : text;
   }

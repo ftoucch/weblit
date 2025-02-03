@@ -1,5 +1,4 @@
 <section>
-  <!-- Skeleton Loader -->
   <section *ngIf="loading" class="loading-wrapper">
     <article class="skeleton-item" *ngFor="let i of [1,2,3,4]">
       <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
@@ -20,7 +19,6 @@
               <span>{{ filterQuery.searchString }}</span>
               <span class="total-found">{{ filterQuery.totalFound }}</span>
             </div>
-            <!-- Hidden Details -->
             <div class="details" *ngIf="expandedQueries[i]">
               <strong>Search String:</strong>
               <p>{{ filterQuery.searchString }}</p>
@@ -30,8 +28,6 @@
               <p>{{ filterQuery.inclusionCriteria }}</p>
               <strong>Exclusion Criteria:</strong>
               <p>{{ filterQuery.exclusionCriteria }}</p>
-    
-              <!-- Delete Button -->
               <div class="button-wrapper">
                 <button class="btn btn-danger" (click)="deleteQuery(filterQuery._id)">
                   <span nz-icon nzType="delete" nzTheme="fill"></span>
@@ -64,8 +60,6 @@
           <p class="authors">
             <span *ngFor="let author of primaryStudy.authors">{{ author.name ?? "Author not found" }}, </span>
           </p>
-
-          <!-- Metadata -->
           <div class="meta-data">
             <span>cited by {{ primaryStudy.citationCount ?? 0 }}</span>
             <span>referenced {{ primaryStudy.referenceCount ?? 0 }} times</span>
