@@ -35,7 +35,7 @@ export class HomeComponent {
   isVisible = false;
   researchs: Array<any> = [];
   researchID = '';
-  loading = true;  // New loading state
+  loading = true; 
 
   constructor(
     private researchService: ResearchService,
