@@ -3,13 +3,12 @@ import { ResearchService } from '../../../services/research.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { EditComponent } from '../../../modals/edit/edit.component';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { EmptyComponent } from '../../../components/empty/empty.component';
-import { CreateReviewComponent } from '../../../modals/create-review/create-review.component';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
+import { ReviewFormComponent } from '../../../components/forms/review-form/review-form.component';
 
 @Component({
   selector: 'app-home',
@@ -18,24 +17,21 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
     CommonModule,
     RouterLink,
     NzIconModule,
-    EditComponent,
     NzModalModule,
     EmptyComponent,
-    CreateReviewComponent,
     NzDropDownModule,
     NzSkeletonModule,
+    ReviewFormComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
 export class HomeComponent {
-  @ViewChild(EditComponent, { static: false }) editModal!: EditComponent;
-  @ViewChild(CreateReviewComponent, { static: false }) createModal!: CreateReviewComponent;
-
-  isVisible = false;
   researchs: Array<any> = [];
   researchID = '';
-  loading = true; 
+  loading = true;
+  showCreateForm = false;
+  editingResearch: any = null;
 
   constructor(
     private researchService: ResearchService,
@@ -47,6 +43,7 @@ export class HomeComponent {
     this.researchService.clearSelectedResearch();
   }
 
+  // Fetch all research data
   getAllResearch() {
     this.loading = true;
     this.researchService.getAllResearch().subscribe({
@@ -56,23 +53,21 @@ export class HomeComponent {
       },
       error: () => {
         this.loading = false;
-      }
+      },
     });
   }
 
+  // Select a research for editing
   selectResearchForEdit(research: any): void {
-    this.researchService.setSelectedResearch(research);
-    this.showEditModal();
+    this.editingResearch = research;
   }
 
+  // Select a research for viewing
   selectResearch(research: any): void {
     this.researchService.setSelectedResearch(research);
   }
 
-  showEditModal(): void {
-    this.editModal.showModal();
-  }
-
+  // Show delete confirmation modal
   showDeleteConfirm(researchID: any): void {
     this.researchID = researchID;
     this.modal.confirm({
@@ -91,11 +86,19 @@ export class HomeComponent {
     });
   }
 
-  showCreateReviewModal() {
-    this.createModal.showModal();
+  toggleCreateForm(): void {
+    this.showCreateForm = !this.showCreateForm;
+    this.editingResearch = null;
   }
 
-  showCreateModal(): void {
-    this.createModal.showModal();
+  toggleEditForm(research: any): void {
+    this.editingResearch = this.editingResearch === research ? null : research;
+    this.showCreateForm = false; 
+  }
+
+  handleFormSubmitted(): void {
+    this.getAllResearch();
+    this.showCreateForm = false;
+    this.editingResearch = null;
   }
 }
