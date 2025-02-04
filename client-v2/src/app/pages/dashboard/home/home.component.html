@@ -1,7 +1,8 @@
 <div class="header-section">
   <h3 class="title">Reviews</h3>
-  <div class="create-review" (click)="showCreateModal()">
-    <span nz-icon nzType="plus-circle" nzTheme="outline"></span><span class="sm-d-none">Create new review</span>
+  <div class="create-review" (click)="toggleCreateForm()">
+    <span nz-icon nzType="plus-circle" nzTheme="outline"></span>
+    <span class="sm-d-none">Create new review</span>
   </div>
 </div>
 
@@ -14,13 +15,21 @@
 
 <!-- Show empty state only if there is no data after loading -->
 <div class="empty-container" *ngIf="!loading && researchs.length === 0">
-  <app-empty [createReview]="showCreateReviewModal.bind(this)"></app-empty>
+  <app-empty [createReview]="toggleCreateForm.bind(this)"></app-empty>
 </div>
-
+<!-- Create Form -->
+<section *ngIf="showCreateForm" class="create-review-wrapper">
+  <article class="reviews">
+    <app-review-form
+      (formSubmitted)="handleFormSubmitted()"
+      (formCanceled)="toggleCreateForm()"
+    ></app-review-form>
+  </article>
+</section>
 <!-- Show actual data if not loading -->
 <section *ngIf="!loading && researchs.length > 0" class="wrapper">
   <article class="reviews" *ngFor="let research of researchs">
-    <div class="review" (click)="selectResearch(research)" [routerLink]="['/dashboard/research', research._id]">
+    <div class="review" *ngIf="editingResearch !== research" (click)="selectResearch(research)" [routerLink]="['/dashboard/research', research._id]">
       <div class="content">
         <span class="research-title">{{ research.title }}</span>
       </div>
@@ -35,15 +44,22 @@
             <li nz-menu-item (click)="showDeleteConfirm(research._id)">
               <span nz-icon nzType="delete" nzTheme="outline"></span><span class="menu-title">Delete Review</span>
             </li>
-            <li nz-menu-item (click)="selectResearchForEdit(research)">
+            <li nz-menu-item (click)="toggleEditForm(research)">
               <span nz-icon nzType="edit" nzTheme="outline"></span><span class="menu-title">Edit Review</span>
             </li>
           </ul>
         </nz-dropdown-menu>
       </div>
     </div>
+    <!-- Edit Form -->
+    <div class="edit review" *ngIf="editingResearch === research">
+      <app-review-form
+        [isEditMode]="true"
+        [reviewToEdit]="research"
+        (formSubmitted)="handleFormSubmitted()"
+        (formCanceled)="toggleEditForm(research)"
+        class="review-edit-form"
+      ></app-review-form>
+    </div>
   </article>
 </section>
-
-<app-edit></app-edit>
-<app-create-review></app-create-review>
