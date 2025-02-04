@@ -17,7 +17,15 @@
 <div class="empty-container" *ngIf="!loading && researchs.length === 0">
   <app-empty [createReview]="toggleCreateForm.bind(this)"></app-empty>
 </div>
-
+<!-- Create Form -->
+<section *ngIf="showCreateForm" class="create-review-wrapper">
+  <article class="reviews">
+    <app-review-form
+      (formSubmitted)="handleFormSubmitted()"
+      (formCanceled)="toggleCreateForm()"
+    ></app-review-form>
+  </article>
+</section>
 <!-- Show actual data if not loading -->
 <section *ngIf="!loading && researchs.length > 0" class="wrapper">
   <article class="reviews" *ngFor="let research of researchs">
@@ -44,23 +52,14 @@
       </div>
     </div>
     <!-- Edit Form -->
-    <div class="review" *ngIf="editingResearch === research">
+    <div class="edit review" *ngIf="editingResearch === research">
       <app-review-form
         [isEditMode]="true"
         [reviewToEdit]="research"
         (formSubmitted)="handleFormSubmitted()"
         (formCanceled)="toggleEditForm(research)"
+        class="review-edit-form"
       ></app-review-form>
     </div>
-  </article>
-</section>
-
-<!-- Create Form -->
-<section *ngIf="showCreateForm" class="create-review-wrapper">
-  <article class="reviews">
-    <app-review-form
-      (formSubmitted)="handleFormSubmitted()"
-      (formCanceled)="toggleCreateForm()"
-    ></app-review-form>
   </article>
 </section>

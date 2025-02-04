@@ -1,3 +1,8 @@
-.create-review-wrapper{
-    padding: 1rem;
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    min-width: 60px ;
 }
