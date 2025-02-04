@@ -1,0 +1,44 @@
+<div class="review-form">
+    <form [formGroup]="form" (ngSubmit)="handleSubmit()">
+      <div class="form-row">
+        <label for="title" class="form-label">Title</label>
+        <input
+          id="title"
+          type="text"
+          [class.input-error]="
+            form['controls']['title'].errors &&
+            form['controls']['title'].touched
+          "
+          class="form-input"
+          formControlName="title"
+          placeholder="Enter title"
+        />
+        <div *ngIf="form.get('title')?.errors && form.get('title')?.touched" class="error-message">
+          Title is required.
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="description" class="form-label">Description</label>
+        <textarea
+          id="description"
+          class="form-input large"
+          [class.input-error]="
+            form['controls']['description'].errors &&
+            form['controls']['description'].touched
+          "
+          placeholder="Enter description"
+          formControlName="description"
+        ></textarea>
+        <div *ngIf="form.get('description')?.errors && form.get('description')?.touched" class="error-message">
+          Description is required.
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit" [disabled]="form.invalid || processLoading">
+          <span *ngIf="!processLoading">{{ isEditMode ? 'Save' : 'Create' }}</span>
+          <nz-spin *ngIf="processLoading" [nzSpinning]="true"></nz-spin>
+        </button>
+        <button type="button" (click)="handleCancel()" class="btn">Cancel</button>
+      </div>
+    </form>
+  </div>
