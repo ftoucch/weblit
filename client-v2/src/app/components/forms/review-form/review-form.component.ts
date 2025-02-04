@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { NzSpinModule } from 'ng-zorro-antd/spin'; // Import NzSpinModule
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { systematicReview } from '../../../models/research';
 import { ResearchService } from '../../../services/research.service';
 import { UserService } from '../../../services/user.service';
@@ -16,18 +16,18 @@ import { UserService } from '../../../services/user.service';
 @Component({
   selector: 'app-review-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NzSpinModule], // Add NzSpinModule
+  imports: [CommonModule, ReactiveFormsModule, NzSpinModule],
   templateUrl: './review-form.component.html',
   styleUrl: './review-form.component.css',
 })
 export class ReviewFormComponent {
-  @Input() isEditMode: boolean = false; // Determines if the form is in edit mode
-  @Input() reviewToEdit: any = null; // The review to edit (if in edit mode)
-  @Output() formSubmitted = new EventEmitter<void>(); // Emits when the form is submitted
-  @Output() formCanceled = new EventEmitter<void>(); // Emits when the form is canceled
+  @Input() isEditMode: boolean = false;
+  @Input() reviewToEdit: any = null;
+  @Output() formSubmitted = new EventEmitter<void>(); 
+  @Output() formCanceled = new EventEmitter<void>();
 
   form: FormGroup;
-  processLoading: boolean = false; // Track loading state
+  processLoading: boolean = false; 
 
   constructor(
     private fb: FormBuilder,
@@ -44,7 +44,6 @@ export class ReviewFormComponent {
 
   ngOnInit(): void {
     if (this.isEditMode && this.reviewToEdit) {
-      // Populate the form with the review data if in edit mode
       this.form.patchValue({
         title: this.reviewToEdit.title,
         description: this.reviewToEdit.description,
@@ -63,7 +62,7 @@ export class ReviewFormComponent {
       return;
     }
 
-    this.processLoading = true; // Start loading
+    this.processLoading = true;
 
     const data = new systematicReview();
     const user = this.userService.getUser();
@@ -80,13 +79,13 @@ export class ReviewFormComponent {
             'Success',
             'Review updated successfully'
           );
-          this.processLoading = false; // Stop loading
+          this.processLoading = false;
           this.formSubmitted.emit();
           this.router.navigateByUrl(`dashboard/research/${res.id}`);
         },
         error: (error: any) => {
           this.notification.create('error', 'Error', 'An error occurred');
-          this.processLoading = false; // Stop loading
+          this.processLoading = false; 
         },
       });
     } else {
@@ -98,13 +97,13 @@ export class ReviewFormComponent {
             'Success',
             'Review created successfully'
           );
-          this.processLoading = false; // Stop loading
+          this.processLoading = false;
           this.formSubmitted.emit();
           this.router.navigateByUrl(`dashboard/research/${res.id}`);
         },
         error: (error: any) => {
           this.notification.create('error', 'Error', 'An error occurred');
-          this.processLoading = false; // Stop loading
+          this.processLoading = false;
         },
       });
     }
