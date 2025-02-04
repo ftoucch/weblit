@@ -14,6 +14,8 @@ import { firstValueFrom } from 'rxjs';
 import { CreateReviewComponent } from '../../modals/create-review/create-review.component';
 import { ResearchService } from '../../services/research.service';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -23,7 +25,8 @@ import { NzAvatarModule } from 'ng-zorro-antd/avatar';
     RouterOutlet,
     NzIconModule,
     CreateReviewComponent,
-    NzAvatarModule
+    NzAvatarModule,
+    NzDropDownModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -72,10 +75,6 @@ export class DashboardComponent implements OnInit {
   }
   logOut() {
     this.generalService.logOutUser();
-  }
-
-  showCreateModal(): void {
-    this.createModal.showModal();
   }
   getInitials(name: string): string {
     let initials = name.split(' ').map((n) => n[0]).join('').toUpperCase();

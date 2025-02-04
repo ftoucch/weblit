@@ -1,6 +1,7 @@
 <main class="full-page">
+  <div class="image-container"></div>
   <form class="form" [formGroup]="form" (submit)="signup()">
-    <h4>Register</h4>
+    <div class="form-heading"><h5>Create an account</h5><p>Let’s get started with  a free account</p></div>
     <div class="form-row">
       <label for="name" class="form-label"> Name </label>
       <input
@@ -43,7 +44,7 @@
       <span *ngIf="!processLoading">Register</span>
       <nz-spin [nzSpinning]="processLoading"></nz-spin>
     </button>
-    <p>
+    <p class="form-footer-link">
       Already a member ? <a routerLink="/signin" class="member-btn">Signin</a>
     </p>
   </form>

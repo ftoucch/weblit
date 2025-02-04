@@ -1,9 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 /* You can add global styles to this file, and also import other style files */
 /* fonts */
-@import url("https://fonts.googleapis.com/css2?family=Cabin&family=Roboto+Condensed:wght@400;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
-
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;700&display=swap');
 *,
 ::after,
 ::before {
@@ -16,27 +14,29 @@ html {
 
 :root {
   /* colors */
-  --primary-50: #eae2f8;
-  --primary-100: #d4bee8;
-  --primary-200: #be9ad8;
-  --primary-300: #a875c7;
-  --primary-400: #9345b6;
-  --primary-500: #743884; /* Your base color */
-  --primary-600: #622d6e;
-  --primary-700: #512457;
-  --primary-800: #411b40;
+  /* colors */
+  --primary-50: #eaf0f5;
+  --primary-100: #c4d0d4; 
+  --primary-200: #a5b6bd;
+  --primary-300: #859da6;
+  --primary-400: #65838e;
+  --primary-500: #101E24; 
+  --primary-600: #0e191e; 
+  --primary-700: #0b1418; 
+  --primary-800: #090f11;  
 
+   --off-white: #F4FAFE;
   /* grey */
-  --grey-50: #f0f4f8;
-  --grey-100: #d9e2ec;
-  --grey-200: #bcccdc;
-  --grey-300: #9fb3c8;
-  --grey-400: #829ab1;
-  --grey-500: #627d98;
-  --grey-600: #486581;
-  --grey-700: #334e68;
-  --grey-800: #243b53;
-  --grey-900: #102a43;
+  --grey-50:  #e6eef0;   /* Very light desaturated cyan */
+  --grey-100: #cfdde0;
+  --grey-200: #b1c5c9;
+  --grey-300: #94acb1;
+  --grey-400: #78939a;
+  --grey-500: #5f7b82;   /* Muted teal-gray */
+  --grey-600: #486168;
+  --grey-700: #344952;
+  --grey-800: #223238;
+  --grey-900: #101E24; 
 
   --grey-default: #626262;
   /* rest of the colors */
@@ -48,15 +48,15 @@ html {
   --green-dark: #0f5132;
 
   /* fonts  */
-  --headingFont: "Roboto", Sans-Serif;
-  --bodyFont: "Roboto", Sans-Serif;
+  --headingFont:'Mona Sans', sans-serif;
+  --bodyFont: 'Mona Sans', sans-serif;
   --small-text: 0.875rem;
   --extra-small-text: 0.7em;
   /* rest of the vars */
-  --backgroundColor: var(--grey-100);
-  --textColor: var(--grey-900);
+  --backgroundColor: var(--off-white);
+  --textColor: var(--primary-500);
   --borderRadius: 0.25rem;
-  --letterSpacing: 1px;
+  --letterSpacing: .8px;
   --transition: 0.3s ease-in-out all;
   --max-width: 1120px;
   --fixed-width: 500px;
@@ -79,8 +79,7 @@ body {
   font-weight: 400;
   line-height: 1.75;
   color: var(--textColor);
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 p {
@@ -225,15 +224,27 @@ ul {
 .form {
   width: 90vw;
   max-width: var(--fixed-width);
-  background: var(--white);
   border-radius: var(--borderRadius);
-  box-shadow: var(--shadow-2);
-  padding: 2rem 2.5rem;
+  padding: 1rem 1.5rem;
   margin: 3rem auto;
   transition: var(--transition);
 }
-.form:hover {
-  box-shadow: var(--shadow-4);
+
+@media(min-width:768px) {
+  .form {
+    padding: 2rem 2.5rem;
+  }
+}
+
+.form-heading {
+  margin-bottom: 2rem;
+}
+.form-heading p {
+    text-align: left;
+    color: var(--grey-300);
+}
+.form-heading h5 {
+  margin-bottom: .5rem;
 }
 .form-label {
   display: block;
@@ -249,12 +260,12 @@ ul {
   padding: 0.375rem 0.75rem;
   border-radius: var(--borderRadius);
   background: var(--backgroundColor);
-  border: 1px solid var(--grey-200);
+  border: 1px solid var(--primary-500);
 }
 .form-input,
 .form-select,
 .btn-block {
-  height: 35px;
+  height: 45px;
 }
 .form-row {
   margin-bottom: 1rem;
@@ -271,6 +282,11 @@ ul {
   color: var(--red-dark);
   letter-spacing: var(--letterSpacing);
   text-transform: capitalize;
+}
+
+.form-footer-link {
+  text-align: center;
+  margin-top: 2rem;
 }
 /* alert */
 
@@ -354,10 +370,16 @@ section {
   justify-content: center;
   align-items: center;
 }
-@media (min-width: 992px) {
+.sm-d-none {
+  display: none;
+}
+@media (min-width: 768px) {
   .card {
     min-width: min-content;
     width: 25%;
     justify-content: space-between;
+  }
+  .sm-d-none {
+    display: block;
   }
 }

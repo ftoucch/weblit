@@ -1,32 +1,49 @@
-<div class="empty-container" *ngIf="researchs.length === 0">
+<div class="header-section">
+  <h3 class="title">Reviews</h3>
+  <div class="create-review" (click)="showCreateModal()">
+    <span nz-icon nzType="plus-circle" nzTheme="outline"></span><span class="sm-d-none">Create new review</span>
+  </div>
+</div>
+
+<!-- Show skeleton while loading -->
+<section *ngIf="loading" class="wrapper">
+  <article class="reviews">
+    <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
+  </article>
+</section>
+
+<!-- Show empty state only if there is no data after loading -->
+<div class="empty-container" *ngIf="!loading && researchs.length === 0">
   <app-empty [createReview]="showCreateReviewModal.bind(this)"></app-empty>
 </div>
-<section class="card-wrapper">
-  <article class="card vertical" *ngFor="let research of researchs">
-    <div class="details-wrapper">
-      <span><strong>title</strong></span>
-      <h5>{{ research.title }}</h5>
-    </div>
-    <div class="details-wrapper">
-      <span><strong>Description</strong></span>
-      <p>{{ research.description }}</p>
-    </div>
-    <div class="button-group">
-      <button
-        class="btn btn-view"
-        (click)="selectResearch(research)"
-        [routerLink]="['/dashboard/research', research._id]"
-      >
-        View Research
-      </button>
-      <button class="btn btn-danger" (click)="showDeleteConfirm(research._id)">
-        <span nz-icon nzType="delete" nzTheme="fill"></span>
-      </button>
-      <button class="btn btn-edit" (click)="selectResearchForEdit(research)">
-        <span nz-icon nzType="edit" nzTheme="fill"></span>
-      </button>
+
+<!-- Show actual data if not loading -->
+<section *ngIf="!loading && researchs.length > 0" class="wrapper">
+  <article class="reviews" *ngFor="let research of researchs">
+    <div class="review" (click)="selectResearch(research)" [routerLink]="['/dashboard/research', research._id]">
+      <div class="content">
+        <span class="research-title">{{ research.title }}</span>
+      </div>
+      <div class="date-nav">
+        <span class="date sm-d-none">10:00am Dec 19</span>
+        <span (click)="$event.stopPropagation()" nz-dropdown nzTrigger="click" [nzDropdownMenu]="reviewActionMenu" nz-icon nzType="ellipsis" nzTheme="outline"></span>
+        <nz-dropdown-menu #reviewActionMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="selectResearch(research)" [routerLink]="['/dashboard/research', research._id]">
+              <span nz-icon nzType="info" nzTheme="outline"></span><span class="menu-title">View Review</span>
+            </li>
+            <li nz-menu-item (click)="showDeleteConfirm(research._id)">
+              <span nz-icon nzType="delete" nzTheme="outline"></span><span class="menu-title">Delete Review</span>
+            </li>
+            <li nz-menu-item (click)="selectResearchForEdit(research)">
+              <span nz-icon nzType="edit" nzTheme="outline"></span><span class="menu-title">Edit Review</span>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
     </div>
   </article>
 </section>
+
 <app-edit></app-edit>
 <app-create-review></app-create-review>
