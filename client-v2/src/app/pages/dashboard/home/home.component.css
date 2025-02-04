@@ -46,3 +46,10 @@ p {
     cursor: pointer;
     align-items: center;
   }
+
+  .create-review-wrapper{
+    padding: 1rem;
+}
+.review-edit-form{
+    width: 100%;
+}
