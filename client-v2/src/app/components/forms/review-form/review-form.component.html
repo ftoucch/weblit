@@ -21,7 +21,7 @@
         <label for="description" class="form-label">Description</label>
         <textarea
           id="description"
-          class="form-input large"
+          class="form-input form-textarea"
           [class.input-error]="
             form['controls']['description'].errors &&
             form['controls']['description'].touched
@@ -38,7 +38,7 @@
           <span *ngIf="!processLoading">{{ isEditMode ? 'Save' : 'Create' }}</span>
           <nz-spin *ngIf="processLoading" [nzSpinning]="true"></nz-spin>
         </button>
-        <button type="button" (click)="handleCancel()" class="btn">Cancel</button>
+        <button type="button" (click)="handleCancel()" class="btn btn-edit">Cancel</button>
       </div>
     </form>
   </div>
