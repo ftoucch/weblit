@@ -13,12 +13,12 @@ This tool aims to:
 
 ## 📜 Key Features
 
-- 🔍 **Dynamic Paper Retrieval**: Automates the search and retrieval of research papers using customizable search strings.  
-- ⚙️ **Full Automation**: From data collection to study selection—no manual uploads required.  
-- 🎯 **Customizable Criteria**: Flexible inclusion/exclusion parameters tailored to specific research needs.  
-- 💬 **Integrated Chat**: Interact with an LLM trained on your selected studies for deeper insights.  
-- 🗂️ **SLR History & Traceability**: View, edit, and manage all past SLRs for continuous improvement.  
-- 🌐 **Cross-Disciplinary Support**: Tested in medical sciences, engineering, and social sciences.  
+- **Dynamic Paper Retrieval**: Automates the search and retrieval of research papers using customizable search strings.  
+- **Full Automation**: From data collection to study selection—no manual uploads required.  
+- **Customizable Criteria**: Flexible inclusion/exclusion parameters tailored to specific research needs.  
+- **Integrated Chat**: Interact with an LLM trained on your selected studies for deeper insights.  
+- **SLR History & Traceability**: View, edit, and manage all past SLRs for continuous improvement.  
+- **Cross-Disciplinary Support**: Tested in medical sciences, engineering, and social sciences.  
 
 ---
 
