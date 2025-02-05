@@ -56,3 +56,19 @@ These metrics emphasize WebLit’s focus on **quality over quantity** in study s
    ```bash
    git clone https://github.com/ftoucch/weblit.git
    cd weblit
+
+2. **Environment Setup**
+Rename .env-example to .env
+Add the required environment variables in .env
+(Ensure you have API keys or credentials if needed)
+
+3.  **Backend Setup**
+    ```bash 
+    npm install && npm run dev
+
+4.  **Frontend Setup**
+
+    ```bash
+    cd client-v2
+    npm install 
+    ng serve --open
