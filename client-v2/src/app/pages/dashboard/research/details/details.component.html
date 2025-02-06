@@ -1,20 +1,27 @@
-<section>
+<!-- Show Create Query Form when "Create Query" is clicked -->
+<app-create-query *ngIf="showCreateQuery" (queryCreated)="onQueryCreated()" (cancel)="onCancelCreateQuery()"></app-create-query>
+
+<!-- Show Results Container only when form is hidden -->
+<section *ngIf="!showCreateQuery">
   <section *ngIf="loading" class="loading-wrapper">
     <article class="skeleton-item" *ngFor="let i of [1,2,3,4]">
       <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
     </article>
   </section>
+
   <div class="results-container">
     <aside>
       <div class="header">
         <h5>{{ research?.title }}</h5>
       </div>
       <div class="query-container">
-        <button class="btn add-new-query" (click)="showCreateQueryModal()">
-          <span nz-icon nzType="plus" nzTheme="outline"></span> Query
+        <!-- Button to show Create Query Form -->
+        <button class="btn add-new-query" (click)="toggleCreateQuery()">
+          <span nz-icon nzType="plus" nzTheme="outline"></span> Create Query
         </button>
+
         <div class="queries" *ngFor="let filterQuery of filterQueries; let i = index">
-          <div class="query" >
+          <div class="query">
             <div class="query-title" (click)="toggleQueryDetails(i)">
               <span>{{ filterQuery.searchString }}</span>
               <span class="total-found">{{ filterQuery.totalFound }}</span>
@@ -37,11 +44,12 @@
           </div>
         </div>
       </div>
-    </aside>    
+    </aside>
+
     <div class="primary-studies" *ngIf="!loading">
       <div class="documents-wrapper">
         <div class="empty-container" *ngIf="primaryStudies.length === 0">
-          <app-empty [createQuery]="showCreateQueryModal.bind(this)"></app-empty>
+          <app-empty></app-empty>
         </div>
 
         <article class="document" *ngFor="let primaryStudy of primaryStudies; let i = index">
@@ -56,7 +64,6 @@
               {{ expandedAbstracts[i] ? "Show Less" : "Read More" }}
             </span>
           </p>
-
           <p class="authors">
             <span *ngFor="let author of primaryStudy.authors">{{ author.name ?? "Author not found" }}, </span>
           </p>
@@ -65,7 +72,7 @@
             <span>referenced {{ primaryStudy.referenceCount ?? 0 }} times</span>
             <span>{{ primaryStudy.year ?? "N/A" }}</span>
             <span *ngIf="primaryStudy.openAccessPdf?.url">
-              <a  class="download" [href]="primaryStudy.openAccessPdf.url"><span nz-icon nzType="download" nzTheme="outline"></span></a>
+              <a class="download" [href]="primaryStudy.openAccessPdf.url"><span nz-icon nzType="download" nzTheme="outline"></span></a>
             </span>
           </div>
         </article>
@@ -73,4 +80,3 @@
     </div>
   </div>
 </section>
-<app-create-query></app-create-query>
