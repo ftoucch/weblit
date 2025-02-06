@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { filterQuery } from '../../../models/research';
@@ -19,7 +19,6 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     NzModalModule,
     NzSpinModule,
   ],
@@ -27,12 +26,13 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
   styleUrl: './create-query.component.css',
 })
 export class CreateQueryComponent {
+  @Output() queryCreated = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
+
   processLoading: boolean = false;
   form: FormGroup;
-  isVisible = false;
   isSpinning = false;
   researchId = '';
-  filterQuery: Array<any> = [];
 
   constructor(
     private fb: FormBuilder,
@@ -45,21 +45,23 @@ export class CreateQueryComponent {
       researchQuestion: ['', Validators.required],
       inclusionCriteria: ['', Validators.required],
       exclusionCriteria: ['', Validators.required],
-      startYear: ['', Validators.required],
-      endYear: ['', Validators.required],
-      maxResearch: ['', Validators.required],
+      startYear: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
+      endYear: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
+      maxResearch: ['', [Validators.required, Validators.min(1)]]
     });
-
     this.researchId = this.activeRoute.snapshot.params['id'];
   }
 
-  /** Handles form submission */
-  onSubmit(): void {
+  submitForm(): void {
     this.form.markAllAsTouched();
     this.form.markAsDirty();
 
     if (!this.form.valid) {
-      this.notification.create('error', 'Error', 'Please check fields and try again');
+      this.notification.create(
+        'error',
+        'Error',
+        'Please check fields and try again'
+      );
       return;
     }
 
@@ -67,14 +69,15 @@ export class CreateQueryComponent {
     data = { ...data, ...this.form.value, systematicReviewId: this.researchId };
 
     this.isSpinning = true;
-
     this.researchService.createQuery(data).subscribe({
       next: () => {
-        this.notification.create('success', 'Success', 'You have successfully created a filter query');
-        this.isVisible = false;
-        this.getAllQuery();
-        this.form.reset(); // Reset the form after submission
-        window.location.reload();
+        this.notification.create(
+          'success',
+          'Success',
+          'You have successfully created a filter query'
+        );
+        this.isSpinning = false;
+        this.queryCreated.emit(); // Notify parent component
       },
       error: () => {
         this.isSpinning = false;
@@ -83,18 +86,7 @@ export class CreateQueryComponent {
     });
   }
 
-  /** Resets the form when the cancel button is clicked */
-  onCancel(): void {
-    this.form.reset();
-  }
-
-  /** Fetches all queries */
-  getAllQuery() {
-    this.researchService.getAllQuery(this.researchId).subscribe({
-      next: (res: any) => {
-        this.filterQuery = res.data;
-        console.log(this.filterQuery);
-      },
-    });
+  cancelForm(): void {
+    this.cancel.emit(); // Notify parent to close form
   }
 }

@@ -42,6 +42,7 @@ export class DetailsComponent {
   loading = false;
   expandedQueries: { [key: number]: boolean } = {};
   expandedAbstracts: { [key: number]: boolean } = {};
+  showCreateQuery = false; // Added flag to control form visibility
 
   constructor(
     private route: ActivatedRoute,
@@ -138,5 +139,18 @@ export class DetailsComponent {
 
   toggleQueryDetails(index: number): void {
     this.expandedQueries[index] = !this.expandedQueries[index];
+  }
+  toggleCreateQuery(): void {
+    this.showCreateQuery = true;
+  }
+
+  onQueryCreated(): void {
+    this.showCreateQuery = false;
+    this.getAllQuery();
+    this.getAllPrimaryStudies();
+  }
+
+  onCancelCreateQuery(): void {
+    this.showCreateQuery = false;
   }
 }
