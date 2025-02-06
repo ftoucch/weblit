@@ -14,52 +14,52 @@
           placeholder=""
         />
       </div>
-  
-      <div class="form-row">
-        <label for="maxResearch" class="form-label"> Maximum number of research</label>
-        <input
-          id="maxResearch"
-          type="text"
-          [class.input-error]="
-            form['controls']['maxResearch'].errors &&
-            form['controls']['maxResearch'].touched
-          "
-          class="form-input"
-          formControlName="maxResearch"
-          placeholder="5"
-        />
+      <div class="form-numbers-group">
+        <div class="form-row">
+            <label for="maxResearch" class="form-label"> Maximum number of research</label>
+            <input
+              id="maxResearch"
+              type="text"
+              [class.input-error]="
+                form['controls']['maxResearch'].errors &&
+                form['controls']['maxResearch'].touched
+              "
+              class="form-input"
+              formControlName="maxResearch"
+              placeholder="5"
+            />
+          </div>
+      
+          <div class="form-row">
+            <label for="startYear" class="form-label"> Start Year </label>
+            <input
+              id="startYear"
+              type="text"
+              class="form-input"
+              formControlName="startYear"
+              placeholder="2000"
+              [class.input-error]="
+                form['controls']['startYear'].errors &&
+                form['controls']['startYear'].touched
+              "
+            />
+          </div>
+      
+          <div class="form-row">
+            <label for="endYear" class="form-label"> End Year </label>
+            <input
+              id="endYear"
+              type="text"
+              class="form-input"
+              formControlName="endYear"
+              placeholder="2024"
+              [class.input-error]="
+                form['controls']['endYear'].errors &&
+                form['controls']['endYear'].touched
+              "
+            />
+          </div>
       </div>
-  
-      <div class="form-row">
-        <label for="startYear" class="form-label"> Start Year </label>
-        <input
-          id="startYear"
-          type="text"
-          class="form-input"
-          formControlName="startYear"
-          placeholder="2000"
-          [class.input-error]="
-            form['controls']['startYear'].errors &&
-            form['controls']['startYear'].touched
-          "
-        />
-      </div>
-  
-      <div class="form-row">
-        <label for="endYear" class="form-label"> End Year </label>
-        <input
-          id="endYear"
-          type="text"
-          class="form-input"
-          formControlName="endYear"
-          placeholder="2024"
-          [class.input-error]="
-            form['controls']['endYear'].errors &&
-            form['controls']['endYear'].touched
-          "
-        />
-      </div>
-  
       <div class="form-row">
         <label for="researchQuestion" class="form-label"> Research question </label>
         <textarea
@@ -101,8 +101,11 @@
   
       <!-- Added Submit and Cancel Buttons -->
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="isSpinning">Submit</button>
-        <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSpinning">
+            <span *ngIf="!processLoading">Submit</span>
+            <nz-spin *ngIf="processLoading" [nzSpinning]="true"></nz-spin>
+        </button>
+        <button type="button" class="btn btn-edit" (click)="cancelForm()">Cancel</button>
       </div>
     </form>
   </section>
