@@ -8,10 +8,10 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { FormsModule } from '@angular/forms';
-import { CreateQueryComponent } from '../../../../modals/create-query/create-query.component';
 import { EmptyComponent } from '../../../../components/empty/empty.component';
 import { ChatboxComponent } from '../../../../components/chatbox/chatbox.component';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
+import { CreateQueryComponent } from '../../../../components/forms/create-query/create-query.component';
 
 @Component({
   selector: 'app-details',
@@ -23,16 +23,14 @@ import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
     NzSwitchModule,
     NzSkeletonModule,
     FormsModule,
-    CreateQueryComponent,
     EmptyComponent,
-    ChatboxComponent
+    ChatboxComponent,
+    CreateQueryComponent
   ],
   templateUrl: './details.component.html',
   styleUrl: './details.component.css',
 })
 export class DetailsComponent {
-  @ViewChild(CreateQueryComponent, { static: false })
-  createQueryModal!: CreateQueryComponent;
   @ViewChild(ChatboxComponent, { static: false })
   openChatBox!: ChatboxComponent;
   
@@ -117,10 +115,6 @@ export class DetailsComponent {
       },
       error: () => (this.loading = false),
     });
-  }
-
-  showCreateQueryModal() {
-    this.createQueryModal.showModal();
   }
 
   showChatBox() {

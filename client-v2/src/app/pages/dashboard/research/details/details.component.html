@@ -1,5 +1,5 @@
 
-
+<app-create-query></app-create-query>
 <section>
   <section *ngIf="loading" class="loading-wrapper">
     <article class="skeleton-item" *ngFor="let i of [1,2,3,4]">
@@ -12,7 +12,7 @@
         <h5>{{ research?.title }}</h5>
       </div>
       <div class="query-container">
-        <button class="btn add-new-query" (click)="showCreateQueryModal()">
+        <button class="btn add-new-query">
           <span nz-icon nzType="plus" nzTheme="outline"></span> Query
         </button>
         <div class="queries" *ngFor="let filterQuery of filterQueries; let i = index">
@@ -43,7 +43,7 @@
     <div class="primary-studies" *ngIf="!loading">
       <div class="documents-wrapper">
         <div class="empty-container" *ngIf="primaryStudies.length === 0">
-          <app-empty [createQuery]="showCreateQueryModal.bind(this)"></app-empty>
+          <app-empty></app-empty>
         </div>
 
         <article class="document" *ngFor="let primaryStudy of primaryStudies; let i = index">
@@ -75,4 +75,3 @@
     </div>
   </div>
 </section>
-<app-create-query></app-create-query>
