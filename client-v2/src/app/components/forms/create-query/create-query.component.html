@@ -1,5 +1,5 @@
 <section class="create-query-form">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="submitForm()">
       <div class="form-row">
         <label for="searchString" class="form-label"> Search String </label>
         <input
@@ -102,7 +102,7 @@
       <!-- Added Submit and Cancel Buttons -->
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="isSpinning">Submit</button>
-        <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelForm()">Cancel</button>
       </div>
     </form>
   </section>
