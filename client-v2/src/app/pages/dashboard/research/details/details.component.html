@@ -1,4 +1,66 @@
 <section>
+  <form>
+    <div class="form-row">
+      <label for="searchString" class="form-label"> Search String </label>
+      <input
+        id="searchString"
+        type="text"
+        class="form-input"
+        placeholder=""
+      />
+    </div>
+    <div class="form-row">
+      <label for="maxResearch" class="form-label"> Maximum number of research</label>
+      <input
+        id="maxResearch"
+        type="text"
+        class="form-input"
+        placeholder="5"
+      />
+    </div>
+    <div class="form-row">
+      <label for="startYear" class="form-label"> Start Year </label>
+      <input id="startYear" type="text" class="form-input
+    " />
+    </div>
+    <div class="form-row">
+      <label for="startYear" class="form-label"> End Year </label>
+      <input id="endYear" type="text" class="form-input" />
+    </div>
+    <div class="form-row">
+      <label for="researchQuestion" class="form-label">
+        Research question
+      </label>
+      <textarea
+        type="text"
+        class="form-input large"
+        placeholder=" "
+      ></textarea>
+    </div>
+    <div class="form-row">
+      <label for="inclusionCriteria" class="form-label">
+        Inclusion Criteria
+      </label>
+      <textarea
+        type="text"
+        class="form-input large"
+        placeholder=" "
+      ></textarea>
+    </div>
+    <div class="form-row">
+      <label for="exclusionCriteria" class="form-label">
+        Exclusion Criteria
+      </label>
+      <textarea
+        type="text"
+        class="form-input large"
+        placeholder=" "
+      ></textarea>
+    </div>
+  </form>
+</section>
+
+<section>
   <section *ngIf="loading" class="loading-wrapper">
     <article class="skeleton-item" *ngFor="let i of [1,2,3,4]">
       <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
