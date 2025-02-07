@@ -1,6 +1,5 @@
 <!-- Show Create Query Form when "Create Query" is clicked -->
 <app-create-query *ngIf="showCreateQuery" (queryCreated)="onQueryCreated()" (cancel)="onCancelCreateQuery()"></app-create-query>
-
 <!-- Show Results Container only when form is hidden -->
 <section *ngIf="!showCreateQuery">
   <section *ngIf="loading" class="loading-wrapper">
@@ -8,7 +7,6 @@
       <nz-skeleton [nzLoading]="loading" [nzActive]="true" [nzParagraph]="{ rows: 4 }"></nz-skeleton>
     </article>
   </section>
-
   <div class="results-container">
     <aside>
       <div class="header">
@@ -19,7 +17,6 @@
         <button class="btn add-new-query" (click)="toggleCreateQuery()">
           <span nz-icon nzType="plus" nzTheme="outline"></span> Create Query
         </button>
-
         <div class="queries" *ngFor="let filterQuery of filterQueries; let i = index">
           <div class="query">
             <div class="query-title" (click)="toggleQueryDetails(i)">
