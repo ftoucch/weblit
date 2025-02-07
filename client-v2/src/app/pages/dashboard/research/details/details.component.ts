@@ -42,7 +42,7 @@ export class DetailsComponent {
   loading = false;
   expandedQueries: { [key: number]: boolean } = {};
   expandedAbstracts: { [key: number]: boolean } = {};
-  showCreateQuery = false; // Added flag to control form visibility
+  showCreateQuery = false;
 
   constructor(
     private route: ActivatedRoute,
