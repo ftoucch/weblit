@@ -35,8 +35,7 @@ These metrics emphasize WebLit’s focus on **quality over quantity** in study s
 
 - **Frontend:** [Angular](https://angular.io/)  
 - **Backend:** [Node.js](https://nodejs.org/)  
-- **LLM:** GPT-4  
-- **Version Control:** Git  
+- **LLM:** GPT-4   
 
 ---
 
