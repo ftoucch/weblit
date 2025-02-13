@@ -34,7 +34,7 @@
         <span class="research-title">{{ research.title }}</span>
       </div>
       <div class="date-nav">
-        <span class="date sm-d-none">10:00am Dec 19</span>
+        <span class="date sm-d-none"> {{ research.updatedAt | date: 'h:mma MMM d' }} </span>
         <span (click)="$event.stopPropagation()" nz-dropdown nzTrigger="click" [nzDropdownMenu]="reviewActionMenu" nz-icon nzType="ellipsis" nzTheme="outline"></span>
         <nz-dropdown-menu #reviewActionMenu="nzDropdownMenu">
           <ul nz-menu>
