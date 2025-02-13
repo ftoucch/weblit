@@ -14,6 +14,7 @@ import {
 } from '../utils/openAiRequest.js';
 import ResearchPapers from '../models/ResearchPapers.js';
 import Chat from '../models/Chat.js';
+import webScrapper from '../utils/webScrapper.js';
 
 const createResearch = async (req, res) => {
   const { title, description } = req.body;
@@ -118,10 +119,8 @@ const createQuery = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: 'Systematic review not found' });
     }
 
-    const semanticResponse = await axios.get(
-      `https://api.semanticscholar.org/graph/v1/paper/search/?query=${searchString}&year=${startYear}-${endYear}&fields=title,url,abstract,authors,referenceCount,citationCount,year,openAccessPdf&limit=${maxResearch}`,
-      { headers: { 'x-api-key': process.env.SEMANTIC_SCHOLAR_API_KEY } }
-    );
+    const semanticResponse  = await webScrapper(searchString, maxResearch);
+
 
     const semanticScholarData = semanticResponse.data;
     const filteredPapers = filterScholarresponse(semanticScholarData);
