@@ -4,7 +4,8 @@ dotenv.config();
 import connectDB from './db/connect.js';
 import cors from 'cors';
 import authMiddleware from './middleware/authMiddleware.js';
-// routers
+
+
 import authRouter from './routes/authRoutes.js';
 import researchRouter from './routes/researchRoutes.js';
 import userRouter from './routes/userRoutes.js';
@@ -19,7 +20,7 @@ import cookieParser from 'cookie-parser';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-app.use(cors());  // Allow CORS from all origins
+app.use(cors()); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -46,4 +47,4 @@ const start = async () => {
   }
 };
 
-start();
+start(); 
