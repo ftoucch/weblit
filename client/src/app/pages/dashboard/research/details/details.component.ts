@@ -101,7 +101,6 @@ export class DetailsComponent {
     this.researchService.getAllPrimaryStudies(this.researchId).subscribe({
       next: (res: any) => {
         this.primaryStudies = res.data || [];
-        console.log(res.data)
         this.loading = false;
       },
       error: () => (this.loading = false),
