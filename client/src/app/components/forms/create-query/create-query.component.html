@@ -103,7 +103,7 @@
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" [disabled]="isSpinning">
             <span *ngIf="!processLoading">Submit</span>
-            <nz-spin *ngIf="processLoading" [nzSpinning]="true"></nz-spin>
+            <nz-spin *ngIf="isSpinning" [nzSpinning]="true"></nz-spin>
         </button>
         <button type="button" class="btn btn-edit" (click)="cancelForm()">Cancel</button>
       </div>
