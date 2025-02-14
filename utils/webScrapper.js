@@ -43,9 +43,18 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
         }
       }
 
-      const pageResults = await page.evaluate(() => {
+      const pageResults = await page.evaluate(async () => {
         const papers = [];
-        document.querySelectorAll('.cl-paper-row').forEach((element) => {
+        const paperElements = document.querySelectorAll('.cl-paper-row');
+
+        for (const element of paperElements) {
+          // Click "more-toggle" button if it exists to reveal full abstract
+          const expandButton = element.querySelector('.more-toggle');
+          if (expandButton) {
+            expandButton.click();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for content to load
+          }
+
           const title = element.querySelector('.cl-paper-title')?.textContent.trim() || 'No Title';
           const linkElement = element.querySelector('.link-button--show-visited');
           const url = linkElement ? 'https://www.semanticscholar.org' + linkElement.getAttribute('href') : null;
@@ -55,8 +64,11 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
           }));
           const yearTag = element.querySelector('.cl-paper-pubdates')?.textContent.trim() || 'No Year';
           const year = yearTag.match(/\d{4}/) ? parseInt(yearTag.match(/\d{4}/)[0]) : null;
+          
+          // Extract full abstract after clicking "more-toggle"
           const abstractElement = element.querySelector('.tldr-abstract-replacement');
           const abstract = abstractElement ? abstractElement.textContent.trim() : 'No Abstract';
+
           const referenceCountElement = element.querySelector('.cl-paper-stats__item .cl-paper-stats__citation-pdp-link');
           const referenceCount = referenceCountElement ? parseInt(referenceCountElement.textContent.trim(), 10) || 0 : null;
 
@@ -66,7 +78,6 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
           const openAccessPdfElement = element.querySelector('.cl-paper-action__button-container .cl-paper-view-paper');
           const openAccessPdf = openAccessPdfElement ? { url: openAccessPdfElement.getAttribute('href') } : null;
 
-          papers.push({ title, abstract, url, authors, year });
           papers.push({
             title,
             abstract,
@@ -77,7 +88,7 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
             year,
             openAccessPdf,
           });
-        });
+        }
 
         return papers;
       });
