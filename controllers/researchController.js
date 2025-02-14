@@ -80,14 +80,14 @@ const updateResearch = async (req, res) => {
 
 const createQuery = async (req, res) => {
   try {
-    const { researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId, maxResearch } = req.body;
-    if (!researchQuestion || !inclusionCriteria || !exclusionCriteria || !searchString || !systematicReviewId) 
+    const { researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId, maxResearch, startYear, endYear } = req.body;
+    if (!researchQuestion || !inclusionCriteria || !exclusionCriteria || !searchString || !systematicReviewId || !startYear || !endYear) 
       throw new UnAuthenticatedError('Please enter all fields');
 
     const systematicReview = await SystematicReview.findById(systematicReviewId);
     if (!systematicReview) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Systematic review not found' });
 
-    const filteredPapers = await fetchSemanticScholar(searchString, maxResearch) || [];
+    const filteredPapers = await fetchSemanticScholar(searchString, maxResearch, startYear, endYear) || [];
     let totalFound = 0;
     const filterQuery = await FilterQuery.create({
       researchQuestion, inclusionCriteria, exclusionCriteria, searchString, systematicReviewId, totalFound
