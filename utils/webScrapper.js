@@ -25,7 +25,7 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
       console.log("Navigating to:", url);
       await page.goto(url, { waitUntil: 'networkidle' });
 
-      // Wait for content to load with retry mechanism
+      // Wait for content to load
       let attempts = 0;
       const maxAttempts = 3;
 
@@ -33,13 +33,13 @@ const fetchSemanticScholar = async (query, maxResults = 10, startYear, endYear) 
         try {
           await page.waitForFunction(() => {
             return document.querySelectorAll('.cl-paper-row').length > 0;
-          }, { timeout: 60000 }); // 60 seconds timeout
+          }, { timeout: 60000 }); 
           break;
         } catch (error) {
           attempts++;
           console.error(`Attempt ${attempts} failed: ${error.message}`);
           if (attempts >= maxAttempts) throw new Error('Max retry attempts reached.');
-          await page.reload({ waitUntil: 'networkidle' }); // Reload the page and try again
+          await page.reload({ waitUntil: 'networkidle' }); 
         }
       }
 
