@@ -77,7 +77,7 @@ export class CreateQueryComponent {
           'You have successfully created a filter query'
         );
         this.isSpinning = false;
-        this.queryCreated.emit(); // Notify parent component
+        this.queryCreated.emit(); // Notify parent component 
       },
       error: () => {
         this.isSpinning = false;
