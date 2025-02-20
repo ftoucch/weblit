@@ -1,6 +1,6 @@
 # WebLit: Automated Primary Study Selection for Systematic Literature Reviews (SLRs)
 
-## 🚀 Overview
+## Overview
 
 **WebLit** is an open-source, web-based application designed to fully automate the **primary study selection process** in **Systematic Literature Reviews (SLRs)**. Built with **Angular** for the frontend and **Node.js** for the backend, WebLit leverages the power of **GPT-4** to dynamically retrieve, filter, and analyze research papers across multiple disciplines.
 
@@ -11,7 +11,7 @@ This tool aims to:
 
 ---
 
-## 📜 Key Features
+## Key Features
 
 - **Dynamic Paper Retrieval**: Automates the search and retrieval of research papers using customizable search strings.  
 - **Full Automation**: From data collection to study selection—no manual uploads required.  
@@ -22,7 +22,7 @@ This tool aims to:
 
 ---
 
-## 📊 Performance Highlights
+## Performance Highlights
 
 - **Precision Rate**: 73.3% (High accuracy in identifying relevant studies)  
 - **Retention Rate**: 1.7% (Selective and rigorous screening process)  
@@ -31,7 +31,7 @@ These metrics emphasize WebLit’s focus on **quality over quantity** in study s
 
 ---
 
-## ⚡ Tech Stack
+## Tech Stack
 
 - **Frontend:** [Angular](https://angular.io/)  
 - **Backend:** [Node.js](https://nodejs.org/)  
@@ -39,9 +39,9 @@ These metrics emphasize WebLit’s focus on **quality over quantity** in study s
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### ✅ Prerequisites
+### Prerequisites
 
 - **Node.js** (v14 or above)  
 - **Angular CLI** (v15 or above)  
@@ -49,7 +49,7 @@ These metrics emphasize WebLit’s focus on **quality over quantity** in study s
 
 ---
 
-### 🛠️ Installation
+### Installation
 
 1. **Clone the Repository**  
    ```bash
