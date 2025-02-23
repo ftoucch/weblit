@@ -1,4 +1,4 @@
-# WebLit: Automated Primary Study Selection for Systematic Literature Reviews (SLRs)
+# WebLit: Automated Primary Study Selection for Systematic Literature Reviews (SLRs).
 
 ## Overview
 
