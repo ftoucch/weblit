@@ -77,3 +77,9 @@
     </div>
   </div>
 </section>
+<section class="chatbox-toggle">
+  <button class="btn btn-chat-toggle" (click)="showChatBox()">
+    <i nz-icon nzType="wechat" nzTheme="outline"></i>
+  </button>
+</section>
+<app-chatbox [research]="research"></app-chatbox>
