@@ -9,6 +9,7 @@ This tool aims to:
 - Provide transparent, user-controlled automation. 
 - Enhance cross-domain applicability. 
 
+
 ---
 
 ## Key Features
@@ -19,6 +20,7 @@ This tool aims to:
 - **Integrated Chat**: Interact with an LLM trained on your selected studies for deeper insights.  
 - **SLR History & Traceability**: View, edit, and manage all past SLRs for continuous improvement.  
 - **Cross-Disciplinary Support**: Tested in medical sciences, engineering, and social sciences.  
+
 
 ---
 
