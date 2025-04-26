@@ -5,7 +5,6 @@ import connectDB from './db/connect.js';
 import cors from 'cors';
 import authMiddleware from './middleware/authMiddleware.js';
 
-
 import authRouter from './routes/authRoutes.js';
 import researchRouter from './routes/researchRoutes.js';
 import userRouter from './routes/userRoutes.js';
@@ -18,7 +17,6 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
 const app = express();
 app.use(cors()); 
 app.use(express.json());
