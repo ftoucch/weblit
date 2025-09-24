@@ -30,6 +30,10 @@ app.use('/api/v1/research', authMiddleware, researchRouter);
 app.use('/api/v1/users', authMiddleware, userRouter);
 app.use('/api/v1/chat', authMiddleware, chatRouter);
 
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'index.html'));
 });
