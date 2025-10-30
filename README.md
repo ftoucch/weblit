@@ -68,6 +68,6 @@ Add the required environment variables in .env
 4.  **Frontend Setup**
 
     ```bash
-    cd client-v2
+    cd client
     npm install 
     ng serve --open
