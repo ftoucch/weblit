@@ -1,7 +1,7 @@
 # WebLit: Automated Primary Study Selection for Systematic Literature Reviews (SLRs).
 
 ## Overview
-**WebLit** is an open-source, web-based application designed to fully automate the **primary study selection process** in **Systematic Literature Reviews (SLRs)**. Built with **Angular** for the frontend and **Node.js** for the backend, WebLit leverages the power of **GPT-4** to dynamically retrieve, filter, and analyze research papers across multiple disciplines.
+**WebLit** is an open-source, web-based application designed to fully automate the **primary study selection process** in **Systematic Literature Reviews (SLRs)**. Built with **Angular** and **Node.js**, WebLit leverages the power of **GPT-4** to dynamically retrieve, filter, and analyze research papers across multiple disciplines.
 
 This tool aims to:
 - Eliminate manual efforts in SLRs.
