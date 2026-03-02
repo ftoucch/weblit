@@ -1,0 +1,16 @@
+service:
+  host: 0.0.0.0
+  http_port: 6333
+  grpc_port: 6334
+  max_request_size_mb: 32
+
+storage:
+  # Persist vectors to disk
+  storage_path: /qdrant/storage
+
+  # Optimise for recall accuracy vs speed
+  # hnsw_index settings are per-collection, configured via Python client
+  performance:
+    max_search_threads: 4
+
+log_level: INFO
