@@ -1,0 +1,100 @@
+veweblition: "3.9"
+
+services:
+
+  # ── FastAPI application ────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weblit_api
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./app:/project/app          # hot-reload during dev
+    depends_on:
+      mongo:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - weblit-network
+    restart: unless-stopped
+
+  # ── Celery worker — uncomment when ready ──────────────────────────────────
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: weblit_worker
+  #   command: celery -A app.workeweblit.celery_app worker --loglevel=info --concurrency=2
+  #   env_file: .env
+  #   volumes:
+  #     - ./app:/project/app
+  #   depends_on:
+  #     - redis
+  #     - mongo
+  #     - qdrant
+  #   networks:
+  #     - weblit-network
+  #   restart: unless-stopped
+
+  # ── MongoDB (NoSQL — paper metadata) ──────────────────────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: weblit_mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - weblit-network
+    restart: unless-stopped
+
+  # ── Qdrant (vector database — semantic search) ────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.9.0
+    container_name: weblit_qdrant
+    ports:
+      - "6333:6333"     # REST + dashboard
+      - "6334:6334"     # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+      - ./qdrant/config.yaml:/qdrant/config/production.yaml:ro
+    networks:
+      - weblit-network
+    restart: unless-stopped
+
+  # ── Redis (Celery broker + query result cache) ────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: weblit_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - weblit-network
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  qdrant_data:
+  redis_data:
+
+networks:
+  weblit-network:
+    driver: bridge
