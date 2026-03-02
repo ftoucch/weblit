@@ -1,0 +1,60 @@
+[project]
+name = "novelty-checker"
+version = "0.1.0"
+description = "Pre-research semantic intelligence — find gaps before you start"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.116.1",
+    "uvicorn[standard]>=0.30.6",
+
+    # HTTP client
+    "httpx>=0.28.1",
+    "tenacity>=9.0.0",
+
+    # Database
+    "motor>=3.6.0",
+    "pymongo>=4.9.2",
+    "sqlalchemy>=2.0.42",
+    "aiosqlite>=0.20.0",
+    "aiomysql>=0.2.0",
+    "greenlet>=3.0.0",
+
+    # Vector DB
+    "qdrant-client>=1.11.3",
+
+    # Embeddings / ML
+    "sentence-transformers>=3.3.1",
+    "torch==2.4.1; platform_system != 'Darwin'",
+    "transformers>=4.45.2",
+
+    # Background tasks / caching
+    "celery>=5.4.0",
+    "redis>=5.1.1",
+
+    # Config / validation
+    "pydantic>=2.9.2",
+    "pydantic-settings>=2.10.1",
+    "email-validator>=2.1.0",
+    "python-dotenv>=1.1.1",
+    "pyjwt<3.0.0,>=2.8.0",
+    "pwdlib[argon2,bcrypt]>=0.3.0",
+    "python-multipart<1.0.0,>=0.0.7",
+
+    # Testing
+    "pytest>=8.4.1",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
