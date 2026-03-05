@@ -1,12 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime
-from enum import Enum
+from app.enums.user import UserRole
 import re
-
-
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    USER = "user"
 
 
 class UserCreate(BaseModel):
@@ -52,26 +47,20 @@ class UserChangePassword(BaseModel):
         return v
     
 class UserForgotPassword(BaseModel):
-    """POST /users/forgot-password"""
     email: EmailStr
 
 
 class UserResetPassword(BaseModel):
-    """POST /users/reset-password"""
     token: str
     new_password: str = Field(..., min_length=8, max_length=128)
 
 
 class UserVerifyEmail(BaseModel):
-    """POST /users/verify-email"""
     token: str
 
 
 class UserResponse(BaseModel):
-    """
-    Safe public response — hashed_password and tokens
-    are structurally absent, so they can never leak.
-    """
+
     id: str
     name: str
     email: str
@@ -84,11 +73,13 @@ class UserResponse(BaseModel):
 
 
 class UserMeResponse(UserResponse):
-    """GET /users/me — the authenticated user's own profile."""
     pass
 
 
 class UserAdminResponse(UserResponse):
-    """Admin-only view — exposes tokens for debugging/support."""
     verification_token: str | None = None
     reset_password_token: str | None = None
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
