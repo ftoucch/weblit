@@ -25,22 +25,23 @@ services:
     restart: unless-stopped
 
   # ── Celery worker — uncomment when ready ──────────────────────────────────
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: weblit_worker
-  #   command: celery -A app.workeweblit.celery_app worker --loglevel=info --concurrency=2
-  #   env_file: .env
-  #   volumes:
-  #     - ./app:/project/app
-  #   depends_on:
-  #     - redis
-  #     - mongo
-  #     - qdrant
-  #   networks:
-  #     - weblit-network
-  #   restart: unless-stopped
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weblit_worker
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
+    env_file: .env
+    volumes:
+      - ./app:/project/app
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - weblit-network
+    restart: unless-stopped
 
   # ── MongoDB (NoSQL — paper metadata) ──────────────────────────────────────
   mongo:
@@ -59,6 +60,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - weblit-network
+    restart: unless-stopped
+  
+  # ── mailhog ────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: weblit_mailhog
+    ports:
+      - "1025:1025"  
+      - "8025:8025"
     networks:
       - weblit-network
     restart: unless-stopped
