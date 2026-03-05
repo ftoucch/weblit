@@ -1,11 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from bson import ObjectId
 from datetime import datetime
-from enum import Enum 
-
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    USER = "user"
+from app.enums.user import UserRole
 
 
 class UserDocument(BaseModel):
