@@ -7,11 +7,13 @@ from app.db.mongo import mongo_db
 
 from app.models.user import UserDocument
 from app.schemas.user import UserCreate, UserResponse
-from app.enums.user import UserRole
+from app.services.otp_service import otp_service
+from app.workers.tasks.email_tasks import send_otp_verification, send_welcome_email
+
 
 class AuthService:
     def __init__(self) :
-        self.users = mongo_db.collections["users"]
+        self.users = mongo_db.collections["users"] # type: ignore
 
     def _to_response(self, doc: UserDocument) -> UserResponse:
         """converts a DB model into a safe APU schema"""
@@ -39,8 +41,45 @@ class AuthService:
         )
         
         await self.users.insert_one(user_doc.model_dump(by_alias=True))
+
+        otp = await otp_service.create(str(user_doc.id))
+
+        send_otp_verification.delay(name=user_doc.name, email=user_doc.email, otp=otp )# type: ignore
+
         return self._to_response(user_doc)
     
+    async def verify_email(self, user_id: str, otp: str) -> UserResponse:
+        await otp_service.verify(user_id, otp)
+
+        await self.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"is_verified": True}}
+        )
+
+        user = await self.users.find_one({"_id": ObjectId(user_id)})
+
+        if not user:
+            raise UserNotFoundError(user_id)
+
+        send_welcome_email.delay(name=user["name"], email=user["email"])  # type: ignore
+
+        user_doc = UserDocument.model_validate(user)
+        return self._to_response(user_doc)
+    
+
+    async def resend_otp(self, user_id: str) -> None:
+        user = await self.users.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise UserNotFoundError(user_id)
+
+        if user["is_verified"]:
+            return 
+        
+        otp = await otp_service.create(user_id)
+
+        send_otp_verification.delay( name=user["name"], email=user["email"],otp=otp) # type: ignore
+    
+
     async def login_user(self, email: str, password: str) -> str:
         user = await self.users.find_one({"email": email})
 

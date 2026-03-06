@@ -9,3 +9,12 @@ class UserNotFoundError(Exception):
 
 class UserNotVerifiedError(Exception):
     pass
+
+class OTPExpiredError(Exception):
+    pass
+
+class OTPInvalidError(Exception):
+    pass
+
+class OTPRateLimitError(Exception):
+    pass

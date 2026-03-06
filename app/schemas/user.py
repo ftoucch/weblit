@@ -56,7 +56,8 @@ class UserResetPassword(BaseModel):
 
 
 class UserVerifyEmail(BaseModel):
-    token: str
+    user_id: str
+    otp: str
 
 
 class UserResponse(BaseModel):
