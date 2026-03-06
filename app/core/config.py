@@ -15,6 +15,11 @@ class Config(BaseSettings):
     mongo_port: int = 27017
     redis_host: str = "redis"
     redis_port: int = 6379
+    smtp_host: str = "mailhog"
+    smtp_port: int = 1025
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "noreply@weblit.com"
     secret_key: str = secrets.token_urlsafe(32)
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
 

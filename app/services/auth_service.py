@@ -3,7 +3,7 @@ from bson import ObjectId
 from app.core.security import Security
 from app.core.config import config
 from app.core.exceptions import EmailAlreadyExistsError, InvalidCredentialsError, UserNotFoundError, UserNotVerifiedError
-from app.db.config import mongo_db
+from app.db.mongo import mongo_db
 
 from app.models.user import UserDocument
 from app.schemas.user import UserCreate, UserResponse
