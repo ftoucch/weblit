@@ -53,7 +53,10 @@ async def login(service: AuthServiceDependency, form_data: Annotated[OAuth2Passw
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def forgot_password(data: UserForgotPassword, service: AuthServiceDependency) -> dict:
-    await service.forgot_password(data.email)
+    try:
+        await service.forgot_password(data.email)
+    except OTPRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
     return {"message": "If this email is registered you will receive an OTP shortly."}
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
