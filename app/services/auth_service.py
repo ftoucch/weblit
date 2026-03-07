@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from bson import ObjectId
 from app.core.security import Security
 from app.core.config import config
@@ -8,17 +8,16 @@ from app.db.mongo import mongo_db
 from app.models.user import UserDocument
 from app.schemas.user import UserCreate, UserResponse
 from app.services.otp_service import otp_service
-from app.workers.tasks.email_tasks import send_otp_verification, send_welcome_email
+from app.workers.tasks.email_tasks import send_otp_verification, send_welcome_email, send_password_reset, send_password_reset_confirmation
 
 
 class AuthService:
-    def __init__(self) :
-        self.users = mongo_db.collections["users"] # type: ignore
+    def __init__(self):
+        self.users = mongo_db.collections["users"]  # type: ignore
 
     def _to_response(self, doc: UserDocument) -> UserResponse:
-        """converts a DB model into a safe APU schema"""
         return UserResponse(
-            id = str(doc.id),
+            id=str(doc.id),
             name=doc.name,
             email=doc.email,
             role=doc.role,
@@ -33,23 +32,22 @@ class AuthService:
         existing_user = await self.users.find_one({"email": data.email})
         if existing_user:
             raise EmailAlreadyExistsError(data.email)
-        
+
         user_doc = UserDocument(
             name=data.name,
             email=data.email,
             hashed_password=Security.hash_password(data.password),
         )
-        
+
         await self.users.insert_one(user_doc.model_dump(by_alias=True))
 
-        otp = await otp_service.create(str(user_doc.id))
-
-        send_otp_verification.delay(name=user_doc.name, email=user_doc.email, otp=otp )# type: ignore
+        otp = await otp_service.create(str(user_doc.id), purpose="verify_email")
+        send_otp_verification.delay(name=user_doc.name, email=user_doc.email, otp=otp)  # type: ignore
 
         return self._to_response(user_doc)
-    
+
     async def verify_email(self, user_id: str, otp: str) -> UserResponse:
-        await otp_service.verify(user_id, otp)
+        await otp_service.verify(user_id, otp, purpose="verify_email")
 
         await self.users.update_one(
             {"_id": ObjectId(user_id)},
@@ -57,7 +55,6 @@ class AuthService:
         )
 
         user = await self.users.find_one({"_id": ObjectId(user_id)})
-
         if not user:
             raise UserNotFoundError(user_id)
 
@@ -65,7 +62,6 @@ class AuthService:
 
         user_doc = UserDocument.model_validate(user)
         return self._to_response(user_doc)
-    
 
     async def resend_otp(self, user_id: str) -> None:
         user = await self.users.find_one({"_id": ObjectId(user_id)})
@@ -73,29 +69,51 @@ class AuthService:
             raise UserNotFoundError(user_id)
 
         if user["is_verified"]:
-            return 
-        
-        otp = await otp_service.create(user_id)
+            return
 
-        send_otp_verification.delay( name=user["name"], email=user["email"],otp=otp) # type: ignore
-    
+        otp = await otp_service.create(user_id, purpose="verify_email")
+        send_otp_verification.delay(name=user["name"], email=user["email"], otp=otp)  # type: ignore
 
     async def login_user(self, email: str, password: str) -> str:
         user = await self.users.find_one({"email": email})
 
         if not user or not Security.verify_password(password, user["hashed_password"]):
             raise InvalidCredentialsError()
-        
+
+        if not user["is_verified"]:            
+            raise UserNotVerifiedError()
+
         access_token_expires = timedelta(minutes=config.access_token_expire_minutes)
         return Security.create_access_token(
             subject=str(user["_id"]),
             expires_delta=access_token_expires,
         )
-    
+
     async def get_user_by_id(self, user_id: str) -> UserResponse:
         user = await self.users.find_one({"_id": ObjectId(user_id)})
-        if not user: 
+        if not user:
             raise UserNotFoundError(user_id)
-        
-        user_doc = UserDocument(**user)
+
+        user_doc = UserDocument.model_validate(user) 
         return self._to_response(user_doc)
+
+    async def forgot_password(self, email: str) -> None:
+        user = await self.users.find_one({"email": email})
+        if not user:
+            return
+
+        user_id = str(user["_id"])
+        otp = await otp_service.create(user_id, purpose="password_reset")
+        send_password_reset.delay(name=user["name"], email=user["email"], otp=otp)  # type: ignore
+
+    async def reset_password(self, user_id: str, otp: str, new_password: str) -> None:
+        await otp_service.verify(user_id, otp, purpose="password_reset")
+
+        hashed = Security.hash_password(new_password)
+        await self.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"hashed_password": hashed, "updated_at": datetime.utcnow()}}
+        )
+        user = await self.users.find_one({"_id": ObjectId(user_id)})
+        if user:
+            send_password_reset_confirmation.delay(name=user["name"], email=user["email"])  # type: ignore
