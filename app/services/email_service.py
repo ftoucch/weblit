@@ -11,10 +11,11 @@ class EmailService:
     def _get_connection(self) -> smtplib.SMTP:
         smtp = smtplib.SMTP(config.smtp_host, config.smtp_port)
         smtp.ehlo()
-        smtp.starttls()
+        if config.app_env == "production":
+            smtp.starttls()
 
-        if config.smtp_user and config.smtp_password:
-            smtp.login(config.smtp_user, config.smtp_password)
+            if config.smtp_user and config.smtp_password:
+                smtp.login(config.smtp_user, config.smtp_password)
         return smtp
     
     def _build_message(self, to: str, subject: str, html: str)->MIMEMultipart:

@@ -7,6 +7,7 @@ load_dotenv()
 
 class Config(BaseSettings):
     app_name: str = "weblit"
+    app_env:str = "development"
     debug: bool = False
     mongo_user: str = ""
     mongo_password: str = ""

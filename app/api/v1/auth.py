@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
-from app.schemas.user import UserCreate, UserResponse, Token, UserVerifyEmail
+from app.schemas.user import UserCreate, UserResponse, Token, UserVerifyEmail, UserForgotPassword, UserResetPassword
 from app.api.dependency import AuthServiceDependency, CurrentUserDependency
 from app.core.exceptions import EmailAlreadyExistsError, InvalidCredentialsError, OTPExpiredError, OTPInvalidError, OTPRateLimitError
 
@@ -49,6 +49,26 @@ async def login(service: AuthServiceDependency, form_data: Annotated[OAuth2Passw
             detail = "Invalid credentials.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(data: UserForgotPassword, service: AuthServiceDependency) -> dict:
+    await service.forgot_password(data.email)
+    return {"message": "If this email is registered you will receive an OTP shortly."}
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(data: UserResetPassword, service: AuthServiceDependency)->dict:
+    try:
+        await service.reset_password(data.user_id, data.otp, data.new_password)
+        return {"message": "Password reset successfully."}
+    
+    except OTPExpiredError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except OTPInvalidError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except OTPRateLimitError as e:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e))
+
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: CurrentUserDependency) -> UserResponse:
