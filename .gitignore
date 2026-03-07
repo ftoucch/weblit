@@ -209,5 +209,5 @@ __marimo__/
 venv
 
 .env
-
+.env.test
 __init__.py
