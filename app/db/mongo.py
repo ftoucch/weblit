@@ -23,10 +23,16 @@ async def connect_mongo() -> None:
     logger.info("Successfully connected to MongoDB.")
 
     mongo_db.collections = {
-        "users": mongo_db.db["users"]
+        "users": mongo_db.db["users"],
+        "papers": mongo_db.db["papers"]
     }
 
     await mongo_db.db["users"].create_index("email", unique=True)
+    await mongo_db.db["papers"].create_index("doi", unique=True, sparse=True)
+    await mongo_db.db["papers"].create_index(
+        [("source", 1), ("source_id", 1)], unique=True
+    )
+    await mongo_db.db["papers"].create_index("has_full_text")
 
     logger.info("MongoDB collections and indexes are set up.")
 
