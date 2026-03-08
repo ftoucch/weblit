@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from pydantic import ConfigDict 
 from bson import ObjectId
 from datetime import datetime

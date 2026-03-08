@@ -1,7 +1,3 @@
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  USER SCHEMA UNIT TESTS  —  validators, field rules          ║
-# ╚══════════════════════════════════════════════════════════════╝
-
 import pytest
 from pydantic import ValidationError
 from app.schemas.user import UserCreate
