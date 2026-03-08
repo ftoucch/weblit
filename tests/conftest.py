@@ -56,12 +56,12 @@ async def setup_test_db():
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncClient:
+async def client() -> AsyncClient: # type: ignore
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test"
     ) as ac:
-        yield ac
+        yield ac # type: ignore
 
 
 @pytest.fixture
