@@ -7,6 +7,7 @@ celery_app = Celery(
     backend=f"redis://{config.redis_host}:{config.redis_port}/1",
     include=[
         "app.workers.tasks.email_tasks",
+        "app.workers.tasks.indexing_tasks",
     ]
 )
 
