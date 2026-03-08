@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from bson import ObjectId
 from datetime import datetime
 from typing import Optional
-from app.schemas.paper import PaperSource
 
 
 class AuthorDocument(BaseModel):
@@ -28,9 +27,18 @@ class PaperDocument(BaseModel):
     source_url: Optional[str] = None
     citation_count: Optional[int] = None
 
-    source_id: str  
+    source: str                  
+    source_id: str                     
 
-    qdrant_id: str
+    full_text: Optional[str] = None
+    full_text_source: Optional[str] = None
+    has_full_text: bool = False
+
+    qdrant_abstract_id: Optional[str] = None
+    qdrant_fulltext_ids: list[str] = []
+
+    abstract_indexed: bool = False
+    fulltext_indexed: bool = False
 
     indexed_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
