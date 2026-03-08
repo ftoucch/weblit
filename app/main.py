@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1 import auth
+from app.api.v1 import auth, search
 from app.core.config import config
 from app.core.logging import setup_logging
 from contextlib import asynccontextmanager
@@ -27,3 +27,4 @@ def read_root():
 
 api_prefix = "/api/v1"
 app.include_router(auth.router, prefix=api_prefix)
+app.include_router(search.router, prefix=api_prefix)
