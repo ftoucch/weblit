@@ -16,6 +16,11 @@ class Config(BaseSettings):
     mongo_port: int = 27017
     redis_host: str = "redis"
     redis_port: int = 6379
+    qdrant_host: str = "qdrant"
+    qdrant_port: int = 6333
+    qdrant_collection: str = "papers"
+    embedding_model: str = "all-mpnet-base-v2"
+    vector_size: int = 768
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
     smtp_user: str = ""
