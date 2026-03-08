@@ -4,12 +4,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class MongoDB:
+class _MongoDB:
     client: AsyncIOMotorClient | None = None
     db: AsyncIOMotorDatabase | None = None
     collections: dict[str, AsyncIOMotorCollection] | None = None
 
-mongo_db = MongoDB()
+mongo_db = _MongoDB()
 
 async def connect_mongo() -> None:
     logger.info("Connecting to MongoDB...")
