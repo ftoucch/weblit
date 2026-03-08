@@ -2,6 +2,9 @@ import logging
 import asyncio
 from app.workers.celery_app import celery_app
 from app.models.paper import PaperDocument
+from app.services.ingestion_service import ingestion_service
+from app.services.sources.openalex import openalex_source
+from app.services.ingestion_service import ingestion_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +33,6 @@ def ingest_papers_task(self, paper_dicts: list[dict]) -> dict:
                  (Pydantic models can't be passed directly to Celery)
     """
     try:
-        from app.services.ingestion_service import ingestion_service
-
         # deserialize back to PaperDocument
         papers = [PaperDocument.model_validate(d) for d in paper_dicts]
 
@@ -58,9 +59,6 @@ def ingest_topic_task(self, topic: str, limit: int = 100) -> dict:
     Only callable by admins via the admin route — not exposed to regular users.
     """
     try:
-        from app.services.sources.openalex import openalex_source
-        from app.services.ingestion_service import ingestion_service
-
         papers = _run_async(openalex_source.fetch(query=topic, limit=limit))
         stored = _run_async(ingestion_service.ingest(papers))
 
