@@ -11,6 +11,9 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      - HF_HOME=/home/appuser/.cache/huggingface
+      - SENTENCE_TRANSFORMERS_HOME=/home/appuser/.cache/huggingface
     volumes:
       - ./app:/project/app          # hot-reload during dev
     depends_on:
@@ -32,6 +35,9 @@ services:
     container_name: weblit_worker
     command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2
     env_file: .env
+    environment:
+      - HF_HOME=/home/appuser/.cache/huggingface
+      - SENTENCE_TRANSFORMERS_HOME=/home/appuser/.cache/huggingface
     volumes:
       - ./app:/project/app
     depends_on:

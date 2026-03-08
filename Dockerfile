@@ -31,9 +31,13 @@ COPY ./app ./app
 ENV PATH="/project/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    SENTENCE_TRANSFORMERS_HOME=/root/.cache/sentence_transformers
+    HF_HOME=/home/appuser/.cache/huggingface \
+    SENTENCE_TRANSFORMERS_HOME=/home/appuser/.cache/huggingface
 
-RUN useradd -m appuser && chown -R appuser /project
+RUN useradd -m appuser && \
+    cp -r /root/.cache /home/appuser/.cache && \
+    chown -R appuser /project /home/appuser/.cache
+
 USER appuser
 
 EXPOSE 8000
