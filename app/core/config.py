@@ -21,6 +21,7 @@ class Config(BaseSettings):
     qdrant_collection: str = "papers"
     embedding_model: str = "all-mpnet-base-v2"
     vector_size: int = 768
+    openalex_email: str = "ftoucch@gmail.com"
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
     smtp_user: str = ""
