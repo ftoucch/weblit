@@ -33,7 +33,7 @@ class PaperSearchRequest(BaseModel):
         default=[PaperSource.OPENALEX, PaperSource.CORE]
     )
     sort_by: SortBy = SortBy.RELEVANCE
-    limit: int = Field(default=10, ge=1, le=50)
+    limit: int = Field(default=20, ge=1, le=500)
     min_similarity: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
