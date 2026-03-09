@@ -11,7 +11,7 @@ class AuthorResponse(BaseModel):
 class PaperSearchRequest(BaseModel):
     query: str = Field(
         ...,
-        min_length=20,
+        min_length=10,
         max_length=1000,
         description="Natural language description of the research topic."
     )

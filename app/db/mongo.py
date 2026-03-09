@@ -24,7 +24,8 @@ async def connect_mongo() -> None:
 
     mongo_db.collections = {
         "users": mongo_db.db["users"],
-        "papers": mongo_db.db["papers"]
+        "papers": mongo_db.db["papers"],
+        "saved_searches": mongo_db.db["saved_searches"],
     }
 
     await mongo_db.db["users"].create_index("email", unique=True)
@@ -33,6 +34,9 @@ async def connect_mongo() -> None:
         [("source", 1), ("source_id", 1)], unique=True
     )
     await mongo_db.db["papers"].create_index("has_full_text")
+    await mongo_db.db["saved_searches"].create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
 
     logger.info("MongoDB collections and indexes are set up.")
 
