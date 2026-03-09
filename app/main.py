@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import auth, search
 from app.core.config import config
 from app.core.logging import setup_logging
@@ -20,6 +21,14 @@ async def lifespan(app: FastAPI):
     await close_qdrant()
 
 app = FastAPI(title= config.app_name, lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],        # tighten this in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def read_root():

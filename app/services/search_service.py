@@ -27,11 +27,17 @@ SOURCES: dict[PaperSource, BaseSource] = {
 }
 
 
+def _serialize_for_celery(p: PaperDocument) -> dict:
+    d = p.model_dump(by_alias=True)
+    d["_id"] = str(d["_id"])
+    return d
+
+
 class SearchService:
 
     @property
     def papers(self):
-        return mongo_db.collections["papers"] #type: ignore
+        return mongo_db.collections["papers"]  # type: ignore
 
     def _to_result(
         self,
@@ -63,29 +69,54 @@ class SearchService:
             meets_exclusion=meets_exclusion,
         )
 
+    async def _embed_criteria(
+        self,
+        inclusion_criteria: str | None,
+        exclusion_criteria: str | None,
+    ) -> dict[str, list[float]]:
+        """
+        Pre-embeds inclusion/exclusion criteria once.
+        Reused across all papers — never re-embedded per paper.
+        """
+        criteria_vectors: dict[str, list[float]] = {}
+        texts = []
+        keys = []
 
-    async def _check_criteria(
+        if inclusion_criteria:
+            texts.append(inclusion_criteria)
+            keys.append("inclusion")
+        if exclusion_criteria:
+            texts.append(exclusion_criteria)
+            keys.append("exclusion")
+
+        if texts:
+            vectors = await embedding_service.embed_batch(texts)
+            criteria_vectors = dict(zip(keys, vectors))
+
+        return criteria_vectors
+
+    def _check_criteria(
         self,
         paper_vector: list[float],
+        criteria_vectors: dict[str, list[float]],
         inclusion_criteria: str | None,
         exclusion_criteria: str | None,
     ) -> tuple[bool | None, bool | None]:
+        """
+        Sync dot product check — criteria vectors already computed.
+        """
         meets_inclusion = None
         meets_exclusion = None
 
-        if inclusion_criteria:
-            inclusion_vector = await embedding_service.embed(inclusion_criteria)
-            score = sum(a * b for a, b in zip(paper_vector, inclusion_vector))
+        if inclusion_criteria and "inclusion" in criteria_vectors:
+            score = sum(a * b for a, b in zip(paper_vector, criteria_vectors["inclusion"]))
             meets_inclusion = score >= 0.4
 
-        if exclusion_criteria:
-            exclusion_vector = await embedding_service.embed(exclusion_criteria)
-            score = sum(a * b for a, b in zip(paper_vector, exclusion_vector))
+        if exclusion_criteria and "exclusion" in criteria_vectors:
+            score = sum(a * b for a, b in zip(paper_vector, criteria_vectors["exclusion"]))
             meets_exclusion = score >= 0.4
 
         return meets_inclusion, meets_exclusion
-
-    # Qdrant cache
 
     async def _search_cache(
         self,
@@ -135,8 +166,6 @@ class SearchService:
 
         return [(doc, score_map[str(doc["_id"])]) for doc in docs]
 
-    # Fresh fetch from sources
-
     async def _fetch_from_sources(
         self,
         request: PaperSearchRequest,
@@ -170,41 +199,55 @@ class SearchService:
 
         return papers
 
-    # Main streaming method
-
     async def search_stream(
         self,
         request: PaperSearchRequest,
     ) -> AsyncGenerator[dict, None]:
         """
-        Yields events as results become available:
-            { "type": "result", "paper": {...}, "cached": bool }
-            { "type": "done",   "total": int, "cached": int, "new": int }
-            { "type": "error",  "message": str }
+        Streams results to the user as soon as each one is ready.
+
+        Order of operations:
+            1. Embed query + criteria (parallel, once)
+            2. Stream cached results immediately (batch embed, fast)
+            3. Fetch fresh from OpenAlex
+            4. For each fresh paper: embed → score → yield immediately
+            5. After all streamed: fire background ingestion task
+
+        The user sees results as they arrive.
+        Ingestion never blocks the stream.
         """
         total = 0
         cached_count = 0
         new_count = 0
 
         try:
-            query_vector = await embedding_service.embed(request.query)
+            # embed query and criteria in parallel — done once
+            query_vector, criteria_vectors = await asyncio.gather(
+                embedding_service.embed(request.query),
+                self._embed_criteria(
+                    request.inclusion_criteria,
+                    request.exclusion_criteria,
+                ),
+            )
 
             cached_results = await self._search_cache(query_vector, request)
 
-            for doc, score in cached_results:
-                paper_text = f"{doc.get('title', '')}. {doc.get('abstract', '')}"
-                paper_vector = await embedding_service.embed(paper_text)
+            if cached_results:
+                cached_texts = [
+                    f"{doc.get('title', '')}. {doc.get('abstract', '')}"
+                    for doc, _ in cached_results
+                ]
+                cached_vectors = await embedding_service.embed_batch(cached_texts)
 
-                meets_inclusion, meets_exclusion = await self._check_criteria(
-                    paper_vector,
-                    request.inclusion_criteria,
-                    request.exclusion_criteria,
-                )
-
-                result = self._to_result(doc, score, meets_inclusion, meets_exclusion)
-                yield {"type": "result", "paper": result.model_dump(), "cached": True}
-                total += 1
-                cached_count += 1
+                for (doc, score), paper_vector in zip(cached_results, cached_vectors):
+                    meets_inclusion, meets_exclusion = self._check_criteria(
+                        paper_vector, criteria_vectors,
+                        request.inclusion_criteria, request.exclusion_criteria,
+                    )
+                    result = self._to_result(doc, score, meets_inclusion, meets_exclusion)
+                    yield {"type": "result", "paper": result.model_dump(), "cached": True}
+                    total += 1
+                    cached_count += 1
 
             fresh_papers = await self._fetch_from_sources(request)
 
@@ -227,7 +270,7 @@ class SearchService:
                 if key in seen_source_ids:
                     continue
 
-                # embed and score against query
+                # embed this paper and yield immediately — don't wait for others
                 paper_text = f"{paper.title}. {paper.abstract}" if paper.abstract else paper.title
                 paper_vector = await embedding_service.embed(paper_text)
                 score = sum(a * b for a, b in zip(query_vector, paper_vector))
@@ -235,10 +278,9 @@ class SearchService:
                 if score < request.min_similarity:
                     continue
 
-                meets_inclusion, meets_exclusion = await self._check_criteria(
-                    paper_vector,
-                    request.inclusion_criteria,
-                    request.exclusion_criteria,
+                meets_inclusion, meets_exclusion = self._check_criteria(
+                    paper_vector, criteria_vectors,
+                    request.inclusion_criteria, request.exclusion_criteria,
                 )
 
                 result = PaperSearchResult(
@@ -273,15 +315,15 @@ class SearchService:
             # background ingestion
             if new_to_ingest:
                 try:
-                    paper_dicts = [
-                        p.model_dump(by_alias=True, mode="json")
-                        for p in new_to_ingest
-                    ]
+                    paper_dicts = [_serialize_for_celery(p) for p in new_to_ingest]
                     ingest_papers_task.delay(paper_dicts)  # type: ignore
-                    logger.info(f"Fired background ingestion for {len(new_to_ingest)} papers.")
-                except ImportError:
-                    # fallback — ingest directly if worker not available
+                    logger.info(
+                        f"Fired background ingestion for {len(new_to_ingest)} papers."
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to fire ingest task: {e}")
                     await ingestion_service.ingest(new_to_ingest)
+
             yield {
                 "type": "done",
                 "total": total,

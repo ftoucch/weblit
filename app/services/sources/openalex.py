@@ -45,7 +45,7 @@ class OpenAlexSource(BaseSource):
             params["mailto"] = config.openalex_email
 
         if year_from and year_to:
-            params["filter"] = f"publication_year: {year_from} -- {year_to} "
+            params["filter"] = f"publication_year:{year_from}-{year_to}"
         elif year_from:
             params["filter"] = f"publication_year:{year_from}-"
         elif year_to:

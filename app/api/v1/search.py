@@ -37,11 +37,16 @@ async def _check_rate_limit(user_id: str) -> None:
 
 
 # SSE formatter
+def _serialize(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    raise TypeError(f"Unable to serialize unknown type: {type(obj)}")
+
 async def _as_sse(
     generator: AsyncGenerator[dict, None]
 ) -> AsyncGenerator[str, None]:
     async for event in generator:
-        yield f"data: {json.dumps(event)}\n\n"
+        yield f"data: {json.dumps(event, default=_serialize)}\n\n"
 
 @router.post("/papers")
 async def search_papers(request: PaperSearchRequest, current_user: GuestOrUserDependency) -> StreamingResponse:
@@ -57,7 +62,7 @@ async def search_papers(request: PaperSearchRequest, current_user: GuestOrUserDe
 
     if is_authenticated:
         await _saved_searches().insert_one({ 
-            "user_id": current_user.id,
+            "user_id": str(current_user.id), 
             "query": request.query,
             "filters": request.model_dump(exclude={"query"}),
             "created_at": datetime.utcnow(),
