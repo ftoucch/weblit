@@ -18,7 +18,7 @@ async def register(data: UserCreate, service: AuthServiceDependency)-> UserRespo
             detail="A user with this email already exists"
         )
 
-@router.post("/verify-email", response_model=UserResponse)
+@router.post("/verify-otp", response_model=UserResponse)
 async def verify_email(data: UserVerifyEmail, service: AuthServiceDependency) -> UserResponse:
     try:
         return await service.verify_email(data.user_id, data.otp)

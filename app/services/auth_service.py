@@ -80,9 +80,6 @@ class AuthService:
         if not user or not Security.verify_password(password, user["hashed_password"]):
             raise InvalidCredentialsError()
 
-        if not user["is_verified"]:            
-            raise UserNotVerifiedError()
-
         access_token_expires = timedelta(minutes=config.access_token_expire_minutes)
         return Security.create_access_token(
             subject=str(user["_id"]),
