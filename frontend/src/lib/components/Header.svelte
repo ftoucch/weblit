@@ -75,7 +75,7 @@
           >
             <!-- img with descriptive alt satisfies the a11y label requirement on this button -->
             <div
-              class="size-8 rounded-full bg-weblit flex items-center justify-center text-white text-sm font-semibold"
+              class="size-6 rounded-full bg-weblit flex items-center justify-center text-white text-xs font-semibold"
             >
               {$currentUser?.name?.charAt(0).toUpperCase() ?? '?'}
             </div>
@@ -178,7 +178,6 @@
             {$currentUser?.name?.charAt(0).toUpperCase() ?? '?'}
           </div>
           <div class="ml-3">
-            <div class="text-base font-medium text-black">{$currentUser?.name}</div>
             <div class="text-sm text-gray-500">{$currentUser?.email}</div>
           </div>
         </div>
