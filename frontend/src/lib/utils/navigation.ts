@@ -4,7 +4,7 @@ import type { ComponentType } from 'svelte';
 export const navigation: { name: string; href: string; icon: ComponentType }[] = [
   { name: 'Search', href: '/search', icon: SearchIcon },
   { name: 'Similarity Check', href: '/similarity-check', icon: LayersIcon },
-  { name: 'Novelty Checker', href: '/novelty-checker', icon: StarIcon },
+  { name: 'Novelty Check', href: '/novelty-check', icon: StarIcon },
   { name: 'History', href: '/history', icon: ClockIcon },
 ];
 
