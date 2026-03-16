@@ -36,24 +36,24 @@
       <!-- Left: Logo + nav links -->
       <div class="flex items-center">
         <div class="shrink-0 flex items-center space-x-4 pr-1.5">
-          <h2 class="text-black text-xl font-semibold">Weblit</h2>
+          <h2 class="text-black text-l font-semibold">Weblit</h2>
         </div>
 
         <!-- Desktop nav links -->
-        <div class="hidden md:flex ml-50 items-baseline space-x-10">
+        <div class="hidden md:flex ml-50 items-baseline space-x-15">
           {#each navigation as item}
             <a
-              href={item.href}
-              class="py-5 text-sm text-black border-b-2 {isActive(item.href) ? 'border-weblit-600' : 'border-transparent hover:border-weblit hover:text-weblit'}"
-              aria-current={isActive(item.href) ? 'page' : undefined}
+                href={item.href}
+                class="py-5 text-xs text-black border-b-2 flex items-center gap-1.5 {isActive(item.href) ? 'border-weblit-600' : 'border-transparent hover:border-weblit hover:text-weblit'}"
+                aria-current={isActive(item.href) ? 'page' : undefined}
             >
-              {item.name}
+                <svelte:component this={item.icon} size="14" />
+                {item.name}
             </a>
           {/each}
         </div>
       </div>
 
-      <!-- Right: Search + profile (desktop) -->
       <div class="hidden md:flex items-center gap-4">
         <!-- Profile dropdown -->
         <div id="profile-menu" class="relative">
@@ -69,7 +69,7 @@
                 {$currentUser?.name?.charAt(0).toUpperCase() ?? '?'}
             </div>
             <div class="ml-3">
-                <div class="text-sm text-gray-500">{$currentUser?.email}</div>
+                <div class="text-xs text-gray-500">{$currentUser?.email}</div>
             </div>
           </button>
 
