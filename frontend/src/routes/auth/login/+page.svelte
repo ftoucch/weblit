@@ -1,24 +1,18 @@
 <script lang='ts'>
     import TextInput from "$lib/components/FormInputs/TextInput.svelte";
     import LoadingButton from "$lib/components/FormInputs/LoadingButton.svelte";
-    import GeneralError from "$lib/components/GeneralError.svelte";
-    import { isAuthenticated } from "$lib/stores/auth";
+    import GeneralError from "$lib/components/Alert.svelte";
 
     import { getMe, login } from "$lib/api/auth";
     import { auth } from "$lib/stores/auth";
     import { goto } from "$app/navigation";
-  import { onMount } from "svelte";
+  import Alert from "$lib/components/Alert.svelte";
 
     let email = '';
     let password = ''
     let isLoading = false;
-    let error = ''
-
-    onMount(() => {
-        if ($isAuthenticated) {
-            goto('/');
-        }
-    })
+    let message = '';
+    let alertType: 'success' | 'error' = 'error';
 
     async function handleLogin() {
         isLoading = true;
@@ -30,10 +24,11 @@
             if (!user.isVerified) {
                 await goto('verify-otp');
             } else {
-                await goto('/dashboard');
+                await goto('/search');
             }
         } catch(e: any) {
-            error = e?.detail ?? 'Something went wrong';
+            alertType = 'error';
+            message = e?.detail ?? 'Something went wrong';
         } finally {
             isLoading = false;
         }
@@ -41,7 +36,7 @@
 
 </script>
 <form class="space-y-6" on:submit|preventDefault={handleLogin}>
-    <GeneralError message = {error} />
+    <Alert message = {message} type={alertType} />
     <TextInput  label="Email" name="email" type="email" bind:value={email} />
     <TextInput  label="Password" name="password" type="password" error="" bind:value={password} />
     <div>

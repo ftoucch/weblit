@@ -1,48 +1,52 @@
 <script lang="ts">
-  import { auth, currentUser } from "$lib/stores/auth";
+  import { currentUser } from "$lib/stores/auth";
   import TextInput from "$lib/components/FormInputs/TextInput.svelte";
   import LoadingButton from "$lib/components/FormInputs/LoadingButton.svelte";
-  import GeneralError from "$lib/components/GeneralError.svelte";
+  import Alert from "$lib/components/Alert.svelte";
   import { resendOtp, verifyOtp } from "$lib/api/auth";
   import { goto } from '$app/navigation';
 
   let otp = '';
-  let loading = false;
-  let error = '';
+  let isLoading = false;
+  let message = '';
+  let alertType: 'success' | 'error' = 'error';
 
   async function handleVerify() {
-    
+    isLoading = true
     const userId = $currentUser?.id;
     if (!userId) return;
 
     try {
       const res = await verifyOtp(userId, otp);
-      goto('/');
+      goto('/search');
     } catch (e: any) {
-        error = e?.detail ?? 'Invalid OTP';
+        alertType = 'error';
+        message = e?.detail ?? 'Invalid OTP';
     } finally {
-        loading = false;
+        isLoading = false;
     }
   }
 
   async function resendOtpRequest() {
     const userId = $currentUser?.id;
     if (!userId) return;
-    loading = true;
-    error = '';
+    isLoading = true;
 
     try {
       await resendOtp();
+      alertType = 'success';
+      message = 'OTP has been sent'
     } catch (e: any) {
-      error = e?.detail ?? 'OTP not sent';
+      alertType = 'error'
+      message = e?.detail ?? 'OTP not sent';
     } finally {
-      loading = false;
+      isLoading = false;
     }
   }
 </script>
 
 <form class="space-y-6" on:submit|preventDefault={handleVerify}>
-  <GeneralError message={error} />
+  <Alert message={message} type={alertType} />
 
   <TextInput
     label="OTP"
@@ -52,7 +56,7 @@
   />
 
   <div>
-    <LoadingButton label="Verify" loading={loading} />
+    <LoadingButton label="Verify" loading={isLoading} />
   </div>
 </form>
 
