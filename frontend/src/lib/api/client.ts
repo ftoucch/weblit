@@ -16,13 +16,18 @@ function getHeaders(token?: string, extra: Record<string, string> = {}): Record<
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-    const data = await res.json();
+	
+  if (res.status === 204) {
+    return undefined as T;
+  }
 
-    if (!res.ok) {
-        throw data;
-    }
+  const data = await res.json();
 
-    return camelcaseKeys(data, { deep: true }) as T;
+  if (!res.ok) {
+    throw data;
+  }
+
+  return camelcaseKeys(data, { deep: true }) as T;
 }
 
 export async function getRequest<T>(path: string, token?: string): Promise<T> {

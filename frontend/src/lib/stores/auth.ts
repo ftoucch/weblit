@@ -18,7 +18,10 @@ function createAuthStore() {
         subscribe,
 
         setToken(token: string) {
-            if (isBrowser) localStorage.setItem("token", token);
+            if (isBrowser) {
+                localStorage.setItem("token", token);
+                document.cookie = `accessToken=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+            }
             update((s) => ({ ...s, token }));
         },
 
@@ -36,6 +39,7 @@ function createAuthStore() {
             if (isBrowser) {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
+                document.cookie = `accessToken=; path=/; max-age=0`;
             }
             set({ user: null, token: null, isLoading: false });
         },
