@@ -19,6 +19,7 @@
 		"@tailwindcss/vite": "^4.1.18",
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.4.2",
+		"svelte-feather-icons": "^4.2.0",
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1"
