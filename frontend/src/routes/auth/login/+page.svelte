@@ -1,7 +1,6 @@
 <script lang="ts">
   import TextInput from '$lib/components/FormInputs/TextInput.svelte';
   import LoadingButton from '$lib/components/FormInputs/LoadingButton.svelte';
-  import GeneralError from '$lib/components/Alert.svelte';
 
   import { getMe, login } from '$lib/api/auth';
   import { auth } from '$lib/stores/auth';
