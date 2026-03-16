@@ -3,24 +3,24 @@
 @plugin '@tailwindcss/typography';
 
 @theme {
-    --color-weblit : #264653;
-    --color-weblit-light : #eeeeee;
-    --color-weblit-dark: #101E24;
+  --color-weblit: #264653;
+  --color-weblit-light: #eeeeee;
+  --color-weblit-dark: #101e24;
 
-    --font-weblit: 'Inter', sans-serif;
-    --default-font-family: var(--font-weblit);
+  --font-weblit: 'Inter', sans-serif;
+  --default-font-family: var(--font-weblit);
 }
 
 @layer base {
-    *:focus-visible {
-        outline: 2px solid var(--color-weblit);
-    }
-    #app {
-        height: 100%;
-    }
-    button {
-        cursor: pointer;
-    }
+  *:focus-visible {
+    outline: 2px solid var(--color-weblit);
+  }
+  #app {
+    height: 100%;
+  }
+  button {
+    cursor: pointer;
+  }
 }
 
 .btn-spinner,

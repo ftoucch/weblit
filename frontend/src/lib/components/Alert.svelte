@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { onDestroy } from 'svelte';
 
   export let message: string = '';
   export let type: 'success' | 'error' = 'error';
@@ -7,7 +7,7 @@
 
   const styles = {
     success: 'bg-green-50 border-green-100 text-green-500',
-    error: 'bg-red-50 border-red-100 text-red-400'
+    error: 'bg-red-50 border-red-100 text-red-400',
   };
 
   let timeout: ReturnType<typeof setTimeout>;
