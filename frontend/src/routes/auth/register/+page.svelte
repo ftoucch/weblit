@@ -11,7 +11,7 @@
   let password = '';
   let isLoading = false;
   let message = '';
-  let alertType: 'success' | 'error' = 'error';
+    let alertType: 'success' | 'error' = 'error';
 
   async function handleRegister() {
     isLoading = true;
