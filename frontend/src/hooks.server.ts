@@ -13,7 +13,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   if (isPublic && token) {
-    redirect(303, '/');
+    redirect(303, '/search');
   }
 
   if (token) {
