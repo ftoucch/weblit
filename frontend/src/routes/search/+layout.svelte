@@ -9,7 +9,7 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <main>
   <Header />
-  <section>
+  <section class="flex flex-col justify-center">
     {@render children()}
   </section>
 </main>
