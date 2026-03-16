@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit';
 
-const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password'];
+const publicRoutes = ['/login', '/register', '/forgot-password'];
 
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get('accessToken');
@@ -9,7 +9,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const isPublic = publicRoutes.includes(pathname);
   if (!isPublic && !token) {
-    redirect(303, '/auth/login');
+    redirect(303, '/login');
   }
 
   if (isPublic && token) {
