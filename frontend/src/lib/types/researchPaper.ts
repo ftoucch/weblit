@@ -22,7 +22,14 @@ export type Paper = {
 
 export type SearchResultEvent =
   | { type: 'result'; paper: Paper; cached: boolean }
-  | { type: 'done'; total: number; cached: number; new: number }
+  | {
+      type: 'done';
+      total: number;
+      cached: number;
+      new: number;
+      cursor: string | null;
+      hasMore: boolean;
+    }
   | { type: 'error'; message: string };
 
 export type SearchParams = {

@@ -1,17 +1,30 @@
 <script lang="ts">
-  import { searchPapers } from '$lib/api/search';
+  import { searchPapers, continuePapers } from '$lib/api/search';
   import type { Paper } from '$lib/types/researchPaper';
   import SearchResults from './SearchResults.svelte';
+
+  const DISPLAY_PAGE_SIZE = 15;
 
   let query = '';
   let include = '';
   let exclude = '';
   let panelOpen = false;
+  let limit = 100;
 
   let loading = false;
+  let loadingMore = false;
   let error: string | null = null;
-  let results: { paper: Paper; cached: boolean }[] = [];
+
+  let allResults: { paper: Paper; cached: boolean }[] = [];
+  let displayCount = DISPLAY_PAGE_SIZE;
+
   let total: number | null = null;
+  let cursor: string | null = null;
+  let hasMoreFromBackend = false;
+
+  $: visibleResults = allResults.slice(0, displayCount);
+
+  $: hasMore = displayCount < allResults.length;
 
   function handleSearchKey(e: KeyboardEvent) {
     if (e.key === 'Enter') submit();
@@ -22,19 +35,25 @@
 
     loading = true;
     error = null;
-    results = [];
+    allResults = [];
+    displayCount = DISPLAY_PAGE_SIZE;
     total = null;
+    cursor = null;
+    hasMoreFromBackend = false;
 
     try {
       for await (const event of searchPapers({
         query: query.trim(),
+        limit,
         include: include.trim() || undefined,
         exclude: exclude.trim() || undefined,
       })) {
         if (event.type === 'result') {
-          results = [...results, { paper: event.paper, cached: event.cached }];
+          allResults = [...allResults, { paper: event.paper, cached: event.cached }];
         } else if (event.type === 'done') {
           total = event.total;
+          cursor = event.cursor ?? null;
+          hasMoreFromBackend = event.hasMore ?? false;
           loading = false;
         } else if (event.type === 'error') {
           error = event.message;
@@ -46,15 +65,53 @@
       loading = false;
     }
   }
+
+  async function loadMore() {
+    // if we have hidden results already fetched, just reveal the next batch
+    if (displayCount < allResults.length) {
+      displayCount = Math.min(displayCount + DISPLAY_PAGE_SIZE, allResults.length);
+      return;
+    }
+
+    // otherwise fetch more from backend
+    if (!cursor || loadingMore) return;
+
+    loadingMore = true;
+    error = null;
+
+    try {
+      for await (const event of continuePapers(
+        cursor,
+        include.trim() || undefined,
+        exclude.trim() || undefined
+      )) {
+        if (event.type === 'result') {
+          allResults = [...allResults, { paper: event.paper, cached: event.cached }];
+        } else if (event.type === 'done') {
+          total = (total ?? 0) + event.total;
+          cursor = event.cursor ?? null;
+          hasMoreFromBackend = event.hasMore ?? false;
+          displayCount = Math.min(displayCount + DISPLAY_PAGE_SIZE, allResults.length);
+          loadingMore = false;
+        } else if (event.type === 'error') {
+          error = event.message;
+          loadingMore = false;
+        }
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Load more failed';
+      loadingMore = false;
+    }
+  }
 </script>
 
-<div class="max-w-2xl">
+<div class="max-w-2xl mx-auto">
   <h1 class="text-4xl font-medium text-gray-900 leading-tight mb-3">
     Research made easy by meaning.
   </h1>
   <p class="text-sm text-gray-500 leading-relaxed mb-8">
-    Search through series of research by meanning not just by keyword. get accurate results faster
-    and simpler much more easy to maintain.
+    Search through series of research by meaning not just by keyword. Get accurate results faster
+    and simpler.
   </p>
 
   <div class="border border-gray-200 rounded-xl overflow-hidden bg-white">
@@ -175,6 +232,25 @@
             />
           </div>
         </div>
+
+        <div class="col-span-2 flex items-center justify-between pt-1">
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium">
+            Results per search
+          </p>
+          <div class="flex gap-1.5">
+            {#each [50, 100, 200] as n}
+              <button
+                on:click={() => (limit = n)}
+                class="px-3 py-1 text-xs rounded-lg border transition-colors
+                  {limit === n
+                  ? 'border-weblit text-weblit bg-weblit/5'
+                  : 'border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600'}"
+              >
+                {n}
+              </button>
+            {/each}
+          </div>
+        </div>
       </div>
     {/if}
   </div>
@@ -184,4 +260,11 @@
   <p class="mt-4 text-sm text-red-500">{error}</p>
 {/if}
 
-<SearchResults papers={results} {loading} {total} />
+<SearchResults
+  papers={visibleResults}
+  {loading}
+  {loadingMore}
+  total={allResults.length}
+  {hasMore}
+  on:loadMore={loadMore}
+/>
