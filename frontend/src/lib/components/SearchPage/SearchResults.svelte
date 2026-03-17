@@ -41,9 +41,6 @@
               <!-- Title -->
               <td class="px-4 py-3 align-top">
                 <div class="flex items-start gap-2">
-                  <span
-                    class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full {cached ? 'bg-green-400' : 'bg-weblit'}"
-                  ></span>
                   <div>
                     {#if paper.sourceUrl}
                       <a
