@@ -1,7 +1,8 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { navigation, userNavigation } from '$lib/utils/navigation';
-  import { currentUser } from '$lib/stores/auth';
+  import { auth, currentUser } from '$lib/stores/auth';
+  import { goto } from '$app/navigation';
 
   let mobileOpen = false;
   let profileOpen = false;
@@ -25,11 +26,8 @@
   }
 
   function signout() {
-    const token =
-      (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
-    fetch('/logout', { method: 'DELETE', headers: { 'X-CSRF-TOKEN': token } }).then(() => {
-      window.location.href = '/';
-    });
+    auth.logout();
+    goto('/auth/login');
   }
 </script>
 
