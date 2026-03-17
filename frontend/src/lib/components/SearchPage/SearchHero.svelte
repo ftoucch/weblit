@@ -1,14 +1,51 @@
 <script lang="ts">
+  import { searchPapers } from '$lib/api/search';
+  import type { Paper } from '$lib/types/researchPaper';
+  import SearchResults from './SearchResults.svelte';
+
   let query = '';
   let include = '';
   let exclude = '';
   let panelOpen = false;
 
+  let loading = false;
+  let error: string | null = null;
+  let results: { paper: Paper; cached: boolean }[] = [];
+  let total: number | null = null;
+
   function handleSearchKey(e: KeyboardEvent) {
     if (e.key === 'Enter') submit();
   }
 
-  function submit() {}
+  async function submit() {
+    if (!query.trim()) return;
+
+    loading = true;
+    error = null;
+    results = [];
+    total = null;
+
+    try {
+      for await (const event of searchPapers({
+        query: query.trim(),
+        include: include.trim() || undefined,
+        exclude: exclude.trim() || undefined,
+      })) {
+        if (event.type === 'result') {
+          results = [...results, { paper: event.paper, cached: event.cached }];
+        } else if (event.type === 'done') {
+          total = event.total;
+          loading = false;
+        } else if (event.type === 'error') {
+          error = event.message;
+          loading = false;
+        }
+      }
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Search failed';
+      loading = false;
+    }
+  }
 </script>
 
 <div class="max-w-2xl">
@@ -142,3 +179,9 @@
     {/if}
   </div>
 </div>
+
+{#if error}
+  <p class="mt-4 text-sm text-red-500">{error}</p>
+{/if}
+
+<SearchResults papers={results} {loading} {total} />
