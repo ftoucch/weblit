@@ -33,7 +33,7 @@ class PaperSearchRequest(BaseModel):
         default=[PaperSource.OPENALEX, PaperSource.CORE]
     )
     sort_by: SortBy = SortBy.RELEVANCE
-    limit: int = Field(default=20, ge=1, le=500)
+    limit: int = Field(default=100, ge=1, le=500)
     min_similarity: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
@@ -61,3 +61,8 @@ class PaperSearchResponse(BaseModel):
     results: list[PaperSearchResult]
     sources_searched: list[PaperSource]
     cached: bool = False    
+
+class PaperSearchContinueRequest(BaseModel):
+    cursor: str = Field(..., description="Cursor token from previous search response.")
+    inclusion_criteria: Optional[str] = Field(default=None, max_length=500)
+    exclusion_criteria: Optional[str] = Field(default=None, max_length=500)
