@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
+
 class NoveltyCheckRequest(BaseModel):
     text: str = Field(..., min_length=50)
     year_from: Optional[int] = Field(default=None, ge=1900, le=2100)
@@ -15,7 +16,7 @@ class RelatedWork(BaseModel):
     year: Optional[int] = None
     doi: Optional[str] = None
     source_url: Optional[str] = None
-    citation_count: Optional[int] = None 
+    citation_count: Optional[int] = None
     similarity: float
 
 
@@ -24,22 +25,27 @@ class AspectResult(BaseModel):
     summary: str
     related_works: list[RelatedWork]
 
+
 class NoveltyAspects(BaseModel):
     topic: AspectResult
-    methods: AspectResult
+    problem_statement: AspectResult
+    methodology: AspectResult
     domain: AspectResult
+
 
 class NoveltyCheckResult(BaseModel):
     novelty_score: float
-    verdict: str 
+    verdict: str
     aspects: NoveltyAspects
-    recommendation: str 
+    recommendation: str
+
 
 class NoveltyProgressEvent(BaseModel):
     type: str
-    message: str 
+    message: str
     progress: int
 
+
 class NoveltyResultEvent(BaseModel):
-    type: str 
+    type: str
     result: NoveltyCheckResult
