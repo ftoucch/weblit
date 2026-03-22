@@ -7,7 +7,7 @@ class NoveltyCheckRequest(BaseModel):
     year_from: Optional[int] = Field(default=None, ge=1900, le=2100)
     year_to: Optional[int] = Field(default=None, ge=1900, le=2100)
     field_of_study: Optional[str] = Field(default=None, max_length=200)
-    top_k: int = Field(default=10, ge=1, le=50)
+    top_k: int = Field(default=50, ge=1, le=50)
 
 
 class RelatedWork(BaseModel):
