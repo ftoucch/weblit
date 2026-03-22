@@ -103,7 +103,12 @@ class AuthService:
         otp = await otp_service.create(user_id, purpose="password_reset")
         send_password_reset.delay(name=user["name"], email=user["email"], otp=otp)  # type: ignore
 
-    async def reset_password(self, user_id: str, otp: str, new_password: str) -> None:
+    async def reset_password(self, email: str, otp: str, new_password: str) -> None:
+        user = await self.users.find_one({"email" : email})
+        if not user:
+            return
+        
+        user_id = str(user["_id"])
         await otp_service.verify(user_id, otp, purpose="password_reset")
 
         hashed = Security.hash_password(new_password)
