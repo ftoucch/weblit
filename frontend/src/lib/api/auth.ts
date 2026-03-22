@@ -50,6 +50,10 @@ export function requestPasswordReset(email: string): Promise<{ message: string }
   return postRequest('/auth/forgot-password', { email });
 }
 
-export function resetPassword(token: string, password: string): Promise<{ message: string }> {
-  return postRequest('/auth/reset-password', { token, password });
+export function resetPassword(
+  email: string,
+  otp: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  return postRequest('/auth/reset-password', { email, otp, newPassword });
 }

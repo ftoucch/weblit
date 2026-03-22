@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit';
 
-const publicRoutes = ['/login', '/register', '/forgot-password'];
+const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 export const handle: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get('accessToken');

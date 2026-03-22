@@ -51,7 +51,7 @@ class UserForgotPassword(BaseModel):
 
 
 class UserResetPassword(BaseModel):
-    user_id: str
+    email: str
     otp: str
     new_password: str = Field(..., min_length=8, max_length=128)
 

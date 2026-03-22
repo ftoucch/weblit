@@ -29,6 +29,7 @@ class Config(BaseSettings):
     smtp_from: str = "noreply@weblit.com"
     secret_key: str = secrets.token_urlsafe(32)
     access_token_expire_minutes: int = 60 * 24 * 7  # 7 days
+    frontend_url: str = ""
 
     @property
     def db_url(self):

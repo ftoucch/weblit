@@ -34,7 +34,7 @@ def send_welcome_email(self, name: str, email: str) -> None:
 def send_password_reset(self, name: str, email: str, otp: str) -> None:
     """Fired when user requests a password reset."""
     try:
-        subject, html = password_reset_template(name=name, otp=otp)
+        subject, html = password_reset_template(name=name, email=email, otp=otp)
         email_service.send(to=email, subject=subject, html=html)
     except Exception as e:
         logger.error(f"send_password_reset failed for {email}: {e}")

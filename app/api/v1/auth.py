@@ -62,7 +62,7 @@ async def forgot_password(data: UserForgotPassword, service: AuthServiceDependen
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
 async def reset_password(data: UserResetPassword, service: AuthServiceDependency)->dict:
     try:
-        await service.reset_password(data.user_id, data.otp, data.new_password)
+        await service.reset_password(data.email, data.otp, data.new_password)
         return {"message": "Password reset successfully."}
     
     except OTPExpiredError as e:
