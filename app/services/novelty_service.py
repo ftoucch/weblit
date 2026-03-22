@@ -1,7 +1,6 @@
 import logging
 import asyncio
 import math
-
 from datetime import datetime
 from typing import AsyncGenerator
 from bson import ObjectId
@@ -11,9 +10,19 @@ from app.db.mongo import mongo_db
 from app.db.qdrant import get_qdrant
 from app.core.config import config
 from app.models.paper import PaperDocument
-from app.models.novelty_check import NoveltyAspectsDocument, NoveltyCheckDocument, AspectDocument, RelatedWorkDocument
-from app.schemas.novelty import NoveltyAspects, NoveltyCheckRequest, NoveltyCheckResult, RelatedWork, AspectResult
-
+from app.models.novelty_check import (
+    NoveltyCheckDocument,
+    NoveltyAspectsDocument,
+    AspectDocument,
+    RelatedWorkDocument,
+)
+from app.schemas.novelty import (
+    NoveltyCheckRequest,
+    NoveltyCheckResult,
+    NoveltyAspects,
+    AspectResult,
+    RelatedWork,
+)
 from app.services.embedding_service import embedding_service
 from app.services.ingestion_service import ingestion_service
 from app.services.sources.base import BaseSource
@@ -30,17 +39,28 @@ SOURCES: dict[str, BaseSource] = {
 
 TOPIC_HINTS = [
     "research topic", "study", "investigate", "focus on", "aim to", "objective",
-    "purpose", "this paper", "we explore", "we examine",
+    "purpose", "this paper", "we explore", "we examine", "concerned with",
+    "related to", "area of", "field of",
+]
+
+PROBLEM_HINTS = [
+    "problem", "challenge", "gap", "limitation", "issue", "lack", "need",
+    "currently", "existing", "however", "unfortunately", "despite", "although",
+    "no existing", "few studies", "little work", "not yet", "unsolved",
+    "open question", "remains unclear",
 ]
 
 METHOD_HINTS = [
     "method", "approach", "technique", "algorithm", "model", "framework",
     "architecture", "using", "employ", "propose", "we use", "we apply",
+    "novel", "new approach", "we develop", "we design", "we introduce",
+    "based on", "leveraging",
 ]
- 
+
 DOMAIN_HINTS = [
     "application", "domain", "field", "area", "industry", "context",
     "dataset", "experiment", "evaluation", "clinical", "medical", "healthcare",
+    "deployed", "applied to", "use case", "real-world", "in practice",
 ]
 
 
@@ -49,21 +69,22 @@ def _extract_aspect_sentences(text: str, hints: list[str]) -> str:
     matched = [s for s in sentences if any(h in s.lower() for h in hints)]
     return ". ".join(matched) if matched else text[:500]
 
+
 def _recency_weight(year: int | None, citations: int | None) -> float:
     recency = 1.0
     if year:
         age = max(0, CURRENT_YEAR - year)
         recency = 1 / (1 + age * 0.1)
-
     citation_boost = 1.0
-    if citations :
+    if citations:
         citation_boost = 1 + math.log1p(citations) * 0.1
     return recency * citation_boost
+
 
 def _weighted_novelty(papers: list[tuple[dict, float]]) -> float:
     if not papers:
         return 1.0
-    
+
     total_weight = 0.0
     weighted_sim = 0.0
 
@@ -87,28 +108,32 @@ def _verdict(score: float) -> str:
         return "Limited novelty"
     return "Low novelty — well covered territory"
 
+
 def _aspect_summary(aspect: str, score: float, related_works: list[RelatedWork]) -> str:
     count = len(related_works)
     coverage = "well covered" if score < 0.4 else "moderately covered" if score < 0.7 else "less explored"
     years = [r.year for r in related_works if r.year]
     year_range = f"{min(years)}–{max(years)}" if years else "various years"
- 
-    if aspect == "topic":
-        return f"Research topic is {coverage} in existing literature — {count} related works found ({year_range})."
-    if aspect == "methods":
-        return f"Proposed methodology is {coverage} — {count} papers use similar approaches ({year_range})."
-    return f"Application domain is {coverage} — {count} related works in this area ({year_range})."
+
+    summaries = {
+        "topic": f"Research topic is {coverage} in existing literature — {count} related works found ({year_range}).",
+        "problem_statement": f"Problem statement is {coverage} — {count} papers address similar gaps ({year_range}).",
+        "methodology": f"Proposed methodology is {coverage} — {count} papers use similar approaches ({year_range}).",
+        "domain": f"Application domain is {coverage} — {count} related works in this area ({year_range}).",
+    }
+    return summaries.get(aspect, f"Aspect is {coverage} — {count} related works found ({year_range}).")
 
 
 def _recommendation(aspects: NoveltyAspects, overall: float) -> str:
     scores = {
         "topic": aspects.topic.score,
-        "methods": aspects.methods.score,
+        "problem statement": aspects.problem_statement.score,
+        "methodology": aspects.methodology.score,
         "domain": aspects.domain.score,
     }
     strongest = max(scores, key=lambda k: scores[k])
     weakest = min(scores, key=lambda k: scores[k])
- 
+
     if overall >= 0.7:
         return (
             f"Your research shows strong novelty overall. "
@@ -126,16 +151,17 @@ def _recommendation(aspects: NoveltyAspects, overall: float) -> str:
         f"Consider narrowing the scope or finding a more specific gap to address."
     )
 
+
 class NoveltyService:
- 
+
     @property
     def papers(self):
         return mongo_db.collections["papers"]  # type: ignore
- 
+
     @property
     def novelty_checks(self):
         return mongo_db.collections["novelty_checks"]  # type: ignore
- 
+
     async def _search_qdrant(
         self,
         vector: list[float],
@@ -143,14 +169,14 @@ class NoveltyService:
         top_k: int,
     ) -> list[tuple[dict, float]]:
         qdrant = get_qdrant()
- 
+
         conditions = []
         if request.year_from:
             conditions.append(FieldCondition(key="year", range=Range(gte=request.year_from)))
         if request.year_to:
             conditions.append(FieldCondition(key="year", range=Range(lte=request.year_to)))
         qdrant_filter = Filter(must=conditions) if conditions else None
- 
+
         response = await qdrant.query_points(
             collection_name=config.qdrant_collection,
             query=vector,
@@ -158,11 +184,11 @@ class NoveltyService:
             query_filter=qdrant_filter,
             with_payload=True,
         )
- 
+
         hits = response.points
         if not hits:
             return []
- 
+
         mongo_ids = [
             ObjectId(hit.payload["mongo_id"])
             for hit in hits
@@ -173,12 +199,12 @@ class NoveltyService:
             for hit in hits
             if hit.payload and hit.payload.get("mongo_id")
         }
- 
+
         cursor = self.papers.find({"_id": {"$in": mongo_ids}})
         docs = await cursor.to_list(length=top_k)
- 
+
         return [(doc, score_map[str(doc["_id"])]) for doc in docs]
- 
+
     async def _search_sources(
         self,
         query_text: str,
@@ -194,9 +220,9 @@ class NoveltyService:
             )
             for source in SOURCES.values()
         ]
- 
+
         results = await asyncio.gather(*tasks, return_exceptions=True)
- 
+
         papers: list[PaperDocument] = []
         for result in results:
             if isinstance(result, Exception):
@@ -204,9 +230,9 @@ class NoveltyService:
                 continue
             if isinstance(result, list):
                 papers.extend(result)
- 
+
         return papers
- 
+
     def _to_related_work(self, doc: dict, similarity: float) -> RelatedWork:
         return RelatedWork(
             id=str(doc.get("_id", "")),
@@ -217,7 +243,7 @@ class NoveltyService:
             citation_count=doc.get("citation_count"),
             similarity=round(similarity, 4),
         )
- 
+
     async def _score_aspect(
         self,
         aspect_text: str,
@@ -225,20 +251,20 @@ class NoveltyService:
         aspect_name: str,
     ) -> tuple[AspectResult, list[PaperDocument]]:
         aspect_vector = await embedding_service.embed(aspect_text)
- 
+
         cached_results = await self._search_qdrant(aspect_vector, request, request.top_k)
- 
+
         fresh_papers = await self._search_sources(aspect_text, request)
- 
+
         seen_ids = {str(doc["_id"]) for doc, _ in cached_results}
         new_to_ingest: list[PaperDocument] = []
         fresh_results: list[tuple[dict, float]] = []
- 
+
         for paper in fresh_papers:
             paper_text = f"{paper.title}. {paper.abstract}" if paper.abstract else paper.title
             paper_vector = await embedding_service.embed(paper_text)
             similarity = sum(a * b for a, b in zip(aspect_vector, paper_vector))
- 
+
             pseudo_doc = {
                 "_id": paper.id,
                 "title": paper.title,
@@ -247,26 +273,26 @@ class NoveltyService:
                 "source_url": paper.source_url,
                 "citation_count": paper.citation_count,
             }
- 
+
             if str(paper.id) not in seen_ids:
                 fresh_results.append((pseudo_doc, similarity))
                 new_to_ingest.append(paper)
                 seen_ids.add(str(paper.id))
- 
+
         all_results = cached_results + fresh_results
         all_results.sort(key=lambda x: x[1], reverse=True)
         top_results = all_results[:request.top_k]
- 
+
         novelty = _weighted_novelty(top_results)
         related_works = [self._to_related_work(doc, sim) for doc, sim in top_results]
         summary = _aspect_summary(aspect_name, novelty, related_works)
- 
+
         return AspectResult(
             score=novelty,
             summary=summary,
             related_works=related_works,
         ), new_to_ingest
- 
+
     async def _save_check(
         self,
         request: NoveltyCheckRequest,
@@ -286,26 +312,22 @@ class NoveltyService:
                     topic=AspectDocument(
                         score=result.aspects.topic.score,
                         summary=result.aspects.topic.summary,
-                        related_works=[
-                            RelatedWorkDocument(**rw.model_dump())
-                            for rw in result.aspects.topic.related_works
-                        ],
+                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.topic.related_works],
                     ),
-                    methods=AspectDocument(
-                        score=result.aspects.methods.score,
-                        summary=result.aspects.methods.summary,
-                        related_works=[
-                            RelatedWorkDocument(**rw.model_dump())
-                            for rw in result.aspects.methods.related_works
-                        ],
+                    problem_statement=AspectDocument(
+                        score=result.aspects.problem_statement.score,
+                        summary=result.aspects.problem_statement.summary,
+                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.problem_statement.related_works],
+                    ),
+                    methodology=AspectDocument(
+                        score=result.aspects.methodology.score,
+                        summary=result.aspects.methodology.summary,
+                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.methodology.related_works],
                     ),
                     domain=AspectDocument(
                         score=result.aspects.domain.score,
                         summary=result.aspects.domain.summary,
-                        related_works=[
-                            RelatedWorkDocument(**rw.model_dump())
-                            for rw in result.aspects.domain.related_works
-                        ],
+                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.domain.related_works],
                     ),
                 ),
                 recommendation=result.recommendation,
@@ -313,50 +335,63 @@ class NoveltyService:
             await self.novelty_checks.insert_one(doc.model_dump(by_alias=True))
         except Exception as e:
             logger.error(f"Failed to save novelty check: {e}")
- 
+
     async def check_stream(
         self,
         request: NoveltyCheckRequest,
         user_id: str | None = None,
     ) -> AsyncGenerator[dict, None]:
         try:
-            yield {"type": "progress", "message": "Analysing your text…", "progress": 10}
- 
-            topic_text  = _extract_aspect_sentences(request.text, TOPIC_HINTS)
-            method_text = _extract_aspect_sentences(request.text, METHOD_HINTS)
-            domain_text = _extract_aspect_sentences(request.text, DOMAIN_HINTS)
- 
-            yield {"type": "progress", "message": "Checking topic novelty…", "progress": 30}
+            yield {"type": "progress", "message": "Analysing your text…", "progress": 5}
+
+            topic_text     = _extract_aspect_sentences(request.text, TOPIC_HINTS)
+            problem_text   = _extract_aspect_sentences(request.text, PROBLEM_HINTS)
+            method_text    = _extract_aspect_sentences(request.text, METHOD_HINTS)
+            domain_text    = _extract_aspect_sentences(request.text, DOMAIN_HINTS)
+
+            yield {"type": "progress", "message": "Checking topic novelty…", "progress": 20}
             topic_result, topic_new = await self._score_aspect(topic_text, request, "topic")
- 
-            yield {"type": "progress", "message": "Checking methodology novelty…", "progress": 55}
-            method_result, method_new = await self._score_aspect(method_text, request, "methods")
- 
-            yield {"type": "progress", "message": "Checking domain novelty…", "progress": 75}
+
+            yield {"type": "progress", "message": "Checking problem statement novelty…", "progress": 40}
+            problem_result, problem_new = await self._score_aspect(problem_text, request, "problem_statement")
+
+            yield {"type": "progress", "message": "Checking methodology novelty…", "progress": 60}
+            method_result, method_new = await self._score_aspect(method_text, request, "methodology")
+
+            yield {"type": "progress", "message": "Checking domain novelty…", "progress": 78}
             domain_result, domain_new = await self._score_aspect(domain_text, request, "domain")
- 
-            yield {"type": "progress", "message": "Computing novelty score…", "progress": 90}
- 
+
+            yield {"type": "progress", "message": "Computing novelty score…", "progress": 92}
+
             aspects = NoveltyAspects(
                 topic=topic_result,
-                methods=method_result,
+                problem_statement=problem_result,
+                methodology=method_result,
                 domain=domain_result,
             )
- 
+
             overall_score = round(
-                (topic_result.score + method_result.score + domain_result.score) / 3, 4
+                (
+                    topic_result.score +
+                    problem_result.score +
+                    method_result.score +
+                    domain_result.score
+                ) / 4,
+                4,
             )
- 
+
             result = NoveltyCheckResult(
                 novelty_score=overall_score,
                 verdict=_verdict(overall_score),
                 aspects=aspects,
                 recommendation=_recommendation(aspects, overall_score),
             )
- 
+
             await self._save_check(request, result, user_id)
- 
-            all_new = list({p.source_id: p for p in topic_new + method_new + domain_new}.values())
+
+            all_new = list(
+                {p.source_id: p for p in topic_new + problem_new + method_new + domain_new}.values()
+            )
             if all_new:
                 try:
                     paper_dicts = []
@@ -369,12 +404,12 @@ class NoveltyService:
                 except Exception as e:
                     logger.error(f"Failed to fire ingest task: {e}")
                     await ingestion_service.ingest(all_new)
- 
+
             yield {"type": "result", "result": result.model_dump()}
- 
+
         except Exception as e:
             logger.error(f"Novelty check error: {e}")
             yield {"type": "error", "message": str(e)}
- 
- 
+
+
 novelty_service = NoveltyService()

@@ -22,7 +22,8 @@ class AspectDocument(BaseModel):
 
 class NoveltyAspectsDocument(BaseModel):
     topic: AspectDocument
-    methods: AspectDocument
+    problem_statement: AspectDocument
+    methodology: AspectDocument
     domain: AspectDocument
 
 
