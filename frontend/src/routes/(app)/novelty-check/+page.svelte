@@ -7,7 +7,6 @@
   import NoveltyScore from '$lib/components/NoveltyCheck/NoveltyScore.svelte';
   import NoveltyBreakdown from '$lib/components/NoveltyCheck/NoveltyBreakdown.svelte';
   import NoveltyRecommendation from '$lib/components/NoveltyCheck/NoveltyRecommendation.svelte';
-  import NoveltyRelatedWorks from '$lib/components/NoveltyCheck/NoveltyRelatedWorks.svelte';
 
   let text = '';
   let loading = false;
@@ -16,14 +15,12 @@
   let error: string | null = null;
   let result: NoveltyResult | null = null;
 
-  async function handleSubmit(
-    e: CustomEvent<{
-      text: string;
-      fieldOfStudy?: string;
-      yearFrom?: number;
-      yearTo?: number;
-    }>
-  ) {
+  async function handleSubmit(e: CustomEvent<{
+    text: string;
+    fieldOfStudy?: string;
+    yearFrom?: number;
+    yearTo?: number;
+  }>) {
     loading = true;
     error = null;
     result = null;
@@ -71,6 +68,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
+
   {#if !result}
     <NoveltyInput {text} {loading} on:submit={handleSubmit} />
 
@@ -99,9 +97,9 @@
       </button>
     </div>
 
+    <NoveltyRecommendation recommendation={result.recommendation} />
     <NoveltyScore score={result.noveltyScore} verdict={result.verdict} />
     <NoveltyBreakdown aspects={result.aspects} />
-    <NoveltyRecommendation recommendation={result.recommendation} />
-    <NoveltyRelatedWorks aspects={result.aspects} />
   {/if}
+
 </div>
