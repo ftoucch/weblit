@@ -26,6 +26,7 @@ async def connect_mongo() -> None:
         "users": mongo_db.db["users"],
         "papers": mongo_db.db["papers"],
         "saved_searches": mongo_db.db["saved_searches"],
+        "fulltext_checks": mongo_db.db["fulltext_checks"],
     }
 
     await mongo_db.db["users"].create_index("email", unique=True)
@@ -35,6 +36,10 @@ async def connect_mongo() -> None:
     )
     await mongo_db.db["papers"].create_index("has_full_text")
     await mongo_db.db["saved_searches"].create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
+
+    await mongo_db.db["fulltext_checks"].create_index(
         [("user_id", 1), ("created_at", -1)]
     )
 
