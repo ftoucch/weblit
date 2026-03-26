@@ -124,32 +124,101 @@ def _aspect_summary(aspect: str, score: float, related_works: list[RelatedWork])
     return summaries.get(aspect, f"Aspect is {coverage} — {count} related works found ({year_range}).")
 
 
+def _top_paper(aspect_result: AspectResult) -> RelatedWork | None:
+    if not aspect_result.related_works:
+        return None
+    return max(aspect_result.related_works, key=lambda r: r.similarity)
+
+
+def _aspect_coverage_line(name: str, result: AspectResult) -> str:
+    pct = round(result.score * 100)
+    top = _top_paper(result)
+    count = len(result.related_works)
+
+    if result.score >= 0.7:
+        line = f"Your {name} is your strongest angle ({pct}% novel)"
+        if top:
+            line += f" — the closest existing work is '{top.title}'"
+            if top.year:
+                line += f" ({top.year})"
+            line += f" at {round(top.similarity * 100)}% similarity"
+        if count:
+            line += f", with only {count} related papers found"
+        return line + "."
+
+    if result.score >= 0.4:
+        line = f"Your {name} is moderately covered ({pct}% novel)"
+        if top:
+            line += f" — '{top.title}'"
+            if top.year:
+                line += f" ({top.year})"
+            line += f" is the most similar at {round(top.similarity * 100)}%"
+        return line + "."
+
+    line = f"Your {name} is well covered territory ({pct}% novel)"
+    if top:
+        line += f" — '{top.title}'"
+        if top.year:
+            line += f" ({top.year})"
+        line += f" already addresses this at {round(top.similarity * 100)}% similarity"
+    if count:
+        line += f", and {count} other papers overlap significantly"
+    return line + "."
+
+
 def _recommendation(aspects: NoveltyAspects, overall: float) -> str:
-    scores = {
-        "topic": aspects.topic.score,
-        "problem statement": aspects.problem_statement.score,
-        "methodology": aspects.methodology.score,
-        "domain": aspects.domain.score,
+    aspect_map = {
+        "topic": aspects.topic,
+        "problem statement": aspects.problem_statement,
+        "methodology": aspects.methodology,
+        "domain": aspects.domain,
     }
+    scores = {k: v.score for k, v in aspect_map.items()}
     strongest = max(scores, key=lambda k: scores[k])
     weakest = min(scores, key=lambda k: scores[k])
+    overall_pct = round(overall * 100)
+
+    lines = []
+
+    for name, result in aspect_map.items():
+        lines.append(_aspect_coverage_line(name, result))
+
+    lines.append("")
 
     if overall >= 0.7:
-        return (
-            f"Your research shows strong novelty overall. "
-            f"The {strongest} aspect is particularly original — emphasise this in your proposal."
+        lines.append(
+            f"Overall your research is highly novel ({overall_pct}%). "
+            f"Lead with your {strongest} in your proposal — it is your clearest differentiator."
         )
-    if overall >= 0.4:
-        return (
-            f"Your {strongest} aspect shows the most novelty (score: {scores[strongest]:.2f}). "
-            f"Consider framing your proposal around this to differentiate from existing work. "
-            f"The {weakest} aspect is more crowded — acknowledge prior work there explicitly."
+    elif overall >= 0.4:
+        weakest_top = _top_paper(aspect_map[weakest])
+        lines.append(
+            f"Overall novelty is moderate ({overall_pct}%). "
+            f"Frame your proposal around your {strongest} to stand out. "
         )
-    return (
-        f"This area has significant existing coverage. "
-        f"Your strongest angle is {strongest} (score: {scores[strongest]:.2f}). "
-        f"Consider narrowing the scope or finding a more specific gap to address."
-    )
+        if weakest_top:
+            lines.append(
+                f"For your {weakest}, explicitly acknowledge \'{weakest_top.title}\'"
+                + (f" ({weakest_top.year})" if weakest_top.year else "")
+                + " and articulate clearly how your work differs."
+            )
+        else:
+            lines.append(f"For your {weakest}, explicitly position against existing work.")
+    else:
+        weakest_top = _top_paper(aspect_map[weakest])
+        lines.append(
+            f"This is a well-researched area ({overall_pct}% novel). "
+            f"To strengthen your proposal, narrow the scope significantly — "
+            f"focus on a specific gap that the existing literature has not addressed. "
+        )
+        if weakest_top:
+            lines.append(
+                f"Pay particular attention to \'{weakest_top.title}\'"
+                + (f" ({weakest_top.year})" if weakest_top.year else "")
+                + " — it is the closest match and reviewers will likely compare your work against it."
+            )
+
+    return " ".join(lines)
 
 
 class NoveltyService:
