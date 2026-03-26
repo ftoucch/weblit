@@ -96,8 +96,7 @@
         Check another →
       </button>
     </div>
-
-    <NoveltyRecommendation recommendation={result.recommendation} />
+    {@html '<!--<NoveltyRecommendation recommendation={result.recommendation} />-->'}
     <NoveltyScore score={result.noveltyScore} verdict={result.verdict} />
     <NoveltyBreakdown aspects={result.aspects} />
   {/if}
