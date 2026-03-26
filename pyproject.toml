@@ -42,6 +42,7 @@ dependencies = [
     "pyjwt<3.0.0,>=2.8.0",
     "pwdlib[argon2,bcrypt]>=0.3.0",
     "python-multipart<1.0.0,>=0.0.7",
+    "pypdf>=4.0.0",
 
     # Testing
     "pytest>=8.4.1",
