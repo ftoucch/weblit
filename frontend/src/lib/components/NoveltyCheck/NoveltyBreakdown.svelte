@@ -4,10 +4,10 @@
   export let aspects: NoveltyAspects;
 
   const ASPECTS = [
-    { key: 'topic',            label: 'Topic'             },
+    { key: 'topic', label: 'Topic' },
     { key: 'problemStatement', label: 'Problem statement' },
-    { key: 'methodology',      label: 'Methodology'       },
-    { key: 'domain',           label: 'Domain'            },
+    { key: 'methodology', label: 'Methodology' },
+    { key: 'domain', label: 'Domain' },
   ] as const;
 
   let expanded: string | null = null;
@@ -69,7 +69,9 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-2">
             <span class="text-sm font-medium text-gray-800">{aspect.label}</span>
-            <span class="text-[11px] px-2 py-0.5 rounded-full {badgeClass(score)}">{badgeLabel(score)}</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full {badgeClass(score)}"
+              >{badgeLabel(score)}</span
+            >
           </div>
           <div class="flex items-center gap-3">
             <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -78,15 +80,22 @@
                 style="width: {pct(score)}%"
               ></div>
             </div>
-            <span class="text-sm font-medium text-gray-700 tabular-nums w-10 text-right">{pct(score)}%</span>
+            <span class="text-sm font-medium text-gray-700 tabular-nums w-10 text-right"
+              >{pct(score)}%</span
+            >
           </div>
         </div>
 
         <svg
-          class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 {isOpen
+            ? 'rotate-180'
+            : ''}"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          <path d="m6 9 6 6 6-6"/>
+          <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
 
@@ -98,7 +107,9 @@
             <div class="border border-gray-100 rounded-lg overflow-hidden">
               <table class="w-full text-xs">
                 <thead>
-                  <tr class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase tracking-wide">
+                  <tr
+                    class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase tracking-wide"
+                  >
                     <th class="text-left px-4 py-2 font-medium">Paper</th>
                     <th class="text-right px-3 py-2 font-medium w-24">Similarity</th>
                     <th class="text-right px-3 py-2 font-medium w-16">Year</th>
@@ -115,7 +126,8 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             class="text-gray-700 hover:text-weblit leading-snug line-clamp-2"
-                          >{rw.title}</a>
+                            >{rw.title}</a
+                          >
                         {:else}
                           <p class="text-gray-700 leading-snug line-clamp-2">{rw.title}</p>
                         {/if}

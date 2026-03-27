@@ -15,12 +15,14 @@
   let error: string | null = null;
   let result: NoveltyResult | null = null;
 
-  async function handleSubmit(e: CustomEvent<{
-    text: string;
-    fieldOfStudy?: string;
-    yearFrom?: number;
-    yearTo?: number;
-  }>) {
+  async function handleSubmit(
+    e: CustomEvent<{
+      text: string;
+      fieldOfStudy?: string;
+      yearFrom?: number;
+      yearTo?: number;
+    }>
+  ) {
     loading = true;
     error = null;
     result = null;
@@ -67,8 +69,7 @@
     : 0;
 </script>
 
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
-
+<div class="mx-auto min-w-3xl max-w-7xl px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
   {#if !result}
     <NoveltyInput {text} {loading} on:submit={handleSubmit} />
 
@@ -100,5 +101,4 @@
     <NoveltyScore score={result.noveltyScore} verdict={result.verdict} />
     <NoveltyBreakdown aspects={result.aspects} />
   {/if}
-
 </div>
