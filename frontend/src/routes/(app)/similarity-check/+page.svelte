@@ -5,7 +5,7 @@
   import SimilarityInput from '$lib/components/similaritycheck/SimilarityInput.svelte';
   import SimilarityProgress from '$lib/components/similaritycheck/SimilarityProgress.svelte';
   import SimilarityScore from '$lib/components/similaritycheck/SimilarityScore.svelte';
-  import SimilarityDocument from '$lib/components/similaritycheck/SimilarityDocument.svelte';
+  import SimilarityDocument from '$lib/components/SimilarityCheck/SimilarityDocument.svelte';
 
   let loading = false;
   let streaming = false;

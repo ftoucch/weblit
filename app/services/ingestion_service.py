@@ -17,13 +17,9 @@ class IngestionService:
 
     @property
     def papers(self):
-        return mongo_db.collections["papers"] # type: ignore
+        return mongo_db.collections["papers"] #type: ignore
 
     async def _exists(self, paper: PaperDocument) -> bool:
-        """
-        Check if paper already exists in MongoDB.
-        Priority: DOI → source + source_id
-        """
         if paper.doi:
             exists = await self.papers.find_one({"doi": paper.doi})
         else:
@@ -34,25 +30,16 @@ class IngestionService:
         return exists is not None
 
     async def _filter_new(self, papers: list[PaperDocument]) -> list[PaperDocument]:
-        """Filter out papers already in MongoDB."""
         new_papers = []
         for paper in papers:
             if not await self._exists(paper):
                 new_papers.append(paper)
-
-        logger.info(
-            f"{len(new_papers)} new papers out of {len(papers)} fetched."
-        )
+        logger.info(f"{len(new_papers)} new papers out of {len(papers)} fetched.")
         return new_papers
-
 
     async def _embed_papers(
         self, papers: list[PaperDocument]
     ) -> list[tuple[PaperDocument, list[float]]]:
-        """
-        Embed all papers in one batch.
-        Returns list of (paper, vector) tuples.
-        """
         texts = [
             f"{p.title}. {p.abstract}" if p.abstract else p.title
             for p in papers
@@ -63,10 +50,6 @@ class IngestionService:
     async def _store(
         self, papers_with_vectors: list[tuple[PaperDocument, list[float]]]
     ) -> int:
-        """
-        Store papers in Qdrant and MongoDB.
-        Returns count of successfully stored papers.
-        """
         if not papers_with_vectors:
             return 0
 
@@ -77,7 +60,6 @@ class IngestionService:
         for paper, vector in papers_with_vectors:
             qdrant_id = str(uuid.uuid4())
 
-            # build Qdrant point
             points.append(PointStruct(
                 id=qdrant_id,
                 vector=vector,
@@ -88,17 +70,16 @@ class IngestionService:
                     "year": paper.year,
                     "doi": paper.doi,
                     "has_full_text": paper.has_full_text,
+                    "vector": vector,
                 }
             ))
 
-            # update paper with qdrant reference
             paper.qdrant_abstract_id = qdrant_id
             paper.abstract_indexed = True
             paper.updated_at = datetime.utcnow()
 
             docs_to_insert.append(paper.model_dump(by_alias=True))
 
-        # store in Qdrant
         try:
             await qdrant.upsert(
                 collection_name=config.qdrant_collection,
@@ -108,13 +89,10 @@ class IngestionService:
             logger.error(f"Qdrant upsert failed: {e}")
             return 0
 
-        # store in MongoDB
         try:
             if docs_to_insert:
                 await self.papers.insert_many(docs_to_insert, ordered=False)
         except Exception as e:
-            # ordered=False means partial inserts succeed
-            # duplicate key errors are expected and safe to ignore
             logger.warning(f"MongoDB insert_many partial error: {e}")
 
         stored = len(docs_to_insert)
@@ -122,21 +100,11 @@ class IngestionService:
         return stored
 
     async def ingest(self, papers: list[PaperDocument]) -> int:
-        """
-        Full ingestion pipeline:
-        deduplicate → embed → store.
-
-        Returns count of newly indexed papers.
-        Called by search_service directly for small batches,
-        or by Celery tasks for large background jobs.
-        """
         if not papers:
             return 0
-
         new_papers = await self._filter_new(papers)
         if not new_papers:
             return 0
-
         papers_with_vectors = await self._embed_papers(new_papers)
         return await self._store(papers_with_vectors)
 

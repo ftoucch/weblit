@@ -10,7 +10,7 @@ class AuthorDocument(BaseModel):
 
 
 class PaperDocument(BaseModel):
-
+    
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         populate_by_name=True
@@ -27,15 +27,16 @@ class PaperDocument(BaseModel):
     source_url: Optional[str] = None
     citation_count: Optional[int] = None
 
-    source: str                  
-    source_id: str                     
+    source: str                                
+    source_id: str                             
 
     full_text: Optional[str] = None
-    full_text_source: Optional[str] = None
+    full_text_source: Optional[str] = None     
     has_full_text: bool = False
+    oa_url: Optional[str] = None
 
-    qdrant_abstract_id: Optional[str] = None
-    qdrant_fulltext_ids: list[str] = []
+    qdrant_abstract_id: Optional[str] = None   
+    qdrant_fulltext_ids: list[str] = []        
 
     abstract_indexed: bool = False
     fulltext_indexed: bool = False

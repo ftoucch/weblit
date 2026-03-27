@@ -127,6 +127,7 @@ class OpenAlexSource(BaseSource):
                 source_id=raw["id"],
                 has_full_text=has_full_text,
                 full_text_source="core" if has_full_text else None,
+                oa_url=oa_url if has_full_text else None,
             )
         except Exception as e:
             logger.warning(f"Failed to parse OpenAlex result: {e}")
