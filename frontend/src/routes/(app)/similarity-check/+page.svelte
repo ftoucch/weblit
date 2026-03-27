@@ -23,14 +23,16 @@
   let lowSimilarityChunks = 0;
   let done = false;
 
-  async function handleSubmit(e: CustomEvent<{
-    text?: string;
-    pdfBase64?: string;
-    fieldOfStudy?: string;
-    yearFrom?: number;
-    yearTo?: number;
-    minSimilarity: number;
-  }>) {
+  async function handleSubmit(
+    e: CustomEvent<{
+      text?: string;
+      pdfBase64?: string;
+      fieldOfStudy?: string;
+      yearFrom?: number;
+      yearTo?: number;
+      minSimilarity: number;
+    }>
+  ) {
     loading = true;
     streaming = false;
     done = false;
@@ -55,15 +57,18 @@
         } else if (event.type === 'text') {
           inputText = event.content;
         } else if (event.type === 'chunk_result') {
-          chunks = [...chunks, {
-            chunkIndex: event.chunkIndex,
-            text: event.text,
-            startChar: event.startChar,
-            endChar: event.endChar,
-            similarity: event.similarity,
-            similarityLevel: event.similarityLevel,
-            matches: event.matches,
-          }];
+          chunks = [
+            ...chunks,
+            {
+              chunkIndex: event.chunkIndex,
+              text: event.text,
+              startChar: event.startChar,
+              endChar: event.endChar,
+              similarity: event.similarity,
+              similarityLevel: event.similarityLevel,
+              matches: event.matches,
+            },
+          ];
           totalChunks = Math.max(totalChunks, event.chunkIndex + 1);
           progress = event.progress;
         } else if (event.type === 'result') {
@@ -98,8 +103,7 @@
   }
 </script>
 
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
-
+<div class="mx-auto min-w-3xl max-w-7xl px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
   {#if !done && !streaming}
     <SimilarityInput {loading} on:submit={handleSubmit} />
   {/if}
@@ -147,5 +151,4 @@
 
     <SimilarityDocument text={inputText} {chunks} streaming={false} />
   {/if}
-
 </div>

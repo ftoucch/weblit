@@ -29,18 +29,26 @@
 <div class="border border-gray-200 rounded-xl bg-white px-5 py-5 mb-4">
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">Semantic similarity</p>
+      <p class="text-xs uppercase tracking-wide text-gray-400 font-medium mb-1">
+        Semantic similarity
+      </p>
       <div class="flex items-baseline gap-3">
         <span class="text-4xl font-medium text-gray-900">{pct}%</span>
-        <span class="text-xs border px-2 py-0.5 rounded-full {verdictClass(pct)}">{verdict(pct)}</span>
+        <span class="text-xs border px-2 py-0.5 rounded-full {verdictClass(pct)}"
+          >{verdict(pct)}</span
+        >
       </div>
     </div>
     <div class="w-16 h-16">
       <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90">
-        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" stroke-width="3"/>
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" stroke-width="3" />
         <circle
-          cx="18" cy="18" r="15.9" fill="none"
-          stroke={ringColor(pct)} stroke-width="3"
+          cx="18"
+          cy="18"
+          r="15.9"
+          fill="none"
+          stroke={ringColor(pct)}
+          stroke-width="3"
           stroke-dasharray="{pct} 100"
           stroke-linecap="round"
         />

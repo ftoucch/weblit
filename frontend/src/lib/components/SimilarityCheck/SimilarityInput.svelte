@@ -44,7 +44,7 @@
     if (!valid) return;
     dispatch('submit', {
       text: mode === 'text' ? text.trim() : undefined,
-      pdfBase64: mode === 'pdf' ? pdfBase64 ?? undefined : undefined,
+      pdfBase64: mode === 'pdf' ? (pdfBase64 ?? undefined) : undefined,
       fieldOfStudy: fieldOfStudy.trim() || undefined,
       yearFrom: yearFrom ? parseInt(yearFrom) : undefined,
       yearTo: yearTo ? parseInt(yearTo) : undefined,
@@ -53,12 +53,10 @@
   }
 </script>
 
-<h1 class="text-4xl font-medium text-gray-900 leading-tight mb-3">
-  Full text similarity check.
-</h1>
+<h1 class="text-4xl font-medium text-gray-900 leading-tight mb-3">Full text similarity check.</h1>
 <p class="text-sm text-gray-500 leading-relaxed mb-8">
-  Paste your paper or upload a PDF. We'll analyse each section against existing literature
-  and show you where your work overlaps.
+  Paste your paper or upload a PDF. We'll analyse each section against existing literature and show
+  you where your work overlaps.
 </p>
 
 <div class="border border-gray-200 rounded-xl overflow-hidden bg-white">
@@ -66,14 +64,18 @@
     <button
       on:click={() => (mode = 'text')}
       class="flex-1 px-4 py-2.5 text-xs font-medium transition-colors
-        {mode === 'text' ? 'text-gray-900 bg-gray-50 border-b-2 border-gray-900' : 'text-gray-400 hover:text-gray-600'}"
+        {mode === 'text'
+        ? 'text-gray-900 bg-gray-50 border-b-2 border-gray-900'
+        : 'text-gray-400 hover:text-gray-600'}"
     >
       Paste text
     </button>
     <button
       on:click={() => (mode = 'pdf')}
       class="flex-1 px-4 py-2.5 text-xs font-medium transition-colors
-        {mode === 'pdf' ? 'text-gray-900 bg-gray-50 border-b-2 border-gray-900' : 'text-gray-400 hover:text-gray-600'}"
+        {mode === 'pdf'
+        ? 'text-gray-900 bg-gray-50 border-b-2 border-gray-900'
+        : 'text-gray-400 hover:text-gray-600'}"
     >
       Upload PDF
     </button>
@@ -92,8 +94,16 @@
       <label
         class="w-full border-2 border-dashed border-gray-200 rounded-xl px-6 py-8 flex flex-col items-center gap-2 cursor-pointer hover:border-gray-300 transition-colors"
       >
-        <svg class="w-8 h-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        <svg
+          class="w-8 h-8 text-gray-300"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
         {#if pdfFile}
           <span class="text-sm text-gray-700 font-medium">{pdfFile.name}</span>
@@ -120,7 +130,14 @@
       class="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg transition-colors
         {panelOpen ? 'text-weblit' : 'text-gray-400 hover:text-gray-600'}"
     >
-      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <svg
+        class="w-3.5 h-3.5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
         <line x1="4" y1="6" x2="20" y2="6" />
         <line x1="8" y1="12" x2="16" y2="12" />
         <line x1="11" y1="18" x2="13" y2="18" />
@@ -163,7 +180,9 @@
         </div>
       </div>
       <div>
-        <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">Field of study</p>
+        <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">
+          Field of study
+        </p>
         <input
           bind:value={fieldOfStudy}
           type="text"
@@ -173,7 +192,9 @@
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div>
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">Year from</p>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">
+            Year from
+          </p>
           <input
             bind:value={yearFrom}
             type="number"
@@ -182,7 +203,9 @@
           />
         </div>
         <div>
-          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">Year to</p>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 font-medium mb-1.5">
+            Year to
+          </p>
           <input
             bind:value={yearTo}
             type="number"

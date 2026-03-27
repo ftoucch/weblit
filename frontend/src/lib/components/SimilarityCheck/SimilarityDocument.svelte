@@ -23,7 +23,7 @@
     if (!chunkList.length) return [{ text: fullText, chunk: null }];
 
     const relevant = chunkList
-      .filter(c => c.similarityLevel !== 'low')
+      .filter((c) => c.similarityLevel !== 'low')
       .sort((a, b) => a.startChar - b.startChar);
 
     const segs: Segment[] = [];
@@ -100,7 +100,10 @@
     </div>
   </div>
 
-  <div class="px-6 py-5 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap relative" style="font-family: Georgia, serif; line-height: 1.8;">
+  <div
+    class="px-6 py-5 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap relative"
+    style="font-family: Georgia, serif; line-height: 1.8;"
+  >
     {#if text}
       {#each segments as seg}
         {#if seg.chunk}
@@ -109,8 +112,8 @@
             on:mouseenter={(e) => showTooltip(e, seg.chunk!)}
             on:mouseleave={hideTooltip}
             role="mark"
-            aria-label="Semantically similar section"
-          >{seg.text}</span>
+            aria-label="Semantically similar section">{seg.text}</span
+          >
         {:else}
           {seg.text}
         {/if}
@@ -135,10 +138,12 @@
     style="top: {tooltipTop}px; left: {tooltipLeft}px; transform: translateY(-100%)"
   >
     <div class="flex items-center gap-2 mb-2.5">
-      <span class="px-2 py-0.5 rounded-full text-[10px] font-medium
+      <span
+        class="px-2 py-0.5 rounded-full text-[10px] font-medium
         {activeChunk.similarityLevel === 'high'
           ? 'bg-red-50 text-red-600 border border-red-200'
-          : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+          : 'bg-amber-50 text-amber-700 border border-amber-200'}"
+      >
         {Math.round(activeChunk.similarity * 100)}% semantically similar
       </span>
     </div>
@@ -152,7 +157,9 @@
 
       {#if match.matchedText}
         <div class="border-t border-gray-100 pt-2 mt-2">
-          <p class="text-[10px] uppercase tracking-wide text-gray-400 font-medium mb-1">Similar passage</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-400 font-medium mb-1">
+            Similar passage
+          </p>
           <p class="text-gray-600 leading-relaxed italic">"{truncate(match.matchedText)}"</p>
         </div>
       {/if}

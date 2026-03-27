@@ -8,7 +8,7 @@ import type { SimilarityCheckParams, SimilarityEvent } from '$lib/types/similari
 const WS_BASE_URL = BASE_URL.replace(/^http/, 'ws');
 
 export async function* checkSimilarity(
-  params: SimilarityCheckParams,
+  params: SimilarityCheckParams
 ): AsyncGenerator<SimilarityEvent> {
   const token = get(auth).token;
   const url = token
@@ -31,9 +31,7 @@ export async function* checkSimilarity(
       ...(params.yearFrom && { yearFrom: params.yearFrom }),
       ...(params.yearTo && { yearTo: params.yearTo }),
     };
-    ws.send(JSON.stringify(
-      snakecaseKeys(payload, { deep: true })
-    ));
+    ws.send(JSON.stringify(snakecaseKeys(payload, { deep: true })));
   };
 
   ws.onmessage = (e) => {
@@ -72,7 +70,9 @@ export async function* checkSimilarity(
       if (wsError) yield { type: 'error', message: wsError } as SimilarityEvent;
       break;
     } else {
-      await new Promise<void>((r) => { resolve = r; });
+      await new Promise<void>((r) => {
+        resolve = r;
+      });
     }
   }
 }
