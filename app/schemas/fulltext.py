@@ -22,6 +22,7 @@ class ChunkMatch(BaseModel):
     doi: Optional[str] = None
     source_url: Optional[str] = None
     similarity: float
+    matched_text: Optional[str] = None
 
 
 class ChunkResult(BaseModel):

@@ -14,6 +14,7 @@ export type ChunkMatch = {
   doi: string | null;
   sourceUrl: string | null;
   similarity: number;
+  matchedText: string | null;
 };
 
 export type ChunkResult = {
