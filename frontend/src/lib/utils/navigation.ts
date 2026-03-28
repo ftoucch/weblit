@@ -5,7 +5,7 @@ export const navigation: { name: string; href: string; icon: ComponentType }[] =
   { name: 'Search', href: '/search', icon: SearchIcon },
   { name: 'Similarity Check', href: '/similarity-check', icon: LayersIcon },
   { name: 'Novelty Check', href: '/novelty-check', icon: StarIcon },
-  { name: 'History', href: '/history', icon: ClockIcon },
+  //{ name: 'History', href: '/history', icon: ClockIcon },
 ];
 
 export let userNavigation = [
