@@ -1,4 +1,5 @@
 import logging
+import re
 import uuid
 from datetime import datetime
 from bson import ObjectId
@@ -12,40 +13,83 @@ from app.services.fulltext_fetcher import fetch_fulltext
 
 logger = logging.getLogger(__name__)
 
-CHUNK_SIZE   = 300
-CHUNK_STRIDE = 150
 MAX_CHUNKS   = 200
+MIN_PARA_LEN = 100
+MAX_PARA_LEN = 3000
 
 
-def _sliding_window_chunks(text: str) -> list[tuple[str, int, int]]:
-    words = text.split()
-    if not words:
-        return []
+def _paragraph_chunks(text: str) -> list[tuple[str, int, int]]:
+    """
+    Split text into semantic paragraphs, handling both HTML and PDF extracted text.
 
-    word_positions: list[int] = []
-    pos = 0
-    for word in words:
-        idx = text.find(word, pos)
-        word_positions.append(idx)
-        pos = idx + len(word)
+    Strategy:
+    1. Join single-line wraps (PDF line breaks mid-sentence)
+    2. Split on double newlines OR sentence-ending single newlines
+    3. Skip short segments (headers, page numbers, captions)
+    4. Track char offsets for frontend highlighting
+    """
+    normalized = re.sub(r'(?<![.!?:"])\n(?!\n)', ' ', text)
 
-    chunks = []
-    start = 0
+    raw_paras = re.split(r'\n{2,}|(?<=[.!?])\n', normalized)
 
-    while start < len(words):
-        end = min(start + CHUNK_SIZE, len(words))
-        chunk_text = " ".join(words[start:end])
+    chunks: list[tuple[str, int, int]] = []
+    cursor = 0
 
-        if len(chunk_text.strip()) > 50:
-            start_char = word_positions[start]
-            end_char = word_positions[end - 1] + len(words[end - 1])
-            chunks.append((chunk_text, start_char, end_char))
+    for para in raw_paras:
+        para = para.strip()
 
-        if end == len(words):
-            break
-        start += CHUNK_SIZE - CHUNK_STRIDE
+        if not para:
+            cursor = text.find('\n', cursor)
+            if cursor == -1:
+                break
+            cursor += 1
+            continue
+
+        # find this paragraph in the original text
+        start_char = text.find(para[:40], cursor)
+        if start_char == -1:
+            # fallback — try shorter prefix
+            start_char = text.find(para[:20], cursor)
+        if start_char == -1:
+            continue
+
+        end_char = start_char + len(para)
+
+        # skip short segments — likely headers, page numbers, captions
+        if len(para) < MIN_PARA_LEN:
+            cursor = end_char
+            continue
+
+        # if paragraph is very long, split at sentence boundaries
+        if len(para) > MAX_PARA_LEN:
+            sentences = re.split(r'(?<=[.!?])\s+', para)
+            sub_cursor = start_char
+            current = ''
+
+            for sentence in sentences:
+                if len(current) + len(sentence) > MAX_PARA_LEN and current:
+                    sub_start = text.find(current[:40], sub_cursor)
+                    if sub_start != -1:
+                        chunks.append((current.strip(), sub_start, sub_start + len(current.strip())))
+                    sub_cursor = sub_start + len(current) if sub_start != -1 else sub_cursor
+                    current = sentence
+                else:
+                    current = current + ' ' + sentence if current else sentence
+
+            if current.strip() and len(current.strip()) >= MIN_PARA_LEN:
+                sub_start = text.find(current[:40], sub_cursor)
+                if sub_start != -1:
+                    chunks.append((current.strip(), sub_start, sub_start + len(current.strip())))
+        else:
+            chunks.append((para, start_char, end_char))
+
+        cursor = end_char
 
     return chunks[:MAX_CHUNKS]
+
+
+# alias so fulltext_service.py import still works
+_sliding_window_chunks = _paragraph_chunks
 
 
 class FullTextIngestionService:
@@ -116,7 +160,7 @@ class FullTextIngestionService:
             logger.warning(f"No full text available for paper {paper.id}")
             return False
 
-        chunks = _sliding_window_chunks(full_text)
+        chunks = _paragraph_chunks(full_text)
         if not chunks:
             return False
 
@@ -165,7 +209,7 @@ class FullTextIngestionService:
             }}
         )
 
-        logger.info(f"Fulltext indexed {len(chunks)} chunks for paper {paper.id}")
+        logger.info(f"✓ Fulltext indexed: '{paper.title}' — {len(chunks)} chunks")
         return True
 
     async def index_batch(self, papers: list[PaperDocument]) -> int:

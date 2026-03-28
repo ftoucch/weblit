@@ -6,7 +6,7 @@ from bson import ObjectId
 from qdrant_client.models import Filter, FieldCondition, Range
 
 from app.db.mongo import mongo_db
-from app.db.qdrant import get_qdrant
+from app.db.qdrant import get_qdrant, FULLTEXT_COLLECTION
 from app.core.config import config
 from app.models.fulltext import (
     FullTextCheckDocument,
@@ -20,13 +20,12 @@ from app.schemas.fulltext import (
     ChunkMatch,
 )
 from app.services.embedding_service import embedding_service
+from app.services.fulltext_ingestion_service import _sliding_window_chunks
 
 logger = logging.getLogger(__name__)
 
-CHUNK_SIZE   = 300
-CHUNK_STRIDE = 150
-MAX_CHUNKS   = 100
-TOP_K        = 5
+MAX_CHUNKS = 100
+TOP_K      = 5
 
 
 def _extract_text_from_pdf(pdf_base64: str) -> str:
@@ -38,41 +37,6 @@ def _extract_text_from_pdf(pdf_base64: str) -> str:
         return "\n\n".join(pages)
     except Exception as e:
         raise ValueError(f"Failed to extract text from PDF: {e}")
-
-
-def _sliding_window_chunks(text: str, chunk_size: int, stride: int) -> list[tuple[str, int, int]]:
-    """
-    Returns list of (chunk_text, start_char, end_char) tuples.
-    Tracks character offsets so frontend can highlight exact positions.
-    """
-    words = text.split()
-    if not words:
-        return []
-
-    word_positions: list[int] = []
-    pos = 0
-    for word in words:
-        idx = text.find(word, pos)
-        word_positions.append(idx)
-        pos = idx + len(word)
-
-    chunks = []
-    start = 0
-
-    while start < len(words):
-        end = min(start + chunk_size, len(words))
-        chunk_text = " ".join(words[start:end])
-
-        if len(chunk_text.strip()) > 50:
-            start_char = word_positions[start]
-            end_char = word_positions[end - 1] + len(words[end - 1])
-            chunks.append((chunk_text, start_char, end_char))
-
-        if end == len(words):
-            break
-        start += stride
-
-    return chunks[:MAX_CHUNKS]
 
 
 def _similarity_level(similarity: float) -> str:
@@ -93,11 +57,25 @@ class FullTextService:
     def fulltext_checks(self):
         return mongo_db.collections["fulltext_checks"]  # type: ignore
 
+    async def _get_collection(self) -> str:
+        """Check once which collection to use — fulltext if available, else abstracts."""
+        try:
+            qdrant = get_qdrant()
+            info = await qdrant.get_collection(FULLTEXT_COLLECTION)
+            if (info.points_count or 0) > 0:
+                logger.info(f"Using fulltext collection ({info.points_count} vectors)")
+                return FULLTEXT_COLLECTION
+        except Exception as e:
+            logger.warning(f"Could not check fulltext collection: {e}")
+        logger.info("Falling back to abstracts collection")
+        return config.qdrant_collection
+
     async def _search_similar(
         self,
         vector: list[float],
         request: FullTextCheckRequest,
-    ) -> list[tuple[dict, float]]:
+        collection: str,
+    ) -> list[ChunkMatch]:
         qdrant = get_qdrant()
 
         conditions = []
@@ -108,7 +86,7 @@ class FullTextService:
         qdrant_filter = Filter(must=conditions) if conditions else None
 
         response = await qdrant.query_points(
-            collection_name=config.qdrant_collection,
+            collection_name=collection,
             query=vector,
             limit=TOP_K,
             score_threshold=request.min_similarity,
@@ -120,21 +98,40 @@ class FullTextService:
         if not hits:
             return []
 
-        mongo_ids = [
-            ObjectId(hit.payload["mongo_id"])
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        ]
-        score_map = {
-            hit.payload["mongo_id"]: hit.score
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        }
+        matches = []
+        use_fulltext = collection == FULLTEXT_COLLECTION
 
-        cursor = self.papers.find({"_id": {"$in": mongo_ids}})
-        docs = await cursor.to_list(length=TOP_K)
+        for hit in hits:
+            if not hit.payload:
+                continue
 
-        return [(doc, score_map[str(doc["_id"])]) for doc in docs]
+            if use_fulltext:
+                matches.append(ChunkMatch(
+                    paper_id=hit.payload.get("paper_id", ""),
+                    title=hit.payload.get("title", ""),
+                    year=hit.payload.get("year"),
+                    doi=hit.payload.get("doi"),
+                    source_url=hit.payload.get("source_url"),
+                    similarity=round(hit.score, 4),
+                    matched_text=hit.payload.get("chunk_text"),
+                ))
+            else:
+                mongo_id = hit.payload.get("mongo_id")
+                if not mongo_id:
+                    continue
+                doc = await self.papers.find_one({"_id": ObjectId(mongo_id)})
+                if doc:
+                    matches.append(ChunkMatch(
+                        paper_id=str(doc["_id"]),
+                        title=doc.get("title", ""),
+                        year=doc.get("year"),
+                        doi=doc.get("doi"),
+                        source_url=doc.get("source_url"),
+                        similarity=round(hit.score, 4),
+                        matched_text=doc.get("abstract"),
+                    ))
+
+        return matches
 
     async def _save_check(
         self,
@@ -189,15 +186,18 @@ class FullTextService:
                 yield {"type": "error", "message": "No text could be extracted."}
                 return
 
-            chunks = _sliding_window_chunks(input_text, CHUNK_SIZE, CHUNK_STRIDE)
+            chunks = _sliding_window_chunks(input_text)
+            chunks = chunks[:MAX_CHUNKS]
             total = len(chunks)
 
             if total == 0:
                 yield {"type": "error", "message": "Text is too short to analyse."}
                 return
 
-            yield {"type": "text", "content": input_text}
+            # determine collection once — not per chunk
+            collection = await self._get_collection()
 
+            yield {"type": "text", "content": input_text}
             yield {
                 "type": "progress",
                 "message": f"Analysing {total} sections…",
@@ -209,22 +209,10 @@ class FullTextService:
 
             for i, (chunk_text, start_char, end_char) in enumerate(chunks):
                 chunk_vector = await embedding_service.embed(chunk_text)
-                similar_docs = await self._search_similar(chunk_vector, request)
+                matches = await self._search_similar(chunk_vector, request, collection)
 
-                chunk_sim = similar_docs[0][1] if similar_docs else 0.0
+                chunk_sim = matches[0].similarity if matches else 0.0
                 similarities.append(chunk_sim)
-
-                matches = [
-                    ChunkMatch(
-                        paper_id=str(doc.get("_id", "")),
-                        title=doc.get("title", ""),
-                        year=doc.get("year"),
-                        doi=doc.get("doi"),
-                        source_url=doc.get("source_url"),
-                        similarity=round(score, 4),
-                    )
-                    for doc, score in similar_docs
-                ]
 
                 chunk_result = ChunkResult(
                     chunk_index=i,

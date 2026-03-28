@@ -27,6 +27,7 @@ async def connect_qdrant() -> None:
         host=config.qdrant_host,
         port=config.qdrant_port,
         timeout=30,
+        check_compatibility=False,
     )
     logger.info("Successfully connected to Qdrant")
 
