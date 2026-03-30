@@ -14,7 +14,7 @@ from app.services.fulltext_fetcher import fetch_fulltext
 logger = logging.getLogger(__name__)
 
 MAX_CHUNKS   = 200
-MIN_PARA_LEN = 100
+MIN_PARA_LEN = 50
 MAX_PARA_LEN = 3000
 
 
@@ -28,8 +28,14 @@ def _paragraph_chunks(text: str) -> list[tuple[str, int, int]]:
     3. Skip short segments (headers, page numbers, captions)
     4. Track char offsets for frontend highlighting
     """
+
+    # Step 1 — join wrapped lines (single \n not after sentence end)
+    # e.g. "This is a long\nsentence" → "This is a long sentence"
     normalized = re.sub(r'(?<![.!?:"])\n(?!\n)', ' ', text)
 
+    # Step 2 — split on paragraph boundaries:
+    # - two or more newlines
+    # - single newline after sentence-ending punctuation
     raw_paras = re.split(r'\n{2,}|(?<=[.!?])\n', normalized)
 
     chunks: list[tuple[str, int, int]] = []
