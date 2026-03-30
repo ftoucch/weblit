@@ -1,6 +1,8 @@
 import logging
 import base64
 import io
+import re
+import pypdf
 from typing import AsyncGenerator
 from bson import ObjectId
 from qdrant_client.models import Filter, FieldCondition, Range
@@ -30,7 +32,6 @@ TOP_K      = 5
 
 def _extract_text_from_pdf(pdf_base64: str) -> str:
     try:
-        import pypdf
         pdf_bytes = base64.b64decode(pdf_base64)
         reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
         pages = [page.extract_text() or "" for page in reader.pages]
@@ -191,8 +192,28 @@ class FullTextService:
             total = len(chunks)
 
             if total == 0:
-                yield {"type": "error", "message": "Text is too short to analyse."}
-                return
+                # fallback — if paragraph chunker produced nothing, try sentence splitting
+                sentences = re.split(r'(?<=[.!?])\s+', input_text)
+                sentences = [s.strip() for s in sentences if len(s.strip()) > 50]
+                if not sentences:
+                    yield {"type": "error", "message": "Text is too short to analyse."}
+                    return
+                # build fake chunks from sentences grouped in threes
+                grouped = [' '.join(sentences[i:i+3]) for i in range(0, len(sentences), 3)]
+                chunks = []
+                cursor = 0
+                for g in grouped:
+                    start = input_text.find(g[:30], cursor)
+                    if start == -1:
+                        continue
+                    end = start + len(g)
+                    chunks.append((g, start, end))
+                    cursor = end
+                chunks = chunks[:MAX_CHUNKS]
+                total = len(chunks)
+                if total == 0:
+                    yield {"type": "error", "message": "Text is too short to analyse."}
+                    return
 
             # determine collection once — not per chunk
             collection = await self._get_collection()
