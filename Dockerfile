@@ -19,7 +19,7 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 
 RUN playwright install chromium --with-deps
 
-# ── Stage 2: Slim runtime ─────────────────────────────────────────────────────
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 
 WORKDIR /project
@@ -52,4 +52,5 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Default command — overridden by render.yaml for the worker service
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

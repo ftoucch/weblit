@@ -17,15 +17,16 @@ async def connect_mongo() -> None:
         config.db_url,
         serverSelectionTimeoutMS=5000
     )
-    
+
     mongo_db.db = mongo_db.client[config.mongo_db]
     await mongo_db.client.admin.command('ping')
     logger.info("Successfully connected to MongoDB.")
 
     mongo_db.collections = {
-        "users": mongo_db.db["users"],
-        "papers": mongo_db.db["papers"],
-        "saved_searches": mongo_db.db["saved_searches"],
+        "users":           mongo_db.db["users"],
+        "papers":          mongo_db.db["papers"],
+        "saved_searches":  mongo_db.db["saved_searches"],
+        "novelty_checks":  mongo_db.db["novelty_checks"],
         "fulltext_checks": mongo_db.db["fulltext_checks"],
     }
 
@@ -38,7 +39,9 @@ async def connect_mongo() -> None:
     await mongo_db.db["saved_searches"].create_index(
         [("user_id", 1), ("created_at", -1)]
     )
-
+    await mongo_db.db["novelty_checks"].create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
     await mongo_db.db["fulltext_checks"].create_index(
         [("user_id", 1), ("created_at", -1)]
     )
