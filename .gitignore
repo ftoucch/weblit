@@ -209,4 +209,3 @@ venv
 
 .env
 .env.test
-__init__.py
