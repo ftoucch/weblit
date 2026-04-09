@@ -23,12 +23,22 @@ _qdrant = _Qdrant
 
 async def connect_qdrant() -> None:
     logger.info("Connecting to Qdrant...")
-    _qdrant.client = AsyncQdrantClient(
-        host=config.qdrant_host,
-        port=config.qdrant_port,
-        timeout=30,
-        check_compatibility=False,
-    )
+
+    if config.qdrant_api_key:
+        _qdrant.client = AsyncQdrantClient(
+            url=f"{'https' if config.qdrant_use_https else 'http'}://{config.qdrant_host}:{config.qdrant_port}",
+            api_key=config.qdrant_api_key,
+            timeout=30,
+            check_compatibility=False,
+        )
+    else:
+        _qdrant.client = AsyncQdrantClient(
+            host=config.qdrant_host,
+            port=config.qdrant_port,
+            timeout=30,
+            check_compatibility=False,
+        )
+
     logger.info("Successfully connected to Qdrant")
 
     collections = await _qdrant.client.get_collections()

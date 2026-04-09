@@ -2,9 +2,9 @@
   import { checkSimilarity } from '$lib/api/similarity';
   import type { ChunkResult } from '$lib/types/similarityCheck';
 
-  import SimilarityInput from '$lib/components/SimilarityCheck/SimilarityInput.svelte';
-  import SimilarityProgress from '$lib/components/SimilarityCheck/SimilarityProgress.svelte';
-  import SimilarityScore from '$lib/components/SimilarityCheck/SimilarityScore.svelte';
+  import SimilarityInput from '$lib/components/similaritycheck/SimilarityInput.svelte';
+  import SimilarityProgress from '$lib/components/similaritycheck/SimilarityProgress.svelte';
+  import SimilarityScore from '$lib/components/similaritycheck/SimilarityScore.svelte';
   import SimilarityDocument from '$lib/components/SimilarityCheck/SimilarityDocument.svelte';
 
   let loading = false;
