@@ -9,12 +9,16 @@ logger = logging.getLogger(__name__)
 class EmailService:
 
     def _get_connection(self) -> smtplib.SMTP:
-        smtp = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=10)
-        smtp.ehlo()
-        if config.app_env == "production":
-            smtp.starttls()
-            if config.smtp_user and config.smtp_password:
-                smtp.login(config.smtp_user, config.smtp_password)
+        if config.smtp_port == 465:
+            smtp = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port, timeout=10)
+        else:
+            smtp = smtplib.SMTP(config.smtp_host, config.smtp_port, timeout=10)
+            smtp.ehlo()
+            if config.app_env == "production":
+                smtp.starttls()
+        
+        if config.smtp_user and config.smtp_password:
+            smtp.login(config.smtp_user, config.smtp_password)
         return smtp
     
     def _build_message(self, to: str, subject: str, html: str)->MIMEMultipart:
