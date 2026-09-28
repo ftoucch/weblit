@@ -1,8 +1,8 @@
 import json
 import logging
+import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-from bson import ObjectId
 
 from app.schemas.novelty import NoveltyCheckRequest
 from app.services.novelty_service import novelty_service
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/novelty", tags=["novelty"])
 
 def _serialize(obj):
-    if isinstance(obj, ObjectId):
+    if isinstance(obj, uuid.UUID):
         return str(obj)
     raise TypeError(f"Unable to serialize unknown type: {type(obj)}")
 

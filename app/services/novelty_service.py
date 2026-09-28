@@ -1,21 +1,15 @@
 import logging
 import asyncio
 import math
+import uuid
 from datetime import datetime
 from typing import AsyncGenerator
-from bson import ObjectId
-from qdrant_client.models import Filter, FieldCondition, Range
 
-from app.db.mongo import mongo_db
-from app.db.qdrant import get_qdrant
-from app.core.config import config
-from app.models.paper import PaperDocument
-from app.models.novelty_check import (
-    NoveltyCheckDocument,
-    NoveltyAspectsDocument,
-    AspectDocument,
-    RelatedWorkDocument,
-)
+from sqlalchemy import select
+
+from app.db.postgres import AsyncSessionLocal
+from app.models.orm import Paper, NoveltyCheck
+from app.models.paper import FetchedPaper
 from app.schemas.novelty import (
     NoveltyCheckRequest,
     NoveltyCheckResult,
@@ -25,9 +19,9 @@ from app.schemas.novelty import (
 )
 from app.services.embedding_service import embedding_service
 from app.services.ingestion_service import ingestion_service
+from app.services.fulltext_ingestion_service import fulltext_ingestion_service
 from app.services.sources.base import BaseSource
 from app.services.sources.openalex import openalex_source
-from app.workers.tasks.indexing_tasks import ingest_papers_task
 
 logger = logging.getLogger(__name__)
 
@@ -223,62 +217,47 @@ def _recommendation(aspects: NoveltyAspects, overall: float) -> str:
 
 class NoveltyService:
 
-    @property
-    def papers(self):
-        return mongo_db.collections["papers"]  # type: ignore
-
-    @property
-    def novelty_checks(self):
-        return mongo_db.collections["novelty_checks"]  # type: ignore
-
-    async def _search_qdrant(
+    async def _search_similar(
         self,
         vector: list[float],
         request: NoveltyCheckRequest,
         top_k: int,
     ) -> list[tuple[dict, float]]:
-        qdrant = get_qdrant()
+        async with AsyncSessionLocal() as session:
+            distance_expr = Paper.abstract_embedding.cosine_distance(vector)
+            stmt = (
+                select(Paper, distance_expr.label("distance"))
+                .where(Paper.abstract_embedding.is_not(None))
+            )
+            if request.year_from:
+                stmt = stmt.where(Paper.year >= request.year_from)
+            if request.year_to:
+                stmt = stmt.where(Paper.year <= request.year_to)
 
-        conditions = []
-        if request.year_from:
-            conditions.append(FieldCondition(key="year", range=Range(gte=request.year_from)))
-        if request.year_to:
-            conditions.append(FieldCondition(key="year", range=Range(lte=request.year_to)))
-        qdrant_filter = Filter(must=conditions) if conditions else None
+            stmt = stmt.order_by(distance_expr).limit(top_k)
+            result = await session.execute(stmt)
+            rows = result.all()
 
-        response = await qdrant.query_points(
-            collection_name=config.qdrant_collection,
-            query=vector,
-            limit=top_k,
-            query_filter=qdrant_filter,
-            with_payload=True,
-        )
-
-        hits = response.points
-        if not hits:
-            return []
-
-        mongo_ids = [
-            ObjectId(hit.payload["mongo_id"])
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
+        return [
+            (
+                {
+                    "_id": str(paper.id),
+                    "title": paper.title,
+                    "year": paper.year,
+                    "doi": paper.doi,
+                    "source_url": paper.source_url,
+                    "citation_count": paper.citation_count,
+                },
+                1 - distance,
+            )
+            for paper, distance in rows
         ]
-        score_map = {
-            hit.payload["mongo_id"]: hit.score
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        }
-
-        cursor = self.papers.find({"_id": {"$in": mongo_ids}})
-        docs = await cursor.to_list(length=top_k)
-
-        return [(doc, score_map[str(doc["_id"])]) for doc in docs]
 
     async def _search_sources(
         self,
         query_text: str,
         request: NoveltyCheckRequest,
-    ) -> list[PaperDocument]:
+    ) -> list[FetchedPaper]:
         tasks = [
             source.fetch(
                 query=query_text,
@@ -292,7 +271,7 @@ class NoveltyService:
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        papers: list[PaperDocument] = []
+        papers: list[FetchedPaper] = []
         for result in results:
             if isinstance(result, Exception):
                 logger.error(f"Source fetch failed: {result}")
@@ -318,21 +297,28 @@ class NoveltyService:
         aspect_text: str,
         request: NoveltyCheckRequest,
         aspect_name: str,
-    ) -> tuple[AspectResult, list[PaperDocument]]:
+    ) -> tuple[AspectResult, list[FetchedPaper]]:
         aspect_vector = await embedding_service.embed(aspect_text)
 
-        cached_results = await self._search_qdrant(aspect_vector, request, request.top_k)
+        cached_results = await self._search_similar(aspect_vector, request, request.top_k)
 
         fresh_papers = await self._search_sources(aspect_text, request)
 
-        seen_ids = {str(doc["_id"]) for doc, _ in cached_results}
-        new_to_ingest: list[PaperDocument] = []
+        seen_ids = {doc["_id"] for doc, _ in cached_results}
+        seen_source_ids = set()
+        new_to_ingest: list[FetchedPaper] = []
         fresh_results: list[tuple[dict, float]] = []
 
         for paper in fresh_papers:
+            key = f"{paper.source}:{paper.source_id}"
+            if key in seen_source_ids:
+                continue
+
             paper_text = f"{paper.title}. {paper.abstract}" if paper.abstract else paper.title
             paper_vector = await embedding_service.embed(paper_text)
             similarity = sum(a * b for a, b in zip(aspect_vector, paper_vector))
+
+            paper.id = str(uuid.uuid4())
 
             pseudo_doc = {
                 "_id": paper.id,
@@ -343,10 +329,9 @@ class NoveltyService:
                 "citation_count": paper.citation_count,
             }
 
-            if str(paper.id) not in seen_ids:
-                fresh_results.append((pseudo_doc, similarity))
-                new_to_ingest.append(paper)
-                seen_ids.add(str(paper.id))
+            fresh_results.append((pseudo_doc, similarity))
+            new_to_ingest.append(paper)
+            seen_source_ids.add(key)
 
         all_results = cached_results + fresh_results
         all_results.sort(key=lambda x: x[1], reverse=True)
@@ -369,39 +354,20 @@ class NoveltyService:
         user_id: str | None,
     ) -> None:
         try:
-            doc = NoveltyCheckDocument(
-                user_id=ObjectId(user_id) if user_id else None,
-                input_text=request.text,
-                field_of_study=request.field_of_study,
-                year_from=request.year_from,
-                year_to=request.year_to,
-                novelty_score=result.novelty_score,
-                verdict=result.verdict,
-                aspects=NoveltyAspectsDocument(
-                    topic=AspectDocument(
-                        score=result.aspects.topic.score,
-                        summary=result.aspects.topic.summary,
-                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.topic.related_works],
-                    ),
-                    problem_statement=AspectDocument(
-                        score=result.aspects.problem_statement.score,
-                        summary=result.aspects.problem_statement.summary,
-                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.problem_statement.related_works],
-                    ),
-                    methodology=AspectDocument(
-                        score=result.aspects.methodology.score,
-                        summary=result.aspects.methodology.summary,
-                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.methodology.related_works],
-                    ),
-                    domain=AspectDocument(
-                        score=result.aspects.domain.score,
-                        summary=result.aspects.domain.summary,
-                        related_works=[RelatedWorkDocument(**rw.model_dump()) for rw in result.aspects.domain.related_works],
-                    ),
-                ),
-                recommendation=result.recommendation,
-            )
-            await self.novelty_checks.insert_one(doc.model_dump(by_alias=True))
+            async with AsyncSessionLocal() as session:
+                session.add(NoveltyCheck(
+                    id=uuid.uuid4(),
+                    user_id=uuid.UUID(user_id) if user_id else None,
+                    input_text=request.text,
+                    field_of_study=request.field_of_study,
+                    year_from=request.year_from,
+                    year_to=request.year_to,
+                    novelty_score=result.novelty_score,
+                    verdict=result.verdict,
+                    aspects=result.aspects.model_dump(),
+                    recommendation=result.recommendation,
+                ))
+                await session.commit()
         except Exception as e:
             logger.error(f"Failed to save novelty check: {e}")
 
@@ -463,16 +429,12 @@ class NoveltyService:
             )
             if all_new:
                 try:
-                    paper_dicts = []
-                    for p in all_new:
-                        d = p.model_dump(by_alias=True)
-                        d["_id"] = str(d["_id"])
-                        paper_dicts.append(d)
-                    ingest_papers_task.delay(paper_dicts)  # type: ignore
-                    logger.info(f"Fired background ingestion for {len(all_new)} novelty papers.")
+                    stored = await ingestion_service.ingest(all_new)
+                    fulltext_rows = [p for p in stored if p.has_full_text]
+                    if fulltext_rows:
+                        await fulltext_ingestion_service.index_batch(fulltext_rows)
                 except Exception as e:
-                    logger.error(f"Failed to fire ingest task: {e}")
-                    await ingestion_service.ingest(all_new)
+                    logger.error(f"Failed to ingest novelty-check papers: {e}")
 
             yield {"type": "result", "result": result.model_dump()}
 

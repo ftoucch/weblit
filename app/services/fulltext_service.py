@@ -2,19 +2,14 @@ import logging
 import base64
 import io
 import re
+import uuid
 import pypdf
 from typing import AsyncGenerator
-from bson import ObjectId
-from qdrant_client.models import Filter, FieldCondition, Range
 
-from app.db.mongo import mongo_db
-from app.db.qdrant import get_qdrant, FULLTEXT_COLLECTION
-from app.core.config import config
-from app.models.fulltext import (
-    FullTextCheckDocument,
-    ChunkResultDocument,
-    ChunkMatchDocument,
-)
+from sqlalchemy import select, func
+
+from app.db.postgres import AsyncSessionLocal
+from app.models.orm import Paper, FulltextChunk, FullTextCheck
 from app.schemas.fulltext import (
     FullTextCheckRequest,
     FullTextResult,
@@ -50,89 +45,69 @@ def _similarity_level(similarity: float) -> str:
 
 class FullTextService:
 
-    @property
-    def papers(self):
-        return mongo_db.collections["papers"]  # type: ignore
-
-    @property
-    def fulltext_checks(self):
-        return mongo_db.collections["fulltext_checks"]  # type: ignore
-
-    async def _get_collection(self) -> str:
-        """Check once which collection to use — fulltext if available, else abstracts."""
-        try:
-            qdrant = get_qdrant()
-            info = await qdrant.get_collection(FULLTEXT_COLLECTION)
-            if (info.points_count or 0) > 0:
-                logger.info(f"Using fulltext collection ({info.points_count} vectors)")
-                return FULLTEXT_COLLECTION
-        except Exception as e:
-            logger.warning(f"Could not check fulltext collection: {e}")
-        logger.info("Falling back to abstracts collection")
-        return config.qdrant_collection
+    async def _has_fulltext_chunks(self, session) -> bool:
+        count = await session.scalar(select(func.count()).select_from(FulltextChunk))
+        return bool(count)
 
     async def _search_similar(
         self,
+        session,
         vector: list[float],
         request: FullTextCheckRequest,
-        collection: str,
+        use_fulltext: bool,
     ) -> list[ChunkMatch]:
-        qdrant = get_qdrant()
+        if use_fulltext:
+            distance_expr = FulltextChunk.chunk_embedding.cosine_distance(vector)
+            stmt = (
+                select(FulltextChunk, Paper, distance_expr.label("distance"))
+                .join(Paper, Paper.id == FulltextChunk.paper_id)
+                .where(distance_expr <= (1 - request.min_similarity))
+            )
+            if request.year_from:
+                stmt = stmt.where(Paper.year >= request.year_from)
+            if request.year_to:
+                stmt = stmt.where(Paper.year <= request.year_to)
+            stmt = stmt.order_by(distance_expr).limit(TOP_K)
 
-        conditions = []
-        if request.year_from:
-            conditions.append(FieldCondition(key="year", range=Range(gte=request.year_from)))
-        if request.year_to:
-            conditions.append(FieldCondition(key="year", range=Range(lte=request.year_to)))
-        qdrant_filter = Filter(must=conditions) if conditions else None
+            rows = (await session.execute(stmt)).all()
+            return [
+                ChunkMatch(
+                    paper_id=str(paper.id),
+                    title=paper.title,
+                    year=paper.year,
+                    doi=paper.doi,
+                    source_url=paper.source_url,
+                    similarity=round(1 - distance, 4),
+                    matched_text=chunk.chunk_text,
+                )
+                for chunk, paper, distance in rows
+            ]
 
-        response = await qdrant.query_points(
-            collection_name=collection,
-            query=vector,
-            limit=TOP_K,
-            score_threshold=request.min_similarity,
-            query_filter=qdrant_filter,
-            with_payload=True,
+        distance_expr = Paper.abstract_embedding.cosine_distance(vector)
+        stmt = (
+            select(Paper, distance_expr.label("distance"))
+            .where(Paper.abstract_embedding.is_not(None))
+            .where(distance_expr <= (1 - request.min_similarity))
         )
+        if request.year_from:
+            stmt = stmt.where(Paper.year >= request.year_from)
+        if request.year_to:
+            stmt = stmt.where(Paper.year <= request.year_to)
+        stmt = stmt.order_by(distance_expr).limit(TOP_K)
 
-        hits = response.points
-        if not hits:
-            return []
-
-        matches = []
-        use_fulltext = collection == FULLTEXT_COLLECTION
-
-        for hit in hits:
-            if not hit.payload:
-                continue
-
-            if use_fulltext:
-                matches.append(ChunkMatch(
-                    paper_id=hit.payload.get("paper_id", ""),
-                    title=hit.payload.get("title", ""),
-                    year=hit.payload.get("year"),
-                    doi=hit.payload.get("doi"),
-                    source_url=hit.payload.get("source_url"),
-                    similarity=round(hit.score, 4),
-                    matched_text=hit.payload.get("chunk_text"),
-                ))
-            else:
-                mongo_id = hit.payload.get("mongo_id")
-                if not mongo_id:
-                    continue
-                doc = await self.papers.find_one({"_id": ObjectId(mongo_id)})
-                if doc:
-                    matches.append(ChunkMatch(
-                        paper_id=str(doc["_id"]),
-                        title=doc.get("title", ""),
-                        year=doc.get("year"),
-                        doi=doc.get("doi"),
-                        source_url=doc.get("source_url"),
-                        similarity=round(hit.score, 4),
-                        matched_text=doc.get("abstract"),
-                    ))
-
-        return matches
+        rows = (await session.execute(stmt)).all()
+        return [
+            ChunkMatch(
+                paper_id=str(paper.id),
+                title=paper.title,
+                year=paper.year,
+                doi=paper.doi,
+                source_url=paper.source_url,
+                similarity=round(1 - distance, 4),
+                matched_text=paper.abstract,
+            )
+            for paper, distance in rows
+        ]
 
     async def _save_check(
         self,
@@ -142,31 +117,22 @@ class FullTextService:
         input_text: str,
     ) -> None:
         try:
-            doc = FullTextCheckDocument(
-                user_id=ObjectId(user_id) if user_id else None,
-                input_preview=input_text[:500],
-                field_of_study=request.field_of_study,
-                year_from=request.year_from,
-                year_to=request.year_to,
-                overall_similarity=result.overall_similarity,
-                total_chunks=result.total_chunks,
-                high_similarity_chunks=result.high_similarity_chunks,
-                medium_similarity_chunks=result.medium_similarity_chunks,
-                low_similarity_chunks=result.low_similarity_chunks,
-                chunks=[
-                    ChunkResultDocument(
-                        chunk_index=c.chunk_index,
-                        text=c.text,
-                        start_char=c.start_char,
-                        end_char=c.end_char,
-                        similarity=c.similarity,
-                        similarity_level=c.similarity_level,
-                        matches=[ChunkMatchDocument(**m.model_dump()) for m in c.matches],
-                    )
-                    for c in result.chunks
-                ],
-            )
-            await self.fulltext_checks.insert_one(doc.model_dump(by_alias=True))
+            async with AsyncSessionLocal() as session:
+                session.add(FullTextCheck(
+                    id=uuid.uuid4(),
+                    user_id=uuid.UUID(user_id) if user_id else None,
+                    input_preview=input_text[:500],
+                    field_of_study=request.field_of_study,
+                    year_from=request.year_from,
+                    year_to=request.year_to,
+                    overall_similarity=result.overall_similarity,
+                    total_chunks=result.total_chunks,
+                    high_similarity_chunks=result.high_similarity_chunks,
+                    medium_similarity_chunks=result.medium_similarity_chunks,
+                    low_similarity_chunks=result.low_similarity_chunks,
+                    chunks=[c.model_dump() for c in result.chunks],
+                ))
+                await session.commit()
         except Exception as e:
             logger.error(f"Failed to save fulltext check: {e}")
 
@@ -215,49 +181,50 @@ class FullTextService:
                     yield {"type": "error", "message": "Text is too short to analyse."}
                     return
 
-            # determine collection once — not per chunk
-            collection = await self._get_collection()
+            async with AsyncSessionLocal() as session:
+                use_fulltext = await self._has_fulltext_chunks(session)
+                logger.info(f"Using {'fulltext' if use_fulltext else 'abstracts'} for similarity search")
 
-            yield {"type": "text", "content": input_text}
-            yield {
-                "type": "progress",
-                "message": f"Analysing {total} sections…",
-                "progress": 10,
-            }
-
-            chunk_results: list[ChunkResult] = []
-            similarities: list[float] = []
-
-            for i, (chunk_text, start_char, end_char) in enumerate(chunks):
-                chunk_vector = await embedding_service.embed(chunk_text)
-                matches = await self._search_similar(chunk_vector, request, collection)
-
-                chunk_sim = matches[0].similarity if matches else 0.0
-                similarities.append(chunk_sim)
-
-                chunk_result = ChunkResult(
-                    chunk_index=i,
-                    text=chunk_text,
-                    start_char=start_char,
-                    end_char=end_char,
-                    similarity=round(chunk_sim, 4),
-                    similarity_level=_similarity_level(chunk_sim),
-                    matches=matches,
-                )
-                chunk_results.append(chunk_result)
-
-                progress = 10 + int((i + 1) / total * 85)
+                yield {"type": "text", "content": input_text}
                 yield {
-                    "type": "chunk_result",
-                    "chunk_index": i,
-                    "text": chunk_text,
-                    "start_char": start_char,
-                    "end_char": end_char,
-                    "similarity": round(chunk_sim, 4),
-                    "similarity_level": _similarity_level(chunk_sim),
-                    "matches": [m.model_dump() for m in matches],
-                    "progress": progress,
+                    "type": "progress",
+                    "message": f"Analysing {total} sections…",
+                    "progress": 10,
                 }
+
+                chunk_results: list[ChunkResult] = []
+                similarities: list[float] = []
+
+                for i, (chunk_text, start_char, end_char) in enumerate(chunks):
+                    chunk_vector = await embedding_service.embed(chunk_text)
+                    matches = await self._search_similar(session, chunk_vector, request, use_fulltext)
+
+                    chunk_sim = matches[0].similarity if matches else 0.0
+                    similarities.append(chunk_sim)
+
+                    chunk_result = ChunkResult(
+                        chunk_index=i,
+                        text=chunk_text,
+                        start_char=start_char,
+                        end_char=end_char,
+                        similarity=round(chunk_sim, 4),
+                        similarity_level=_similarity_level(chunk_sim),
+                        matches=matches,
+                    )
+                    chunk_results.append(chunk_result)
+
+                    progress = 10 + int((i + 1) / total * 85)
+                    yield {
+                        "type": "chunk_result",
+                        "chunk_index": i,
+                        "text": chunk_text,
+                        "start_char": start_char,
+                        "end_char": end_char,
+                        "similarity": round(chunk_sim, 4),
+                        "similarity_level": _similarity_level(chunk_sim),
+                        "matches": [m.model_dump() for m in matches],
+                        "progress": progress,
+                    }
 
             overall = round(sum(similarities) / len(similarities), 4) if similarities else 0.0
             high   = sum(1 for s in similarities if s >= 0.75)

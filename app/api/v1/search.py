@@ -3,16 +3,18 @@ import logging
 import uuid
 from datetime import datetime
 from typing import AsyncGenerator
-from bson import ObjectId
 
-from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select, delete
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from app.schemas.paper import PaperSearchRequest, PaperSearchContinueRequest
-from app.services.search_service import search_service
+from app.services.search_service import search_service, ingest_and_index
 from app.api.dependency import CurrentUserDependency, GuestOrUserDependency
-from app.db.mongo import mongo_db
-from app.db.redis import redis_client
+from app.core.rate_limit import check_rate_limit
+from app.db.postgres import AsyncSessionLocal
+from app.models.orm import SavedSearch
 
 logger = logging.getLogger(__name__)
 
@@ -23,16 +25,9 @@ RATE_LIMIT_REQUESTS = 20
 RATE_LIMIT_WINDOW   = 3600
 
 
-def _saved_searches():
-    return mongo_db.collections["saved_searches"]  # type: ignore
-
-
 async def _check_rate_limit(user_id: str) -> None:
-    key = f"rate_limit:search:{user_id}"
-    count = await redis_client.incr(key)
-    if count == 1:
-        await redis_client.expire(key, RATE_LIMIT_WINDOW)
-    if count > RATE_LIMIT_REQUESTS:
+    allowed = await check_rate_limit(f"search:{user_id}", RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW)
+    if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Rate limit exceeded. Max {RATE_LIMIT_REQUESTS} searches per hour."
@@ -40,7 +35,7 @@ async def _check_rate_limit(user_id: str) -> None:
 
 
 def _serialize(obj):
-    if isinstance(obj, ObjectId):
+    if isinstance(obj, uuid.UUID):
         return str(obj)
     raise TypeError(f"Unable to serialize unknown type: {type(obj)}")
 
@@ -52,7 +47,7 @@ async def _as_sse(
         yield f"data: {json.dumps(event, default=_serialize)}\n\n"
 
 
-def _sse_response(generator: AsyncGenerator[str, None]) -> StreamingResponse:
+def _sse_response(generator: AsyncGenerator[str, None], background_tasks: BackgroundTasks | None = None) -> StreamingResponse:
     return StreamingResponse(
         generator,
         media_type="text/event-stream",
@@ -60,7 +55,8 @@ def _sse_response(generator: AsyncGenerator[str, None]) -> StreamingResponse:
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
             "Connection": "keep-alive",
-        }
+        },
+        background=background_tasks,
     )
 
 
@@ -68,6 +64,7 @@ def _sse_response(generator: AsyncGenerator[str, None]) -> StreamingResponse:
 async def search_papers(
     request: PaperSearchRequest,
     current_user: GuestOrUserDependency,
+    background_tasks: BackgroundTasks,
 ) -> StreamingResponse:
     is_admin         = current_user and current_user.role.value == "admin"
     is_authenticated = current_user is not None
@@ -79,22 +76,25 @@ async def search_papers(
         request.limit = min(request.limit, GUEST_MAX_RESULTS)
 
     if is_authenticated:
-        await _saved_searches().insert_one({
-            "user_id": str(current_user.id),
-            "query": request.query,
-            "filters": request.model_dump(exclude={"query"}),
-            "created_at": datetime.utcnow(),
-        })
+        async with AsyncSessionLocal() as session:
+            session.add(SavedSearch(
+                id=uuid.uuid4(),
+                user_id=uuid.UUID(current_user.id),
+                query=request.query,
+                filters=request.model_dump(exclude={"query"}, mode="json"),
+            ))
+            await session.commit()
 
-    cursor_key = f"search_cursor:{uuid.uuid4()}"
+    def on_new_papers(papers):
+        background_tasks.add_task(ingest_and_index, papers)
 
     async def stream() -> AsyncGenerator[str, None]:
         async for chunk in _as_sse(
-            search_service.search_stream(request, cursor_key=cursor_key)
+            search_service.search_stream(request, on_new_papers=on_new_papers)
         ):
             yield chunk
 
-    return _sse_response(stream())
+    return _sse_response(stream(), background_tasks)
 
 
 @router.post("/papers/continue")
@@ -119,14 +119,25 @@ async def continue_search(
 
 @router.get("/history", status_code=status.HTTP_200_OK)
 async def get_search_history(current_user: CurrentUserDependency) -> list[dict]:
-    cursor = _saved_searches().find(
-        {"user_id": current_user.id},
-        sort=[("created_at", -1)]
-    )
-    searches = await cursor.to_list(length=50)
-    for s in searches:
-        s["id"] = str(s.pop("_id"))
-    return searches
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(SavedSearch)
+            .where(SavedSearch.user_id == uuid.UUID(current_user.id))
+            .order_by(SavedSearch.created_at.desc())
+            .limit(50)
+        )
+        searches = result.scalars().all()
+
+    return [
+        {
+            "id": str(s.id),
+            "user_id": str(s.user_id),
+            "query": s.query,
+            "filters": s.filters,
+            "created_at": s.created_at,
+        }
+        for s in searches
+    ]
 
 
 @router.delete("/history/{search_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -134,11 +145,16 @@ async def delete_search_history(
     search_id: str,
     current_user: CurrentUserDependency,
 ) -> None:
-    result = await _saved_searches().delete_one({
-        "_id": ObjectId(search_id),
-        "user_id": current_user.id,
-    })
-    if result.deleted_count == 0:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            delete(SavedSearch).where(
+                SavedSearch.id == uuid.UUID(search_id),
+                SavedSearch.user_id == uuid.UUID(current_user.id),
+            )
+        )
+        await session.commit()
+
+    if result.rowcount == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Search not found."
@@ -147,4 +163,8 @@ async def delete_search_history(
 
 @router.delete("/history", status_code=status.HTTP_204_NO_CONTENT)
 async def clear_search_history(current_user: CurrentUserDependency) -> None:
-    await _saved_searches().delete_many({"user_id": current_user.id})
+    async with AsyncSessionLocal() as session:
+        await session.execute(
+            delete(SavedSearch).where(SavedSearch.user_id == uuid.UUID(current_user.id))
+        )
+        await session.commit()

@@ -2,15 +2,15 @@ import json
 import logging
 import asyncio
 import base64
+import uuid
 from typing import AsyncGenerator
-from bson import ObjectId
-from qdrant_client.models import Filter, FieldCondition, Range
 
-from app.db.mongo import mongo_db
-from app.db.qdrant import get_qdrant
-from app.db.redis import redis_client
+from sqlalchemy import select
+
+from app.db.postgres import AsyncSessionLocal
+from app.models.orm import Paper
 from app.core.config import config
-from app.models.paper import PaperDocument
+from app.models.paper import FetchedPaper
 from app.schemas.paper import (
     PaperSearchRequest,
     PaperSearchContinueRequest,
@@ -20,28 +20,32 @@ from app.schemas.paper import (
 )
 from app.services.embedding_service import embedding_service
 from app.services.ingestion_service import ingestion_service
+from app.services.fulltext_ingestion_service import fulltext_ingestion_service
 from app.services.sources.openalex import openalex_source
 from app.services.sources.base import BaseSource
-from app.workers.tasks.indexing_tasks import ingest_papers_task
 
 logger = logging.getLogger(__name__)
 
-CURSOR_TTL    = 3600
-PAGE_SIZE     = 20
+PAGE_SIZE = 20
 
 SOURCES: dict[PaperSource, BaseSource] = {
     PaperSource.OPENALEX: openalex_source,
 }
 
 
-def _serialize_for_celery(p: PaperDocument) -> dict:
-    d = p.model_dump(by_alias=True)
-    d["_id"] = str(d["_id"])
-    return d
+async def ingest_and_index(papers: list[FetchedPaper]) -> None:
+    try:
+        stored = await ingestion_service.ingest(papers)
+        fulltext_rows = [p for p in stored if p.has_full_text]
+        if fulltext_rows:
+            indexed = await fulltext_ingestion_service.index_batch(fulltext_rows)
+            logger.info(f"Fulltext indexed {indexed} papers in background.")
+    except Exception as e:
+        logger.error(f"Background ingest failed: {e}")
 
 
-def _encode_cursor(data: dict) -> str:
-    return base64.urlsafe_b64encode(json.dumps(data).encode()).decode()
+def _encode_cursor(state: dict) -> str:
+    return base64.urlsafe_b64encode(json.dumps(state).encode()).decode()
 
 
 def _decode_cursor(token: str) -> dict:
@@ -50,35 +54,28 @@ def _decode_cursor(token: str) -> dict:
 
 class SearchService:
 
-    @property
-    def papers(self):
-        return mongo_db.collections["papers"]  # type: ignore
-
     def _to_result(
         self,
-        doc: dict,
+        paper: Paper,
         similarity_score: float,
         meets_inclusion: bool | None = None,
         meets_exclusion: bool | None = None,
     ) -> PaperSearchResult:
         return PaperSearchResult(
-            id=str(doc.get("_id", "")),
-            title=doc.get("title", ""),
-            abstract=doc.get("abstract"),
+            id=str(paper.id),
+            title=paper.title,
+            abstract=paper.abstract,
             authors=[
-                AuthorResponse(
-                    name=a.get("name", ""),
-                    institution=a.get("institution")
-                )
-                for a in doc.get("authors", [])
+                AuthorResponse(name=a.get("name", ""), institution=a.get("institution"))
+                for a in (paper.authors or [])
             ],
-            year=doc.get("year"),
-            field_of_study=doc.get("field_of_study"),
-            source=PaperSource(doc.get("source", PaperSource.OPENALEX.value)),
-            source_url=doc.get("source_url"),
-            doi=doc.get("doi"),
-            citation_count=doc.get("citation_count"),
-            has_full_text=doc.get("has_full_text", False),
+            year=paper.year,
+            field_of_study=paper.field_of_study,
+            source=PaperSource(paper.source or PaperSource.OPENALEX.value),
+            source_url=paper.source_url,
+            doi=paper.doi,
+            citation_count=paper.citation_count,
+            has_full_text=paper.has_full_text,
             similarity_score=round(similarity_score, 4),
             meets_inclusion=meets_inclusion,
             meets_exclusion=meets_exclusion,
@@ -130,78 +127,34 @@ class SearchService:
         query_vector: list[float],
         request: PaperSearchRequest,
         offset: int = 0,
-    ) -> tuple[list[tuple[dict, float, list[float]]], int]:
-        qdrant = get_qdrant()
+    ) -> tuple[list[tuple[Paper, float]], int]:
+        max_distance = 1 - request.min_similarity
 
-        qdrant_filter = None
-        if request.year_from or request.year_to:
-            conditions = []
+        async with AsyncSessionLocal() as session:
+            distance_expr = Paper.abstract_embedding.cosine_distance(query_vector)
+            stmt = (
+                select(Paper, distance_expr.label("distance"))
+                .where(Paper.abstract_embedding.is_not(None))
+                .where(distance_expr <= max_distance)
+            )
             if request.year_from:
-                conditions.append(FieldCondition(key="year", range=Range(gte=request.year_from)))
+                stmt = stmt.where(Paper.year >= request.year_from)
             if request.year_to:
-                conditions.append(FieldCondition(key="year", range=Range(lte=request.year_to)))
-            qdrant_filter = Filter(must=conditions)
+                stmt = stmt.where(Paper.year <= request.year_to)
 
-        response = await qdrant.query_points(
-            collection_name=config.qdrant_collection,
-            query=query_vector,
-            limit=PAGE_SIZE,
-            offset=offset,
-            score_threshold=request.min_similarity,
-            query_filter=qdrant_filter,
-            with_payload=True,
-        )
-        hits = response.points
+            stmt = stmt.order_by(distance_expr).limit(PAGE_SIZE).offset(offset)
 
-        if not hits:
-            return [], offset
+            result = await session.execute(stmt)
+            rows = result.all()
 
-        mongo_ids = [
-            ObjectId(hit.payload["mongo_id"])
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        ]
-        score_map = {
-            hit.payload["mongo_id"]: hit.score
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        }
-        vector_map = {
-            hit.payload["mongo_id"]: hit.payload.get("vector", [])
-            for hit in hits
-            if hit.payload and hit.payload.get("mongo_id")
-        }
-
-        cursor = self.papers.find({"_id": {"$in": mongo_ids}})
-        docs = await cursor.to_list(length=PAGE_SIZE)
-
-        results = [
-            (doc, score_map[str(doc["_id"])], vector_map.get(str(doc["_id"]), []))
-            for doc in docs
-        ]
-
-        next_offset = offset + len(hits)
+        results = [(paper, 1 - distance) for paper, distance in rows]
+        next_offset = offset + len(rows)
         return results, next_offset
-
-    async def _save_cursor(self, cursor_key: str, state: dict) -> str:
-        token = _encode_cursor({"key": cursor_key})
-        await redis_client.setex(cursor_key, CURSOR_TTL, json.dumps(state))
-        return token
-
-    async def _load_cursor(self, token: str) -> dict | None:
-        try:
-            data = _decode_cursor(token)
-            raw = await redis_client.get(data["key"])
-            if not raw:
-                return None
-            return json.loads(raw)
-        except Exception:
-            return None
 
     async def search_stream(
         self,
         request: PaperSearchRequest,
-        cursor_key: str | None = None,
+        on_new_papers=None,
     ) -> AsyncGenerator[dict, None]:
         total = 0
         cached_count = 0
@@ -216,26 +169,22 @@ class SearchService:
                 ),
             )
 
-            # cached results — vector read from Qdrant payload, no re-embedding
             cached_results, next_offset = await self._search_cache(query_vector, request, offset=0)
 
-            for doc, score, paper_vector in cached_results:
+            for paper, score in cached_results:
                 meets_inclusion, meets_exclusion = self._check_criteria(
-                    paper_vector, criteria_vectors,
+                    paper.abstract_embedding, criteria_vectors,
                     request.inclusion_criteria, request.exclusion_criteria,
                 )
-                result = self._to_result(doc, score, meets_inclusion, meets_exclusion)
+                result = self._to_result(paper, score, meets_inclusion, meets_exclusion)
                 yield {"type": "result", "paper": result.model_dump(), "cached": True}
                 total += 1
                 cached_count += 1
 
-            seen_dois = {doc.get("doi") for doc, _, _ in cached_results if doc.get("doi")}
-            seen_source_ids = {
-                f"{doc.get('source')}:{doc.get('source_id')}"
-                for doc, _, _ in cached_results
-            }
+            seen_dois = {paper.doi for paper, _ in cached_results if paper.doi}
+            seen_source_ids = {f"{paper.source}:{paper.source_id}" for paper, _ in cached_results}
 
-            new_to_ingest: list[PaperDocument] = []
+            new_to_ingest: list[FetchedPaper] = []
 
             for source in request.sources:
                 connector = SOURCES.get(source)
@@ -271,8 +220,10 @@ class SearchService:
                             request.inclusion_criteria, request.exclusion_criteria,
                         )
 
+                        paper.id = str(uuid.uuid4())
+
                         result = PaperSearchResult(
-                            id=str(paper.id),
+                            id=paper.id,
                             title=paper.title,
                             abstract=paper.abstract,
                             authors=[
@@ -304,16 +255,12 @@ class SearchService:
                         break
 
             if new_to_ingest:
-                try:
-                    paper_dicts = [_serialize_for_celery(p) for p in new_to_ingest]
-                    ingest_papers_task.delay(paper_dicts)  # type: ignore
-                    logger.info(f"Fired background ingestion for {len(new_to_ingest)} papers.")
-                except Exception as e:
-                    logger.error(f"Failed to fire ingest task: {e}")
-                    await ingestion_service.ingest(new_to_ingest)
+                if on_new_papers is not None:
+                    on_new_papers(new_to_ingest)
+                else:
+                    await ingest_and_index(new_to_ingest)
 
-            # save cursor state for load more
-            if cursor_key and next_offset > 0:
+            if next_offset > 0:
                 state = {
                     "query": request.query,
                     "query_vector": query_vector,
@@ -325,7 +272,7 @@ class SearchService:
                     "min_similarity": request.min_similarity,
                     "limit": request.limit,
                 }
-                cursor_token = await self._save_cursor(cursor_key, state)
+                cursor_token = _encode_cursor(state)
             else:
                 cursor_token = None
 
@@ -349,8 +296,9 @@ class SearchService:
         total = 0
 
         try:
-            state = await self._load_cursor(request.cursor)
-            if not state:
+            try:
+                state = _decode_cursor(request.cursor)
+            except Exception:
                 yield {"type": "error", "message": "Cursor expired or invalid. Please search again."}
                 return
 
@@ -376,21 +324,18 @@ class SearchService:
                 query_vector, search_req, offset=offset
             )
 
-            for doc, score, paper_vector in cached_results:
+            for paper, score in cached_results:
                 meets_inclusion, meets_exclusion = self._check_criteria(
-                    paper_vector, criteria_vectors,
+                    paper.abstract_embedding, criteria_vectors,
                     request.inclusion_criteria, request.exclusion_criteria,
                 )
-                result = self._to_result(doc, score, meets_inclusion, meets_exclusion)
+                result = self._to_result(paper, score, meets_inclusion, meets_exclusion)
                 yield {"type": "result", "paper": result.model_dump(), "cached": True}
                 total += 1
 
-            # update cursor state with new offset
-            data = _decode_cursor(request.cursor)
-            cursor_key = data["key"]
             if next_offset > offset:
                 state["offset"] = next_offset
-                cursor_token = await self._save_cursor(cursor_key, state)
+                cursor_token = _encode_cursor(state)
             else:
                 cursor_token = None
 

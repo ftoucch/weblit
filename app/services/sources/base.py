@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import AsyncGenerator
 
-from app.models.paper import PaperDocument
+from app.models.paper import FetchedPaper
 
 
 class BaseSource(ABC):
@@ -18,7 +18,7 @@ class BaseSource(ABC):
         year_from: int | None = None,
         year_to: int | None = None,
         field_of_study: str | None = None,
-    ) -> list[PaperDocument]: ...
+    ) -> list[FetchedPaper]: ...
 
     @abstractmethod
     def fetch_pages(
@@ -28,4 +28,4 @@ class BaseSource(ABC):
         year_from: int | None = None,
         year_to: int | None = None,
         field_of_study: str | None = None,
-    ) -> AsyncGenerator[list[PaperDocument], None]: ...
+    ) -> AsyncGenerator[list[FetchedPaper], None]: ...

@@ -15,6 +15,22 @@ function getHeaders(token?: string, extra: Record<string, string> = {}): Record<
   };
 }
 
+// FastAPI's custom HTTPExceptions send `detail` as a plain string, but its
+// automatic request-validation errors (422s) send `detail` as an array of
+// {msg, loc, type, ...} objects — normalise both to a single string here so
+// every `catch (e) { message = e?.detail }` call site gets readable text
+// instead of Svelte stringifying an object array to "[object Object]".
+function extractDetail(data: unknown): string {
+  const detail = (data as { detail?: unknown })?.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => (d && typeof d === 'object' && typeof d.msg === 'string' ? d.msg : JSON.stringify(d)))
+      .join(' ');
+  }
+  return 'Something went wrong';
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (res.status === 204) {
     return undefined as T;
@@ -23,7 +39,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
   const data = await res.json();
 
   if (!res.ok) {
-    throw data;
+    throw { detail: extractDetail(data) };
   }
 
   return camelcaseKeys(data, { deep: true }) as T;
@@ -54,7 +70,7 @@ export async function deleteRequest(path: string, token?: string): Promise<void>
   });
 
   if (!res.ok) {
-    throw await res.json();
+    throw { detail: extractDetail(await res.json()) };
   }
 }
 

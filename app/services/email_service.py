@@ -4,6 +4,10 @@ import httpx
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from app.core.config import config
+from app.email.templates.welcome_template import welcome_template
+from app.email.templates.otp_verification_template import otp_verification_template
+from app.email.templates.password_reset_template import password_reset_template
+from app.email.templates.password_reset_confirmation_template import password_reset_confirmation_template
 
 logger = logging.getLogger(__name__)
 
@@ -58,5 +62,21 @@ class EmailService:
         except Exception as e:
             logger.error(f"Failed to send email to {to}: {e}")
             raise
+
+    def send_otp_verification(self, name: str, email: str, otp: str) -> None:
+        subject, html = otp_verification_template(name=name, otp=otp)
+        self.send(to=email, subject=subject, html=html)
+
+    def send_welcome_email(self, name: str, email: str) -> None:
+        subject, html = welcome_template(name=name)
+        self.send(to=email, subject=subject, html=html)
+
+    def send_password_reset(self, name: str, email: str, otp: str) -> None:
+        subject, html = password_reset_template(name=name, email=email, otp=otp)
+        self.send(to=email, subject=subject, html=html)
+
+    def send_password_reset_confirmation(self, name: str, email: str) -> None:
+        subject, html = password_reset_confirmation_template(name=name)
+        self.send(to=email, subject=subject, html=html)
 
 email_service = EmailService()

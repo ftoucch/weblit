@@ -1,8 +1,8 @@
 import json
 import logging
+import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-from bson import ObjectId
 
 from app.schemas.fulltext import FullTextCheckRequest
 from app.services.fulltext_service import fulltext_service
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/fulltext", tags=["fulltext"])
 
 
 def _serialize(obj):
-    if isinstance(obj, ObjectId):
+    if isinstance(obj, uuid.UUID):
         return str(obj)
     raise TypeError(f"Unable to serialize unknown type: {type(obj)}")
 

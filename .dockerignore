@@ -1,0 +1,11 @@
+.venv
+.git
+.pytest_cache
+__pycache__
+*.pyc
+frontend
+tests
+.env
+.env.test
+qdrant
+*.egg-info

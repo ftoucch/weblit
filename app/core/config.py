@@ -11,25 +11,10 @@ class Config(BaseSettings):
     app_env: str = "development"
     debug: bool = False
 
-    mongo_uri: Optional[str] = None  
-    mongo_user: str = ""
-    mongo_password: str = ""
-    mongo_db: str = "weblit"
-    mongo_host: str = "mongo"
-    mongo_port: int = 27017
+    database_url: str = "postgresql://weblit:weblit@localhost:5432/weblit"
 
-    redis_url: Optional[str] = None
-    redis_host: str = "redis"
-    redis_port: int = 6379
-
-    qdrant_host: str = "qdrant"
-    qdrant_port: int = 6333
-    qdrant_api_key: Optional[str] = None   
-    qdrant_use_https: bool = False
-    qdrant_collection: str = "papers"
-
-    embedding_model: str = "all-mpnet-base-v2"
-    vector_size: int = 768
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    vector_size: int = 384
 
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
@@ -45,21 +30,27 @@ class Config(BaseSettings):
 
     openalex_email: str = "ftoucch@gmail.com"
 
-    @property
-    def db_url(self) -> str:
-        if self.mongo_uri:
-            return self.mongo_uri
-        return (
-            f"mongodb://{self.mongo_user}:{self.mongo_password}"
-            f"@{self.mongo_host}:{self.mongo_port}/{self.mongo_db}"
-            "?authSource=admin"
-        )
+    # Bootstrap admin — if both are set, seeded/synced as an admin user on every
+    # startup (see app/db/seed.py). Unset by default so a deploy with no admin
+    # configured stays admin-less rather than seeding a predictable account.
+    admin_email: Optional[str] = None
+    admin_password: Optional[str] = None
+    admin_name: str = "Admin"
 
     @property
-    def redis_connection_url(self) -> str:
-        if self.redis_url:
-            return self.redis_url
-        return f"redis://{self.redis_host}:{self.redis_port}"
+    def sqlalchemy_database_url(self) -> str:
+        """Normalise DATABASE_URL to the asyncpg driver.
+
+        Railway's Postgres plugin (and most providers) set DATABASE_URL as
+        postgres:// or postgresql://, but SQLAlchemy's async engine needs an
+        explicit +asyncpg driver in the scheme.
+        """
+        url = self.database_url
+        if url.startswith("postgres://"):
+            return "postgresql+asyncpg://" + url[len("postgres://"):]
+        if url.startswith("postgresql://") and "+asyncpg" not in url:
+            return "postgresql+asyncpg://" + url[len("postgresql://"):]
+        return url
 
     @property
     def is_production(self) -> bool:

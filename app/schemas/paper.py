@@ -30,7 +30,7 @@ class PaperSearchRequest(BaseModel):
     year_to: Optional[int] = Field(default=None, ge=1900, le=2100)
     field_of_study: Optional[str] = Field(default=None, max_length=200)
     sources: list[PaperSource] = Field(
-        default=[PaperSource.OPENALEX, PaperSource.CORE]
+        default=[PaperSource.OPENALEX]
     )
     sort_by: SortBy = SortBy.RELEVANCE
     limit: int = Field(default=100, ge=1, le=500)

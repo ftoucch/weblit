@@ -4,21 +4,17 @@ from app.api.v1 import auth, search, novelty, fulltext, admin
 from app.core.config import config
 from app.core.logging import setup_logging
 from contextlib import asynccontextmanager
-from app.db.mongo import connect_mongo, close_mongo
-from app.db.redis import connect_redis, close_redis
-from app.db.qdrant import connect_qdrant, close_qdrant
+from app.db.postgres import connect_postgres, close_postgres
+from app.db.seed import seed_admin
 
 setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await connect_mongo()
-    await connect_redis()
-    await connect_qdrant()
+    await connect_postgres()
+    await seed_admin()
     yield
-    await close_mongo()
-    await close_redis()
-    await close_qdrant()
+    await close_postgres()
 
 app = FastAPI(title= config.app_name, lifespan=lifespan)
 

@@ -1,6 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
-from bson import ObjectId
-from datetime import datetime
+from pydantic import BaseModel
 from typing import Optional
 
 
@@ -9,14 +7,15 @@ class AuthorDocument(BaseModel):
     institution: Optional[str] = None
 
 
-class PaperDocument(BaseModel):
-    
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        populate_by_name=True
-    )
+class FetchedPaper(BaseModel):
+    """A paper as returned by a source connector, before it has been persisted.
 
-    id: ObjectId = Field(default_factory=ObjectId, alias="_id")
+    `id` may be pre-assigned by the caller (e.g. a live search result streamed
+    to the client before ingestion completes) so the id shown to the client
+    matches the row that gets persisted moments later.
+    """
+
+    id: Optional[str] = None
 
     title: str
     abstract: Optional[str] = None
@@ -27,19 +26,9 @@ class PaperDocument(BaseModel):
     source_url: Optional[str] = None
     citation_count: Optional[int] = None
 
-    source: str                                
-    source_id: str                             
+    source: str
+    source_id: str
 
-    full_text: Optional[str] = None
-    full_text_source: Optional[str] = None     
+    full_text_source: Optional[str] = None
     has_full_text: bool = False
     oa_url: Optional[str] = None
-
-    qdrant_abstract_id: Optional[str] = None   
-    qdrant_fulltext_ids: list[str] = []        
-
-    abstract_indexed: bool = False
-    fulltext_indexed: bool = False
-
-    indexed_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)

@@ -13,43 +13,36 @@ ENV PATH="/project/venv/bin:$PATH"
 COPY pyproject.toml .
 RUN mkdir -p app && touch app/__init__.py
 RUN pip install --upgrade pip setuptools && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir .
 
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-mpnet-base-v2')"
-
-RUN playwright install chromium --with-deps
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
 
 # ── Stage 2: Slim runtime ─────────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 
 WORKDIR /project
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
-    libgbm1 libasound2 libpango-1.0-0 libcairo2 && \
-    rm -rf /var/lib/apt/lists/*
+RUN useradd -m appuser
 
-COPY --from=builder /project/venv /project/venv
-COPY --from=builder /root/.cache /root/.cache
-COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
+# --chown copies straight into the new layer with the right owner, instead of
+# COPY-then-`chown -R`, which forces Docker to duplicate the entire (multi-GB)
+# tree into a second layer just to change its metadata.
+COPY --from=builder --chown=appuser:appuser /project/venv /project/venv
+COPY --from=builder --chown=appuser:appuser /root/.cache /home/appuser/.cache
 
-COPY pyproject.toml .
-COPY ./app ./app
+COPY --chown=appuser:appuser pyproject.toml .
+COPY --chown=appuser:appuser ./app ./app
 
 ENV PATH="/project/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     HF_HOME=/home/appuser/.cache/huggingface \
-    SENTENCE_TRANSFORMERS_HOME=/home/appuser/.cache/huggingface \
-    PLAYWRIGHT_BROWSERS_PATH=/home/appuser/.cache/ms-playwright
-
-RUN useradd -m appuser && \
-    cp -r /root/.cache /home/appuser/.cache && \
-    chown -R appuser /project /home/appuser/.cache
+    SENTENCE_TRANSFORMERS_HOME=/home/appuser/.cache/huggingface
 
 USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Railway (and most PaaS) inject $PORT at runtime — bind to it, falling back to 8000 locally.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

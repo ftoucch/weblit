@@ -1,16 +1,14 @@
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Optional
-from celery.result import AsyncResult
+from sqlalchemy import select, func
 
 from app.api.dependency import CurrentUserDependency
-from app.workers.tasks.indexing_tasks import ingest_topic_task
-from app.workers.celery_app import celery_app
-
-from app.db.mongo import mongo_db
-from app.db.qdrant import get_qdrant, FULLTEXT_COLLECTION
-from app.core.config import config
+from app.db.postgres import AsyncSessionLocal
+from app.models.orm import Paper, User, FulltextChunk
+from app.services.ingestion_service import ingestion_service
+from app.services.fulltext_ingestion_service import fulltext_ingestion_service
+from app.services.sources.openalex import openalex_source
 
 logger = logging.getLogger(__name__)
 
@@ -31,50 +29,39 @@ class IngestTopicRequest(BaseModel):
 
 
 class IngestTopicResponse(BaseModel):
-    task_id: str
     topic: str
     limit: int
     message: str
 
 
-class TaskStatusResponse(BaseModel):
-    task_id: str
-    status: str
-    result: Optional[dict] = None
+async def _ingest_topic(topic: str, limit: int) -> None:
+    try:
+        papers = await openalex_source.fetch(query=topic, limit=limit)
+        stored = await ingestion_service.ingest(papers)
+        fulltext_rows = [p for p in stored if p.has_full_text]
+        if fulltext_rows:
+            await fulltext_ingestion_service.index_batch(fulltext_rows)
+        logger.info(f"Ingested {len(stored)} papers for topic '{topic}'.")
+    except Exception as e:
+        logger.error(f"Ingestion for topic '{topic}' failed: {e}")
 
 
 @router.post("/ingest-topic", response_model=IngestTopicResponse)
 async def ingest_topic(
     request: IngestTopicRequest,
     current_user: CurrentUserDependency,
+    background_tasks: BackgroundTasks,
 ):
     _require_admin(current_user)
 
-    task = ingest_topic_task.delay(request.topic, request.limit) #type: ignore
+    background_tasks.add_task(_ingest_topic, request.topic, request.limit)
 
     logger.info(f"Admin {current_user.id} triggered ingestion for topic '{request.topic}' limit={request.limit}")
 
     return IngestTopicResponse(
-        task_id=task.id,
         topic=request.topic,
         limit=request.limit,
-        message=f"Ingestion started for '{request.topic}'. Check status with task_id.",
-    )
-
-
-@router.get("/ingest-status/{task_id}", response_model=TaskStatusResponse)
-async def ingest_status(
-    task_id: str,
-    current_user: CurrentUserDependency,
-):
-    _require_admin(current_user)
-
-    result = AsyncResult(task_id, app=celery_app)
-
-    return TaskStatusResponse(
-        task_id=task_id,
-        status=result.status,
-        result=result.result if result.ready() else None,
+        message=f"Ingestion started for '{request.topic}' — check /admin/stats shortly for progress.",
     )
 
 
@@ -82,13 +69,13 @@ async def ingest_status(
 async def stats(current_user: CurrentUserDependency):
     _require_admin(current_user)
 
-    papers_total = await mongo_db.collections["papers"].count_documents({}) #type: ignore
-    papers_fulltext = await mongo_db.collections["papers"].count_documents({"fulltext_indexed": True}) #type: ignore
-    users_total = await mongo_db.collections["users"].count_documents({}) #type: ignore
-
-    qdrant = get_qdrant()
-    abstracts_info = await qdrant.get_collection(config.qdrant_collection)
-    fulltext_info = await qdrant.get_collection(FULLTEXT_COLLECTION)
+    async with AsyncSessionLocal() as session:
+        papers_total = await session.scalar(select(func.count()).select_from(Paper))
+        papers_fulltext = await session.scalar(
+            select(func.count()).select_from(Paper).where(Paper.fulltext_indexed.is_(True))
+        )
+        users_total = await session.scalar(select(func.count()).select_from(User))
+        chunks_total = await session.scalar(select(func.count()).select_from(FulltextChunk))
 
     return {
         "papers": {
@@ -98,8 +85,8 @@ async def stats(current_user: CurrentUserDependency):
         "users": {
             "total": users_total,
         },
-        "qdrant": {
-            "abstracts_vectors": abstracts_info.points_count,
-            "fulltext_vectors": fulltext_info.points_count,
+        "vectors": {
+            "abstract_embeddings": papers_total,
+            "fulltext_chunks": chunks_total,
         },
     }

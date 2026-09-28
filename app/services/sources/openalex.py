@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 
 import httpx
 
-from app.models.paper import PaperDocument, AuthorDocument
+from app.models.paper import FetchedPaper, AuthorDocument
 from app.services.sources.base import BaseSource
 from app.core.config import config
 
@@ -96,7 +96,7 @@ class OpenAlexSource(BaseSource):
             return None
         return raw_doi.replace("https://doi.org/", "").strip()
 
-    def _to_document(self, raw: dict) -> PaperDocument | None:
+    def _to_document(self, raw: dict) -> FetchedPaper | None:
         try:
             title = raw.get("title")
             if not title:
@@ -110,7 +110,7 @@ class OpenAlexSource(BaseSource):
             oa_url = open_access.get("oa_url")
             has_full_text = bool(oa_url)
 
-            return PaperDocument(
+            return FetchedPaper(
                 title=title,
                 abstract=self._reconstruct_abstract(raw.get("abstract_inverted_index")),
                 authors=self._parse_authors(raw.get("authorships", [])),
@@ -141,7 +141,7 @@ class OpenAlexSource(BaseSource):
         year_from: int | None,
         year_to: int | None,
         field_of_study: str | None,
-    ) -> tuple[list[PaperDocument], int]:
+    ) -> tuple[list[FetchedPaper], int]:
         params = self._build_params(query, page, year_from, year_to, field_of_study)
         try:
             response = await client.get(f"{OPENALEX_BASE_URL}/works", params=params)
@@ -165,7 +165,7 @@ class OpenAlexSource(BaseSource):
         year_from: int | None = None,
         year_to: int | None = None,
         field_of_study: str | None = None,
-    ) -> AsyncGenerator[list[PaperDocument], None]:
+    ) -> AsyncGenerator[list[FetchedPaper], None]:
         async with httpx.AsyncClient(timeout=30) as client:
             first_page, total_count = await self._fetch_page(
                 client, query, 1, year_from, year_to, field_of_study
@@ -198,8 +198,8 @@ class OpenAlexSource(BaseSource):
         year_from: int | None = None,
         year_to: int | None = None,
         field_of_study: str | None = None,
-    ) -> list[PaperDocument]:
-        papers: list[PaperDocument] = []
+    ) -> list[FetchedPaper]:
+        papers: list[FetchedPaper] = []
         async for page in self.fetch_pages(
             query=query,
             max_results=limit,

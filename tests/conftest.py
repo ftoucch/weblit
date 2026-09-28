@@ -1,58 +1,27 @@
 import os
-os.environ["MONGO_HOST"] = "localhost"
-os.environ["MONGO_PORT"] = "27017"
-os.environ["REDIS_HOST"] = "localhost"
-os.environ["REDIS_PORT"] = "6379"
+os.environ.setdefault("DATABASE_URL", "postgresql://weblit:weblit@localhost:5432/weblit_test")
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
-from motor.motor_asyncio import AsyncIOMotorClient
-import redis.asyncio as redis
+from sqlalchemy import text
 
 from app.main import app
-from app.db.mongo import mongo_db
-from app.core.config import config
-
-TEST_MONGO_DB = f"{config.mongo_db}_test"
-TEST_REDIS_DB = 9
+from app.db.postgres import engine
+from app.models.orm import Base
 
 
 @pytest_asyncio.fixture(autouse=True)
 async def setup_test_db():
-    # MongoDB
-    mongo_db.client = AsyncIOMotorClient(
-        f"mongodb://{config.mongo_user}:{config.mongo_password}@"
-        f"localhost:{config.mongo_port}/?authSource=admin"
-    )
-    mongo_db.db = mongo_db.client[TEST_MONGO_DB]
-    mongo_db.collections = {
-        "users": mongo_db.db.get_collection("users")
-    }
-    await mongo_db.db["users"].create_index("email", unique=True)
-
-    # Redis
-    import app.db.redis as redis_module
-    import app.services.otp_service as otp_module
-
-    test_redis = redis.Redis(
-        host="localhost",
-        port=config.redis_port,
-        db=TEST_REDIS_DB,
-        decode_responses=True,
-    )
-    redis_module.redis_client = test_redis
-    otp_module.redis_client = test_redis
-
-    # clean before each test
-    await mongo_db.collections["users"].delete_many({})
-    await test_redis.flushdb()
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.run_sync(Base.metadata.create_all)
 
     yield
 
-    await test_redis.flushdb()
-    await test_redis.aclose()
-    mongo_db.client.close()
+    async with engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(table.delete())
 
 
 @pytest_asyncio.fixture
@@ -82,10 +51,16 @@ async def registered_user(client: AsyncClient, user_payload: dict) -> dict:
 
 @pytest_asyncio.fixture
 async def verified_user(client: AsyncClient, registered_user: dict) -> dict:
+    from app.db.postgres import AsyncSessionLocal
+    from app.models.orm import OTPCode
+    import uuid
+
     user_id = registered_user["response"]["id"]
-    import app.db.redis as redis_module
-    otp = await redis_module.redis_client.get(f"otp:verify_email:{user_id}")
-    response = await client.post("/api/v1/auth/verify-email", json={
+    async with AsyncSessionLocal() as session:
+        row = await session.get(OTPCode, (uuid.UUID(user_id), "verify_email"))
+        otp = row.code
+
+    response = await client.post("/api/v1/auth/verify-otp", json={
         "user_id": user_id,
         "otp": otp
     })
