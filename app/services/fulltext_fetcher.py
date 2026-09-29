@@ -22,8 +22,15 @@ def _is_pdf_url(url: str) -> bool:
     return url.lower().split("?")[0].endswith(".pdf")
 
 
+def _sanitize_text(text: str) -> str:
+    """Postgres text/varchar columns reject embedded NUL bytes (\\x00), which
+    pypdf occasionally emits from PDFs with broken font/encoding tables."""
+    return text.replace("\x00", "")
+
+
 async def fetch_fulltext(oa_url: str) -> str | None:
-    return await _fetch_with_httpx(oa_url)
+    text = await _fetch_with_httpx(oa_url)
+    return _sanitize_text(text) if text else text
 
 
 async def _fetch_with_httpx(oa_url: str) -> str | None:

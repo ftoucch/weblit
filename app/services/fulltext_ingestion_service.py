@@ -139,48 +139,55 @@ class FullTextIngestionService:
         return text
 
     async def index_paper(self, paper_id: uuid.UUID) -> bool:
-        async with AsyncSessionLocal() as session:
-            paper = await session.get(Paper, paper_id)
-            if not paper:
-                return False
+        # Any single paper can fail for reasons outside our control (a bad PDF,
+        # a flaky publisher host, a Postgres constraint) — never let one paper
+        # abort indexing for the rest of the batch.
+        try:
+            async with AsyncSessionLocal() as session:
+                paper = await session.get(Paper, paper_id)
+                if not paper:
+                    return False
 
-            if paper.fulltext_indexed:
-                logger.info(f"Paper {paper.id} already fulltext indexed — skipping.")
-                return False
+                if paper.fulltext_indexed:
+                    logger.info(f"Paper {paper.id} already fulltext indexed — skipping.")
+                    return False
 
-            full_text = await self._fetch_and_store_text(session, paper)
-            if not full_text:
-                logger.warning(f"No full text available for paper {paper.id}")
-                return False
+                full_text = await self._fetch_and_store_text(session, paper)
+                if not full_text:
+                    logger.warning(f"No full text available for paper {paper.id}")
+                    return False
 
-            chunks = _paragraph_chunks(full_text)
-            if not chunks:
-                return False
+                chunks = _paragraph_chunks(full_text)
+                if not chunks:
+                    return False
 
-            chunk_texts = [c[0] for c in chunks]
-            vectors = await embedding_service.embed_batch(chunk_texts)
+                chunk_texts = [c[0] for c in chunks]
+                vectors = await embedding_service.embed_batch(chunk_texts)
 
-            rows = [
-                FulltextChunk(
-                    id=uuid.uuid4(),
-                    paper_id=paper.id,
-                    chunk_text=chunk_text,
-                    start_char=start_char,
-                    end_char=end_char,
-                    chunk_embedding=vector,
-                )
-                for (chunk_text, start_char, end_char), vector in zip(chunks, vectors)
-            ]
-            session.add_all(rows)
+                rows = [
+                    FulltextChunk(
+                        id=uuid.uuid4(),
+                        paper_id=paper.id,
+                        chunk_text=chunk_text,
+                        start_char=start_char,
+                        end_char=end_char,
+                        chunk_embedding=vector,
+                    )
+                    for (chunk_text, start_char, end_char), vector in zip(chunks, vectors)
+                ]
+                session.add_all(rows)
 
-            paper.fulltext_indexed = True
-            paper.indexed_at = datetime.utcnow()
-            paper.updated_at = datetime.utcnow()
+                paper.fulltext_indexed = True
+                paper.indexed_at = datetime.utcnow()
+                paper.updated_at = datetime.utcnow()
 
-            await session.commit()
+                await session.commit()
 
-            logger.info(f"Fulltext indexed: '{paper.title}' — {len(chunks)} chunks")
-            return True
+                logger.info(f"Fulltext indexed: '{paper.title}' — {len(chunks)} chunks")
+                return True
+        except Exception as e:
+            logger.error(f"Fulltext indexing failed for paper {paper_id}: {e}")
+            return False
 
     async def index_batch(self, papers: list[Paper]) -> int:
         count = 0
